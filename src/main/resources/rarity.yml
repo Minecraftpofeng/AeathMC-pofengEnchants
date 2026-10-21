@@ -1,0 +1,23 @@
+#
+# 稀有度配置，结构与 EcoEnchants 的 rarity.yml 保持一致
+# 每个稀有度定义抽取权重：数字越大越常见
+#
+common:
+  weight: 50
+  color: '&7'
+
+uncommon:
+  weight: 25
+  color: '&a'
+
+rare:
+  weight: 15
+  color: '&9'
+
+epic:
+  weight: 8
+  color: '&5'
+
+mythic:
+  weight: 2
+  color: '&c'

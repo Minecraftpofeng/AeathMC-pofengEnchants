@@ -1,0 +1,23 @@
+#
+# Criticals EcoEnchant
+#
+name: "Criticals"
+description: Increases critical damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  - axes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  multiplier: 0.10

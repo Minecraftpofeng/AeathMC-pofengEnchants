@@ -1,0 +1,22 @@
+#
+# Force EcoEnchant
+#
+name: "Force"
+description: Massively increases arrow damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - bows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 8
+
+config:
+  multiplier: 0.25

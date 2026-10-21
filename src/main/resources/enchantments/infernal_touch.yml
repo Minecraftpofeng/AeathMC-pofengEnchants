@@ -1,0 +1,19 @@
+#
+# Infernal Touch EcoEnchant
+#
+name: "Infernal Touch"
+description: Automatically smelt mined blocks
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1

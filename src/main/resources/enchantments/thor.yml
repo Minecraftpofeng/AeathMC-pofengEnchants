@@ -1,0 +1,22 @@
+#
+# Thor EcoEnchant
+#
+name: "Thor"
+description: Chance of striking lightning on your opponent
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 6
+
+config:
+  chance: 0.03

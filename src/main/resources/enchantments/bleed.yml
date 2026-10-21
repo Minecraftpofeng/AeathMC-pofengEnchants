@@ -1,0 +1,23 @@
+#
+# Bleed EcoEnchant
+#
+name: "Bleed"
+description: Causes your opponent to bleed, damaging them repeatedly
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 7
+
+config:
+  chance: 0.10
+  duration: 40

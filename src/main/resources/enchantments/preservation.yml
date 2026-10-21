@@ -1,0 +1,22 @@
+#
+# Preservation EcoEnchant
+#
+name: "Preservation"
+description: Massively reduces incoming damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 4
+
+config:
+  multiplier: 0.15

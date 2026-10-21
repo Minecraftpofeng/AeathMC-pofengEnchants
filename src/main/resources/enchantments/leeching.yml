@@ -1,0 +1,23 @@
+#
+# Leeching EcoEnchant
+#
+name: "Leeching"
+description: Heals a portion of damage dealt
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  - axes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 6
+
+config:
+  multiplier: 0.05

@@ -1,0 +1,23 @@
+#
+# Curse of Misfortune EcoEnchant
+#
+name: "Curse of Misfortune"
+description: Chance of blocks to not drop items
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: common
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1
+
+config:
+  curse: true
+  chance: 0.25

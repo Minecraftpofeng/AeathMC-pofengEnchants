@@ -1,0 +1,23 @@
+#
+# Toxic EcoEnchant
+#
+name: "Toxic"
+description: Chance to apply poison to your opponent
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: common
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config:
+  chance: 0.20
+  duration: 60

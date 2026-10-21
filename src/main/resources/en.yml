@@ -1,0 +1,24 @@
+#
+# 消息文件（en.yml），结构与 EcoEnchants 的消息文件保持一致
+#
+prefix: '&8[&6AeathMC&8] '
+
+commands:
+  no-permission: '&c你没有权限执行此指令。'
+  invalid-args: '&c参数错误。用法：/ecoenchants <giverandombook|randomenchant|givebook|reload>'
+  player-not-found: '&c找不到玩家 %player%。'
+  player-only: '&c该指令只能由玩家执行。'
+  reload: '&a配置已重载。'
+  giverandombook: '&a已将一本随机附魔书给予 %player%。'
+  randomenchant: '&a已为 %player% 手中物品添加随机附魔。'
+  givebook: '&a已将附魔书 %enchant% %level% 给予 %player%。'
+  no-item: '&c请先手持一件物品。'
+  enchant-not-found: '&c找不到附魔 %enchant%。'
+
+enchantinfo:
+  header: '&6%name%'
+  description: '&7描述：%description%'
+  max-level: '&7最大等级：%level%'
+  rarity: '&7稀有度：%rarity%'
+  targets: '&7适用：%targets%'
+  conflicts: '&7冲突：%conflicts%'

@@ -1,0 +1,170 @@
+package com.ecoclone.listener;
+
+import com.ecoclone.EcoClonePlugin;
+import com.ecoclone.EnchantManager;
+import com.ecoclone.Enchants;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * 挖掘附魔效果：Blast Mining / Vein / Infernal Touch / Telekinesis /
+ * Wisdom / Energizing / Curse of Misfortune。
+ */
+public final class MiningListener implements Listener {
+
+    private final EcoClonePlugin plugin;
+    private final EnchantManager manager;
+
+    public MiningListener(EcoClonePlugin plugin, EnchantManager manager) {
+        this.plugin = plugin;
+        this.manager = manager;
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        ItemStack held = player.getInventory().getItemInMainHand();
+        if (held == null || held.getType().isAir()) {
+            return;
+        }
+        Block block = event.getBlock();
+
+        // 诅咒：概率不掉落
+        if (Enchants.has(held, "curse_of_misfortune") && Math.random() < 0.25) {
+            event.setDropItems(false);
+            event.setExpToDrop(0);
+            return;
+        }
+
+        // Telekinesis：掉落直接进背包
+        boolean tele = Enchants.has(held, "telekinesis");
+        if (tele && event.isDropItems()) {
+            List<ItemStack> drops = new ArrayList<>(block.getDrops(held));
+            event.setDropItems(false);
+            for (ItemStack d : drops) {
+                player.getInventory().addItem(d).values().forEach(left ->
+                        block.getWorld().dropItemNaturally(block.getLocation(), left));
+            }
+        }
+
+        // Infernal Touch：自动熔炼
+        if (Enchants.has(held, "infernal_touch") && event.isDropItems()) {
+            for (ItemStack d : block.getDrops(held)) {
+                Material smelted = smelt(d.getType());
+                if (smelted != null) {
+                    ItemStack out = d.clone();
+                    out.setType(smelted);
+                    event.setDropItems(false);
+                    block.getWorld().dropItemNaturally(block.getLocation(), out);
+                }
+            }
+        }
+
+        // Wisdom：额外经验
+        int wisdom = Enchants.level(held, "wisdom");
+        if (wisdom > 0) {
+            event.setExpToDrop(event.getExpToDrop() + 2 * wisdom);
+        }
+
+        // Energizing：获得短时急迫
+        int ener = Enchants.level(held, "energizing");
+        if (ener > 0) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 40 * ener, 0));
+        }
+
+        // Blast Mining：3x3 挖掘
+        if (Enchants.has(held, "blast_mining")) {
+            double hardness = block.getType().getHardness();
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) {
+                            continue;
+                        }
+                        Block b = block.getRelative(dx, dy, dz);
+                        if (breakable(b, hardness)) {
+                            b.breakNaturally(held);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Vein：连锁挖掘矿脉
+        int vein = Enchants.level(held, "vein");
+        if (vein > 0 && block.getType().name().contains("ORE")) {
+            int radius = 3 + vein;
+            Set<Block> veinBlocks = new HashSet<>();
+            Deque<Block> queue = new ArrayDeque<>();
+            queue.add(block);
+            Material type = block.getType();
+            while (!queue.isEmpty() && veinBlocks.size() < 40) {
+                Block cur = queue.poll();
+                if (cur.getType() != type) {
+                    continue;
+                }
+                if (!veinBlocks.add(cur)) {
+                    continue;
+                }
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dy = -1; dy <= 1; dy++) {
+                        for (int dz = -1; dz <= 1; dz++) {
+                            Block nb = cur.getRelative(dx, dy, dz);
+                            if (nb.getType() == type
+                                    && nb.getLocation().distanceSquared(block.getLocation()) <= radius * radius) {
+                                queue.add(nb);
+                            }
+                        }
+                    }
+                }
+            }
+            for (Block b : veinBlocks) {
+                if (b.equals(block)) {
+                    continue;
+                }
+                b.breakNaturally(held);
+            }
+        }
+    }
+
+    private static boolean breakable(Block b, double hardness) {
+        if (b.getType().isAir()) {
+            return false;
+        }
+        if (b.getType() == Material.BEDROCK || b.getType() == Material.OBSIDIAN) {
+            return false;
+        }
+        if (b.isLiquid()) {
+            return false;
+        }
+        return b.getType().getHardness() <= hardness;
+    }
+
+    private static Material smelt(Material m) {
+        return switch (m) {
+            case RAW_IRON, IRON_ORE, DEEPSLATE_IRON_ORE -> Material.IRON_INGOT;
+            case RAW_GOLD, GOLD_ORE, DEEPSLATE_GOLD_ORE -> Material.GOLD_INGOT;
+            case RAW_COPPER, COPPER_ORE, DEEPSLATE_COPPER_ORE -> Material.COPPER_INGOT;
+            case COBBLESTONE -> Material.STONE;
+            case SAND -> Material.GLASS;
+            case CLAY -> Material.BRICK;
+            case ANCIENT_DEBRIS -> Material.NETHERITE_SCRAP;
+            default -> null;
+        };
+    }
+}

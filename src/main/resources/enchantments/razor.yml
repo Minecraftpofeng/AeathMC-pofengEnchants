@@ -1,0 +1,22 @@
+#
+# Razor EcoEnchant
+#
+name: "Razor"
+description: Massively increases damage dealt
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 8
+
+config:
+  multiplier: 0.25

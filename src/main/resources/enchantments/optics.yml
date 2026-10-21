@@ -1,0 +1,23 @@
+#
+# Optics EcoEnchant
+#
+name: "Optics"
+description: Increases damage when further from target
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - bows
+  - crossbows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  multiplier: 0.05

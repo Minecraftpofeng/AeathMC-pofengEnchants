@@ -1,0 +1,41 @@
+#
+# EcoClone 主配置文件
+# 结构与 EcoEnchants 的 config.yml 保持一致
+#
+
+# 随机附魔 / 附魔书抽取时的最高等级上限
+# 设置为 -1 表示不限制（玩家无法绕过硬上限，除非拥有权限）
+hard-cap: -1
+
+# 铁砧成本指数，用于放大/缩小铁砧附魔成本
+cost-exponent: 0.0
+
+# 附魔冷却时间（秒），作用于带冷却的附魔（如 Thor / Zeus 的雷电）
+default-cooldown: 3.0
+
+# 是否让自定义附魔在附魔台中出现
+enchanting-table:
+  enabled: true
+  # 每个附魔的权重乘数
+  weight-multiplier: 1.0
+
+# 村民交易（是否生成自定义附魔书交易）
+villager:
+  enabled: true
+
+# 世界生成的战利品宝箱 / 末地城等结构中的自然附魔
+loot:
+  enabled: true
+
+# 铁砧/磨石交互
+anvil:
+  enabled: true
+
+grindstone:
+  enabled: true
+
+# 是否显示自定义附魔的描述（写在物品 lore 上）
+show-descriptions: true
+
+# 消息语言文件（en.yml 或自定义）
+language: en.yml

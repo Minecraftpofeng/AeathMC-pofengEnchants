@@ -1,0 +1,19 @@
+#
+# Soulbound EcoEnchant
+#
+name: "Soulbound"
+description: Keep this item on death
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - everything
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1

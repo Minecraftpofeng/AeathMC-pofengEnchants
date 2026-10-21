@@ -1,0 +1,19 @@
+#
+# Blast Mining EcoEnchant
+#
+name: "Blast Mining"
+description: Mines blocks in a 3x3 area
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - pickaxes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1

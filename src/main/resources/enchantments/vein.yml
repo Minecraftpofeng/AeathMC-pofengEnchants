@@ -1,0 +1,22 @@
+#
+# Vein EcoEnchant
+#
+name: "Vein"
+description: Mine blocks in a vein
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - pickaxes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  radius: 3

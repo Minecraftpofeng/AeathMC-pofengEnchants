@@ -1,0 +1,22 @@
+#
+# Freerunner EcoEnchant
+#
+name: "Freerunner"
+description: Chance to ignore fall damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 6
+
+config:
+  chance: 0.20

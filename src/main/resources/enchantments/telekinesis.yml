@@ -1,0 +1,19 @@
+#
+# Telekinesis EcoEnchant
+#
+name: "Telekinesis"
+description: Drops and xp go directly into your inventory
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1

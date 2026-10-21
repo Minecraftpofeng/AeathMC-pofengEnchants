@@ -1,0 +1,23 @@
+#
+# Wither Aspect EcoEnchant
+#
+name: "Wither Aspect"
+description: Chance to apply wither to your opponent
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config:
+  chance: 0.15
+  duration: 60

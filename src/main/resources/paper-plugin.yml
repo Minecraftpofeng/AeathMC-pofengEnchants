@@ -1,0 +1,7 @@
+name: AeathMC-pofengEnchants
+version: '1.0.0'
+main: com.ecoclone.EcoClonePlugin
+bootstrapper: com.ecoclone.EcoCloneBootstrap
+api-version: '1.21'
+authors: [Minecraft_pofeng]
+description: Custom enchantment plugin — same commands, config format and permission scheme as EcoEnchants.

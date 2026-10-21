@@ -1,0 +1,23 @@
+#
+# Boss Hunter EcoEnchant
+#
+name: "Boss Hunter"
+description: Increases damage against bosses
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - bows
+  - crossbows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 8
+
+config:
+  multiplier: 0.15

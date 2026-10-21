@@ -1,0 +1,19 @@
+#
+# Repairing EcoEnchant
+#
+name: "Repairing"
+description: Automatically repairs items when not held
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - everything
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3

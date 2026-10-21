@@ -1,0 +1,21 @@
+# 构建产物
+target/
+*.jar
+!src/main/resources/**/*.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# 系统 / 临时
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# 本地运行配置
+run/
