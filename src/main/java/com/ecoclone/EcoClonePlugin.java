@@ -8,6 +8,8 @@ import com.ecoclone.listener.DeathListener;
 import com.ecoclone.listener.MiningListener;
 import com.ecoclone.listener.ProjectileListener;
 import com.ecoclone.listener.UtilityListener;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandMap;
@@ -74,17 +76,20 @@ public final class EcoClonePlugin extends JavaPlugin {
         UtilityListener.clearAll(Bukkit.getServer());
     }
 
-    /** 启动鸣谢弹幕：控制台 + 在线玩家各弹两行（含 16 进制颜色，中文后附英文） */
+    /** 启动鸣谢弹幕：控制台 + 在线玩家各弹两行（Adventure 组件，16 进制颜色，中文后附英文） */
     private void sendSplash() {
-        String line1 = manager.colorHex(
-                "&#FFD700;鸣谢 / Thanks to:&#00E5FF; SKY_qwq&#FFFFFF;  &#00E5FF;clowm贺&#FFFFFF;  &#00E5FF;shadow_agent&#FFFFFF;  &#00E5FF;H1111111");
-        String line2 = manager.colorHex(
-                "&#7DF9FF;——长风破浪会有时&#AAAAAA; (Someday I'll ride the wind and break the waves)&#FFD700; [AeathMC 总开发 / Lead Developer&#FFAA00; Minecraft_pofeng&#FFD700;]");
+        Component line1 = Component.text("鸣谢 / Thanks to: ", TextColor.fromHexString("#FFD700"))
+                .append(Component.text("SKY_qwq  clowm贺  shadow_agent  H1111111", TextColor.fromHexString("#00E5FF")));
+        Component line2 = Component.text("——长风破浪会有时 ", TextColor.fromHexString("#7DF9FF"))
+                .append(Component.text("(Someday I'll ride the wind and break the waves) ", TextColor.fromHexString("#AAAAAA")))
+                .append(Component.text("[AeathMC 总开发 / Lead Developer ", TextColor.fromHexString("#FFD700")))
+                .append(Component.text("Minecraft_pofeng", TextColor.fromHexString("#FFAA00")))
+                .append(Component.text("]", TextColor.fromHexString("#FFD700")));
         getServer().getConsoleSender().sendMessage(line1);
         getServer().getConsoleSender().sendMessage(line2);
         getServer().getScheduler().runTaskLater(this, () -> {
-            Bukkit.broadcastMessage(line1);
-            Bukkit.broadcastMessage(line2);
+            Bukkit.broadcast(line1);
+            Bukkit.broadcast(line2);
         }, 20L);
     }
 
