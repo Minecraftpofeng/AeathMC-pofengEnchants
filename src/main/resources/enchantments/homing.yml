@@ -1,0 +1,22 @@
+#
+# Homing EcoEnchant
+#
+name: "Homing"
+description: Arrows home toward the nearest enemy
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - bow
+  - crossbow
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config: {}

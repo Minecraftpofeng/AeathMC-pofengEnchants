@@ -1,0 +1,37 @@
+#
+# Curse of Weakness EcoEnchant
+#
+name: "Curse of Weakness"
+description: Reduces damage you deal while equipped
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: common
+
+general-config:
+  targets:
+  - swords
+  - axes
+  - pickaxe
+  - axe
+  - shovel
+  - hoe
+  - helmet
+  - chestplate
+  - leggings
+  - boots
+  - bow
+  - crossbow
+  - trident
+  - shield
+  - elytra
+  - fishing_rod
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  reduction: 0.1

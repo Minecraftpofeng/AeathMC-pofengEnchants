@@ -1,0 +1,24 @@
+#
+# Regeneration EcoEnchant
+#
+name: "Regeneration"
+description: Regenerate health while worn
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - helmet
+  - chestplate
+  - leggings
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config: {}

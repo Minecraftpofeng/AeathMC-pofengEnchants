@@ -1,0 +1,22 @@
+#
+# Blind EcoEnchant
+#
+name: "Blind"
+description: Chance to blind your opponent
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3

@@ -69,9 +69,40 @@ public final class CombatListener implements Listener {
                     if (adv > 0 && p.getHealth() < p.getMaxHealth() * 0.3) {
                         p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 30, Math.min(1, adv - 1)));
                     }
+                    // Regeneration：穿戴时持续回血
+                    int regen = total(p, "regeneration");
+                    if (regen > 0) {
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 60, Math.min(1, regen - 1)));
+                    }
+                    // Night Vision：头盔夜视
+                    if (Enchants.level(p.getInventory().getHelmet(), "night_vision") > 0) {
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 200, 0));
+                    }
+                    // Diver：水下呼吸+夜视
+                    int diver = Enchants.level(p.getInventory().getBoots(), "diver");
+                    if (diver > 0 && p.isInWater()) {
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 100, 0));
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 200, 0));
+                    }
+                    // Swift：疾跑速度
+                    int swift = Enchants.level(p.getInventory().getBoots(), "swift");
+                    if (swift > 0) {
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, Math.min(1, swift - 1)));
+                    }
                 }
             }
         }.runTaskTimer(plugin, 0L, 20L);
+    }
+
+    /** 护甲上某附魔的总等级 */
+    private int total(Player p, String key) {
+        int sum = 0;
+        for (ItemStack piece : p.getInventory().getArmorContents()) {
+            if (piece != null) {
+                sum += Enchants.level(piece, key);
+            }
+        }
+        return sum;
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -182,6 +213,63 @@ public final class CombatListener implements Listener {
             changed = true;
         }
 
+        // Berserker：自身血量越低伤害越高
+        int bers = Enchants.level(held, "berserker");
+        if (bers > 0) {
+            double missing = 1 - (attacker.getHealth() / attacker.getMaxHealth());
+            dmg *= (1 + 0.3 * bers * missing);
+            changed = true;
+        }
+
+        // Chain Lightning：概率对附近敌人落雷
+        int chain = Enchants.level(held, "chain_lightning");
+        if (chain > 0 && Math.random() < 0.2 * chain
+                && !manager.isOnCooldown(attacker.getUniqueId(), "chain_lightning")) {
+            victim.getWorld().strikeLightning(victim.getLocation());
+            int extra = chain;
+            for (Entity e : victim.getNearbyEntities(6, 6, 6)) {
+                if (extra <= 0) {
+                    break;
+                }
+                if (e instanceof LivingEntity && e != attacker && e != victim) {
+                    e.getWorld().strikeLightning(e.getLocation());
+                    extra--;
+                }
+            }
+            manager.startCooldown(attacker.getUniqueId(), "chain_lightning", manager.cooldownSeconds());
+        }
+
+        // Blind：致盲
+        int blind = Enchants.level(held, "blind");
+        if (blind > 0 && Math.random() < 0.3 * blind) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40 * blind, 0));
+        }
+
+        // Nausea：恶心
+        int nausea = Enchants.level(held, "nausea");
+        if (nausea > 0 && Math.random() < 0.3 * nausea) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 40 * nausea, 0));
+        }
+
+        // Execute：处决（低血概率秒杀非玩家）
+        int exe = Enchants.level(held, "execute");
+        if (exe > 0 && !(victim instanceof Player)
+                && victim.getHealth() < victim.getMaxHealth() * 0.1 && Math.random() < 0.3) {
+            victim.setHealth(0);
+        }
+
+        // Curse of Weakness：手持或穿戴时降低造成的伤害
+        int weak = Enchants.level(held, "curse_of_weakness");
+        for (ItemStack piece : attacker.getInventory().getArmorContents()) {
+            if (piece != null) {
+                weak += Enchants.level(piece, "curse_of_weakness");
+            }
+        }
+        if (weak > 0) {
+            dmg *= (1 - 0.1 * weak);
+            changed = true;
+        }
+
         if (changed) {
             event.setDamage(dmg);
         }
@@ -208,6 +296,18 @@ public final class CombatListener implements Listener {
         if (greedy > 0) {
             event.getEntity().getWorld().spawn(event.getEntity().getLocation(), ExperienceOrb.class,
                     orb -> orb.setExperience(5 * greedy));
+        }
+        // Bloodlust：击杀后治疗+速度
+        int blood = Enchants.level(held, "bloodlust");
+        if (blood > 0) {
+            killer.setHealth(Math.min(killer.getMaxHealth(), killer.getHealth() + 2.0 * blood));
+            killer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40 * blood, 0));
+        }
+        // Soul Siphon：击杀恢复饱食
+        int siphon = Enchants.level(held, "soul_siphon");
+        if (siphon > 0) {
+            killer.setFoodLevel(Math.min(20, killer.getFoodLevel() + 2 * siphon));
+            killer.setSaturation(Math.min(20, killer.getSaturation() + 1.0f * siphon));
         }
         int beheading = Enchants.level(held, "beheading");
         if (beheading <= 0 || Math.random() >= 0.1 * (beheading + 1)) {

@@ -86,6 +86,13 @@ public final class Enchants {
         list.add(def("undead_bane", "Undead Bane", "Deals bonus damage against undead mobs", 6, 4, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
         list.add(def("frenzy", "Frenzy", "Gain strength and speed after a kill", 5, 3, false, false, "epic", swords(), 10, 10, 20, 10, 8));
         list.add(def("greedy", "Greedy", "Earn extra experience from kills", 5, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
+        list.add(def("berserker", "Berserker", "Deals more damage the lower your health is", 5, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("chain_lightning", "Chain Lightning", "Chance to strike lightning on nearby enemies", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("blind", "Blind", "Chance to blind your opponent", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
+        list.add(def("nausea", "Nausea", "Chance to give your opponent nausea", 3, 3, false, false, "common", swords(), 10, 10, 20, 10, 4));
+        list.add(def("execute", "Execute", "Chance to instantly kill enemies at low health", 1, 1, false, true, "mythic", swords(), 20, 10, 40, 10, 10));
+        list.add(def("bloodlust", "Bloodlust", "Heal and gain speed after a kill", 5, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("soul_siphon", "Soul Siphon", "Restore hunger after a kill", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
         // 挖掘
         list.add(def("blast_mining", "Blast Mining", "Mines blocks in a 3x3 area", 1, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
         list.add(def("vein", "Vein", "Mine blocks in a vein", 5, 3, false, false, "epic", pickaxes(), 10, 10, 25, 10, 8));
@@ -100,18 +107,31 @@ public final class Enchants {
         list.add(def("force", "Force", "Massively increases arrow damage", 8, 1, false, true, "mythic", bows(), 30, 10, 60, 10, 12));
         list.add(def("zeus", "Zeus", "Chance to strike lightning on your opponent", 6, 3, false, false, "epic", ranged(), 20, 10, 35, 10, 8));
         list.add(def("explosive_arrow", "Explosive Arrow", "Arrows explode on impact", 2, 3, false, false, "epic", ranged(), 10, 10, 25, 10, 8));
+        list.add(def("blaze", "Blaze", "Arrows set targets on fire", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("shockwave", "Shockwave", "Arrows knock back nearby enemies", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("homing", "Homing", "Arrows home toward the nearest enemy", 3, 2, false, false, "epic", ranged(), 10, 10, 25, 10, 8));
         // 护甲
         list.add(def("evasion", "Evasion", "Chance to ignore incoming damage", 3, 3, false, false, "epic", armor(), 15, 10, 30, 10, 8));
         list.add(def("preservation", "Preservation", "Massively reduces incoming damage", 4, 1, false, true, "mythic", armor(), 30, 10, 60, 10, 12));
         list.add(def("thrive", "Thrive", "Increases maximum health", 2, 4, false, false, "rare", armor(), 10, 10, 20, 10, 6));
         list.add(def("flame_guard", "Flame Guard", "Reduces fire and lava damage", 4, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
+        list.add(def("magic_shield", "Magic Shield", "Reduces magic and potion damage", 4, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("fortitude", "Fortitude", "Reduces explosion damage", 4, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
+        list.add(def("phoenix", "Phoenix", "Chance to survive a fatal blow", 1, 1, false, true, "mythic", armor(), 20, 10, 40, 10, 10));
+        list.add(def("regeneration", "Regeneration", "Regenerate health while worn", 3, 2, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        // 头盔
+        list.add(def("night_vision", "Night Vision", "Grants night vision while worn", 1, 2, false, false, "uncommon", helmets(), 10, 10, 20, 10, 4));
         // 靴子
         list.add(def("magnetic", "Magnetic", "Items and XP go towards you", 4, 4, false, false, "uncommon", boots(), 5, 5, 15, 5, 4));
         list.add(def("spring", "Spring", "Increases jump height and distance", 3, 1, false, true, "mythic", boots(), 20, 10, 40, 10, 10));
         list.add(def("freerunner", "Freerunner", "Chance to ignore fall damage", 6, 4, false, false, "rare", boots(), 5, 5, 15, 5, 5));
         list.add(def("adrenaline", "Adrenaline", "Gain speed when low on health", 3, 2, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        list.add(def("diver", "Diver", "Breathe and see underwater", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        list.add(def("swift", "Swift", "Grants a speed boost while worn", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
         // 斧
         list.add(def("lumberjack", "Lumberjack", "Instantly chop entire trees", 1, 3, false, false, "rare", axes(), 10, 10, 20, 10, 6));
+        list.add(def("scavenger", "Scavenger", "Chance of double drops from blocks", 5, 3, false, false, "rare", tools(), 10, 10, 20, 10, 6));
+        list.add(def("drill", "Drill", "Grants haste while mining", 3, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
         // 通用
         list.add(def("soulbound", "Soulbound", "Keep this item on death", 1, 1, false, true, "mythic", everything(), 30, 10, 60, 10, 10));
         list.add(def("indestructibility", "Indestructibility", "Massively increases item durability", 3, 1, false, true, "mythic", everything(), 30, 10, 60, 10, 10));
@@ -119,6 +139,7 @@ public final class Enchants {
         // 诅咒
         list.add(def("curse_of_fragility", "Curse of Fragility", "Decreases item durability", 1, 4, true, false, "common", everything(), 5, 5, 10, 5, 5));
         list.add(def("curse_of_misfortune", "Curse of Misfortune", "Chance of blocks to not drop items", 1, 4, true, false, "common", tools(), 5, 5, 10, 5, 5));
+        list.add(def("curse_of_weakness", "Curse of Weakness", "Reduces damage you deal while equipped", 3, 4, true, false, "common", everything(), 5, 5, 10, 5, 5));
         return list;
     }
 
@@ -184,6 +205,11 @@ public final class Enchants {
     private static List<TypedKey<ItemType>> boots() {
         return List.of(ItemTypeKeys.LEATHER_BOOTS, ItemTypeKeys.CHAINMAIL_BOOTS, ItemTypeKeys.IRON_BOOTS,
                 ItemTypeKeys.GOLDEN_BOOTS, ItemTypeKeys.DIAMOND_BOOTS, ItemTypeKeys.NETHERITE_BOOTS);
+    }
+
+    private static List<TypedKey<ItemType>> helmets() {
+        return List.of(ItemTypeKeys.LEATHER_HELMET, ItemTypeKeys.CHAINMAIL_HELMET, ItemTypeKeys.IRON_HELMET,
+                ItemTypeKeys.GOLDEN_HELMET, ItemTypeKeys.DIAMOND_HELMET, ItemTypeKeys.NETHERITE_HELMET);
     }
 
     private static List<TypedKey<ItemType>> everything() {

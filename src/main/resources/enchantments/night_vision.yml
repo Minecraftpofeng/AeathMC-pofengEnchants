@@ -1,0 +1,21 @@
+#
+# Night Vision EcoEnchant
+#
+name: "Night Vision"
+description: Grants night vision while worn
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - helmet
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1
+
+config: {}

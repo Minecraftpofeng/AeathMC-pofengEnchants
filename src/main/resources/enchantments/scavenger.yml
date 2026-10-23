@@ -1,0 +1,25 @@
+#
+# Scavenger EcoEnchant
+#
+name: "Scavenger"
+description: Chance of double drops from blocks
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - pickaxe
+  - axe
+  - shovel
+  - hoe
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 0.1

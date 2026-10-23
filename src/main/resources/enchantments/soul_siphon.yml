@@ -1,0 +1,21 @@
+#
+# Soul Siphon EcoEnchant
+#
+name: "Soul Siphon"
+description: Restore hunger after a kill
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config: {}

@@ -1,0 +1,22 @@
+#
+# Berserker EcoEnchant
+#
+name: "Berserker"
+description: Deals more damage the lower your health is
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  multiplier: 0.3

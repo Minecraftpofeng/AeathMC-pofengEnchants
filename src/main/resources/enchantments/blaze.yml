@@ -1,0 +1,23 @@
+#
+# Blaze EcoEnchant
+#
+name: "Blaze"
+description: Arrows set targets on fire
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - bow
+  - crossbow
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  ticks: 40

@@ -1,0 +1,25 @@
+#
+# Phoenix EcoEnchant
+#
+name: "Phoenix"
+description: Chance to survive a fatal blow
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - helmet
+  - chestplate
+  - leggings
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1
+
+config:
+  chance: 0.4

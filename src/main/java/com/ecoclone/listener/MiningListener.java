@@ -146,6 +146,20 @@ public final class MiningListener implements Listener {
                 && (block.getType().name().endsWith("_LOG") || block.getType().name().endsWith("_WOOD"))) {
             chopTree(block, held);
         }
+
+        // Scavenger：概率双倍掉落
+        int scav = Enchants.level(held, "scavenger");
+        if (scav > 0 && event.isDropItems() && Math.random() < 0.1 * scav) {
+            for (ItemStack d : new ArrayList<>(block.getDrops(held))) {
+                block.getWorld().dropItemNaturally(block.getLocation(), d);
+            }
+        }
+
+        // Drill：挖掘时获得急迫
+        int drill = Enchants.level(held, "drill");
+        if (drill > 0) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 40, Math.min(2, drill - 1)));
+        }
     }
 
     private void chopTree(Block origin, ItemStack held) {

@@ -1,0 +1,21 @@
+#
+# Swift EcoEnchant
+#
+name: "Swift"
+description: Grants a speed boost while worn
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config: {}

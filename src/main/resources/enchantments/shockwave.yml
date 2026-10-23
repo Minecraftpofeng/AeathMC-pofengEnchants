@@ -1,0 +1,23 @@
+#
+# Shockwave EcoEnchant
+#
+name: "Shockwave"
+description: Arrows knock back nearby enemies
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - bow
+  - crossbow
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  power: 0.5

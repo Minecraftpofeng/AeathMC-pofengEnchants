@@ -1,0 +1,25 @@
+#
+# Fortitude EcoEnchant
+#
+name: "Fortitude"
+description: Reduces explosion damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - helmet
+  - chestplate
+  - leggings
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 4
+
+config:
+  reduction: 0.2

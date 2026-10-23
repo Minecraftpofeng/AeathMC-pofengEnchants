@@ -32,6 +32,9 @@ public final class ArmorListener implements Listener {
         int preservation = total(player, "preservation");
         int freerunner = total(player, "freerunner");
         int flame = total(player, "flame_guard");
+        int magic = total(player, "magic_shield");
+        int fortitude = total(player, "fortitude");
+        int phoenix = total(player, "phoenix");
 
         // Evasion：概率无视伤害
         if (evasion > 0 && Math.random() < 0.08 * evasion) {
@@ -59,6 +62,29 @@ public final class ArmorListener implements Listener {
                 || event.getCause() == EntityDamageEvent.DamageCause.LAVA
                 || event.getCause() == EntityDamageEvent.DamageCause.HOT_FLOOR)) {
             event.setDamage(event.getDamage() * (1 - 0.25 * flame));
+        }
+
+        // Magic Shield：减免魔法/药水/凋零伤害
+        if (magic > 0 && (event.getCause() == EntityDamageEvent.DamageCause.MAGIC
+                || event.getCause() == EntityDamageEvent.DamageCause.POISON
+                || event.getCause() == EntityDamageEvent.DamageCause.WITHER)) {
+            event.setDamage(event.getDamage() * (1 - 0.2 * magic));
+        }
+
+        // Fortitude：减免爆炸伤害
+        if (fortitude > 0 && (event.getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION
+                || event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)) {
+            event.setDamage(event.getDamage() * (1 - 0.2 * fortitude));
+        }
+
+        // Phoenix：概率免死
+        if (phoenix > 0 && player.getHealth() - event.getDamage() <= 0 && Math.random() < 0.4) {
+            event.setDamage(0);
+            event.setCancelled(true);
+            player.setHealth(1.0);
+            player.setFireTicks(0);
+            player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                    org.bukkit.potion.PotionEffectType.FIRE_RESISTANCE, 200, 0));
         }
     }
 

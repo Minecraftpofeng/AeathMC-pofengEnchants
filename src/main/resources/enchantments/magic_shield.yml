@@ -1,0 +1,25 @@
+#
+# Magic Shield EcoEnchant
+#
+name: "Magic Shield"
+description: Reduces magic and potion damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - helmet
+  - chestplate
+  - leggings
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 4
+
+config:
+  reduction: 0.2

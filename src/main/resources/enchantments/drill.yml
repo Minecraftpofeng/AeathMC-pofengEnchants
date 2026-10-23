@@ -1,0 +1,24 @@
+#
+# Drill EcoEnchant
+#
+name: "Drill"
+description: Grants haste while mining
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - pickaxe
+  - axe
+  - shovel
+  - hoe
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config: {}

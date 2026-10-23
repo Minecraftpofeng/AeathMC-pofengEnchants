@@ -1,0 +1,22 @@
+#
+# Execute EcoEnchant
+#
+name: "Execute"
+description: Chance to instantly kill enemies at low health
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1
+
+config:
+  chance: 0.3

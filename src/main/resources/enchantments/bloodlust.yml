@@ -1,0 +1,22 @@
+#
+# Bloodlust EcoEnchant
+#
+name: "Bloodlust"
+description: Heal and gain speed after a kill
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  heal: 2.0
