@@ -12,9 +12,13 @@
 
 ## 一、环境要求
 
-- **JDK 21**（Paper 1.21.1 要求；低于 21 无法编译/运行）
-- **Paper 1.21.1** 服务端（不适用于 Spigot——注册真实附魔依赖 Paper 的 registry API）
-- Maven 3.8+
+- **Paper 服务端**（不适用于 Spigot——注册真实附魔依赖 Paper 的 registry API）
+- **兼容版本：Paper 1.21.1 ～ 26.3**（含 1.21.x 全系列、26.1、26.2、26.3）
+  - 编译目标为 Java 21 字节码：向下跑 1.21.1 的 Java 21，向上跑 26.3 的 Java 25
+  - `api-version: '1.21'` + 官方 registry-bootstrap API，向前兼容所有新版
+  - 26.3 目前为 ALPHA，请在 26.3 服上做一次冒烟测试确认
+- **Java**：1.21.1 服需 Java 21；26.3 服需 Java 25（jar 本身两种都兼容）
+- Maven 3.8+（仅编译需要）
 
 ## 二、打包
 

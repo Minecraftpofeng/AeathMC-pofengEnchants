@@ -232,6 +232,40 @@ public final class EnchantManager {
         return ChatColor.translateAlternateColorCodes('&', s);
     }
 
+    /**
+     * 支持 16 进制颜色码 &#RRGGBB; 的染色：先转成 &x&R&R&G&G&B&B 旧式码，再按 & 转义。
+     */
+    public String colorHex(String s) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < s.length()) {
+            if (i + 9 <= s.length()
+                    && s.charAt(i) == '&' && s.charAt(i + 1) == '#'
+                    && s.charAt(i + 8) == ';' && isHex6(s, i + 2)) {
+                String rgb = s.substring(i + 2, i + 8);
+                sb.append("&x");
+                for (char c : rgb.toCharArray()) {
+                    sb.append('&').append(c);
+                }
+                i += 9;
+            } else {
+                sb.append(s.charAt(i));
+                i++;
+            }
+        }
+        return ChatColor.translateAlternateColorCodes('&', sb.toString());
+    }
+
+    private static boolean isHex6(String s, int from) {
+        for (int j = 0; j < 6; j++) {
+            char c = s.charAt(from + j);
+            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public String msg(String path) {
         String raw = messages.getString(path);
         if (raw == null) {

@@ -44,6 +44,7 @@ public final class EcoClonePlugin extends JavaPlugin {
             manager.load();
             int n = Enchants.loadFromRegistry();
             getLogger().info("已启用 " + n + " 个自定义附魔。");
+            sendSplash();
             if (!EcoCloneBootstrap.registrationErrors().isEmpty()) {
                 java.util.List<String> errs = EcoCloneBootstrap.registrationErrors();
                 getLogger().severe("有 " + errs.size() + " 个附魔注册失败，详见 plugins/AeathMC-pofengEnchants/registration-errors.txt");
@@ -71,6 +72,20 @@ public final class EcoClonePlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         UtilityListener.clearAll(Bukkit.getServer());
+    }
+
+    /** 启动鸣谢弹幕：控制台 + 在线玩家各弹两行（含 16 进制颜色，中文后附英文） */
+    private void sendSplash() {
+        String line1 = manager.colorHex(
+                "&#FFD700;鸣谢 / Thanks to:&#00E5FF; SKY_qwq&#FFFFFF;  &#00E5FF;clowm贺&#FFFFFF;  &#00E5FF;shadow_agent&#FFFFFF;  &#00E5FF;H1111111");
+        String line2 = manager.colorHex(
+                "&#7DF9FF;——长风破浪会有时&#AAAAAA; (Someday I'll ride the wind and break the waves)&#FFD700; [AeathMC 总开发 / Lead Developer&#FFAA00; Minecraft_pofeng&#FFD700;]");
+        getServer().getConsoleSender().sendMessage(line1);
+        getServer().getConsoleSender().sendMessage(line2);
+        getServer().getScheduler().runTaskLater(this, () -> {
+            Bukkit.broadcastMessage(line1);
+            Bukkit.broadcastMessage(line2);
+        }, 20L);
     }
 
     public EnchantManager manager() {
