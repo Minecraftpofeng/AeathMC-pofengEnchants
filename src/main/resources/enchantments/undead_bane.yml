@@ -1,0 +1,22 @@
+#
+# Undead Bane EcoEnchant
+#
+name: "Undead Bane"
+description: Deals bonus damage against undead mobs
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 6
+
+config:
+  multiplier: 0.2

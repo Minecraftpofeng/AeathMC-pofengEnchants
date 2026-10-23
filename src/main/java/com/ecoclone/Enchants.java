@@ -80,6 +80,12 @@ public final class Enchants {
         list.add(def("toxic", "Toxic", "Chance to apply poison to your opponent", 2, 6, false, false, "common", swords(), 5, 5, 10, 5, 3));
         list.add(def("wither_aspect", "Wither Aspect", "Chance to apply wither to your opponent", 2, 4, false, false, "uncommon", swords(), 10, 5, 20, 5, 4));
         list.add(def("razor", "Razor", "Massively increases damage dealt", 8, 1, false, true, "mythic", swords(), 30, 10, 60, 10, 12));
+        list.add(def("frost", "Frost", "Chance to freeze your opponent with slowness", 5, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("executioner", "Executioner", "Deals bonus damage to low health enemies", 4, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("armor_piercing", "Armor Piercing", "Ignores a portion of enemy armor", 3, 4, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("undead_bane", "Undead Bane", "Deals bonus damage against undead mobs", 6, 4, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
+        list.add(def("frenzy", "Frenzy", "Gain strength and speed after a kill", 5, 3, false, false, "epic", swords(), 10, 10, 20, 10, 8));
+        list.add(def("greedy", "Greedy", "Earn extra experience from kills", 5, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
         // 挖掘
         list.add(def("blast_mining", "Blast Mining", "Mines blocks in a 3x3 area", 1, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
         list.add(def("vein", "Vein", "Mine blocks in a vein", 5, 3, false, false, "epic", pickaxes(), 10, 10, 25, 10, 8));
@@ -93,14 +99,19 @@ public final class Enchants {
         list.add(def("tripleshot", "Tripleshot", "Shoots 3 arrows", 1, 1, false, false, "mythic", bows(), 20, 10, 40, 10, 10));
         list.add(def("force", "Force", "Massively increases arrow damage", 8, 1, false, true, "mythic", bows(), 30, 10, 60, 10, 12));
         list.add(def("zeus", "Zeus", "Chance to strike lightning on your opponent", 6, 3, false, false, "epic", ranged(), 20, 10, 35, 10, 8));
+        list.add(def("explosive_arrow", "Explosive Arrow", "Arrows explode on impact", 2, 3, false, false, "epic", ranged(), 10, 10, 25, 10, 8));
         // 护甲
         list.add(def("evasion", "Evasion", "Chance to ignore incoming damage", 3, 3, false, false, "epic", armor(), 15, 10, 30, 10, 8));
         list.add(def("preservation", "Preservation", "Massively reduces incoming damage", 4, 1, false, true, "mythic", armor(), 30, 10, 60, 10, 12));
         list.add(def("thrive", "Thrive", "Increases maximum health", 2, 4, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("flame_guard", "Flame Guard", "Reduces fire and lava damage", 4, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
         // 靴子
         list.add(def("magnetic", "Magnetic", "Items and XP go towards you", 4, 4, false, false, "uncommon", boots(), 5, 5, 15, 5, 4));
         list.add(def("spring", "Spring", "Increases jump height and distance", 3, 1, false, true, "mythic", boots(), 20, 10, 40, 10, 10));
         list.add(def("freerunner", "Freerunner", "Chance to ignore fall damage", 6, 4, false, false, "rare", boots(), 5, 5, 15, 5, 5));
+        list.add(def("adrenaline", "Adrenaline", "Gain speed when low on health", 3, 2, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        // 斧
+        list.add(def("lumberjack", "Lumberjack", "Instantly chop entire trees", 1, 3, false, false, "rare", axes(), 10, 10, 20, 10, 6));
         // 通用
         list.add(def("soulbound", "Soulbound", "Keep this item on death", 1, 1, false, true, "mythic", everything(), 30, 10, 60, 10, 10));
         list.add(def("indestructibility", "Indestructibility", "Massively increases item durability", 3, 1, false, true, "mythic", everything(), 30, 10, 60, 10, 10));

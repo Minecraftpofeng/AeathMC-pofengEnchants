@@ -1,0 +1,22 @@
+#
+# Armor Piercing EcoEnchant
+#
+name: "Armor Piercing"
+description: Ignores a portion of enemy armor
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  penetration: 0.15

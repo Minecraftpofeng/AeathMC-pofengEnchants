@@ -1,0 +1,21 @@
+#
+# Lumberjack EcoEnchant
+#
+name: "Lumberjack"
+description: Instantly chop entire trees
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - axes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1
+
+config: {}

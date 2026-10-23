@@ -1,0 +1,22 @@
+#
+# Frenzy EcoEnchant
+#
+name: "Frenzy"
+description: Gain strength and speed after a kill
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  duration: 3.0

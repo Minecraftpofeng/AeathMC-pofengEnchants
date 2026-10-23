@@ -31,6 +31,7 @@ public final class ArmorListener implements Listener {
         int evasion = total(player, "evasion");
         int preservation = total(player, "preservation");
         int freerunner = total(player, "freerunner");
+        int flame = total(player, "flame_guard");
 
         // Evasion：概率无视伤害
         if (evasion > 0 && Math.random() < 0.08 * evasion) {
@@ -50,6 +51,14 @@ public final class ArmorListener implements Listener {
         // Preservation：大幅减伤
         if (preservation > 0) {
             event.setDamage(event.getDamage() * (1 - 0.15 * preservation));
+        }
+
+        // Flame Guard：减少火焰/岩浆伤害
+        if (flame > 0 && (event.getCause() == EntityDamageEvent.DamageCause.FIRE
+                || event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK
+                || event.getCause() == EntityDamageEvent.DamageCause.LAVA
+                || event.getCause() == EntityDamageEvent.DamageCause.HOT_FLOOR)) {
+            event.setDamage(event.getDamage() * (1 - 0.25 * flame));
         }
     }
 

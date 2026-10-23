@@ -140,6 +140,43 @@ public final class MiningListener implements Listener {
                 b.breakNaturally(held);
             }
         }
+
+        // Lumberjack：整棵树砍伐
+        if (Enchants.has(held, "lumberjack")
+                && (block.getType().name().endsWith("_LOG") || block.getType().name().endsWith("_WOOD"))) {
+            chopTree(block, held);
+        }
+    }
+
+    private void chopTree(Block origin, ItemStack held) {
+        Material type = origin.getType();
+        Set<Block> logs = new HashSet<>();
+        Deque<Block> queue = new ArrayDeque<>();
+        queue.add(origin);
+        while (!queue.isEmpty() && logs.size() < 80) {
+            Block cur = queue.poll();
+            if (cur.getType() != type) {
+                continue;
+            }
+            if (!logs.add(cur)) {
+                continue;
+            }
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        Block nb = cur.getRelative(dx, dy, dz);
+                        if (nb.getType() == type) {
+                            queue.add(nb);
+                        }
+                    }
+                }
+            }
+        }
+        for (Block b : logs) {
+            if (!b.equals(origin)) {
+                b.breakNaturally(held);
+            }
+        }
     }
 
     private static boolean breakable(Block b, double hardness) {

@@ -1,0 +1,22 @@
+#
+# Greedy EcoEnchant
+#
+name: "Greedy"
+description: Earn extra experience from kills
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  xp-per-level: 5

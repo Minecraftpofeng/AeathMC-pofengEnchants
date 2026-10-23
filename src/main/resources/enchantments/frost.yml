@@ -1,0 +1,22 @@
+#
+# Frost EcoEnchant
+#
+name: "Frost"
+description: Chance to freeze your opponent with slowness
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 0.5

@@ -1,0 +1,22 @@
+#
+# Executioner EcoEnchant
+#
+name: "Executioner"
+description: Deals bonus damage to low health enemies
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 4
+
+config:
+  threshold: 0.3

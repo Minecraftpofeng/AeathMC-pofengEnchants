@@ -5,6 +5,8 @@ import com.ecoclone.EnchantManager;
 import com.ecoclone.Enchants;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -55,6 +57,19 @@ public final class CombatListener implements Listener {
                         }
                     }
                 });
+            }
+        }.runTaskTimer(plugin, 0L, 20L);
+
+        // Adrenaline：低血量时靴子附魔提供速度
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Player p : plugin.getServer().getOnlinePlayers()) {
+                    int adv = Enchants.level(p.getInventory().getBoots(), "adrenaline");
+                    if (adv > 0 && p.getHealth() < p.getMaxHealth() * 0.3) {
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 30, Math.min(1, adv - 1)));
+                    }
+                }
             }
         }.runTaskTimer(plugin, 0L, 20L);
     }
@@ -139,6 +154,37 @@ public final class CombatListener implements Listener {
         if (wither > 0 && Math.random() < 0.15 * wither) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 60, 0));
         }
+
+        // Frost：概率附加缓慢
+        int frost = Enchants.level(held, "frost");
+        if (frost > 0 && Math.random() < 0.5 * frost) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40 * frost, 0));
+        }
+
+        // Undead Bane：对亡灵生物增伤
+        int ub = Enchants.level(held, "undead_bane");
+        if (ub > 0 && isUndead(victim.getType())) {
+            dmg *= (1 + 0.2 * ub);
+            changed = true;
+        }
+
+        // Executioner：目标血量低时增伤
+        int exec = Enchants.level(held, "executioner");
+        if (exec > 0 && victim.getHealth() < victim.getMaxHealth() * 0.3) {
+            dmg *= (1 + 0.2 * exec);
+            changed = true;
+        }
+
+        // Armor Piercing：无视护甲（追加穿透伤害）
+        int ap = Enchants.level(held, "armor_piercing");
+        if (ap > 0) {
+            dmg += dmg * 0.15 * ap;
+            changed = true;
+        }
+
+        if (changed) {
+            event.setDamage(dmg);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -150,6 +196,18 @@ public final class CombatListener implements Listener {
         ItemStack held = killer.getInventory().getItemInMainHand();
         if (held == null) {
             return;
+        }
+        // Frenzy：击杀后获得力量+速度
+        int frenzy = Enchants.level(held, "frenzy");
+        if (frenzy > 0) {
+            killer.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 60 * frenzy, 0));
+            killer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 60 * frenzy, 0));
+        }
+        // Greedy：击杀额外经验
+        int greedy = Enchants.level(held, "greedy");
+        if (greedy > 0) {
+            event.getEntity().getWorld().spawn(event.getEntity().getLocation(), ExperienceOrb.class,
+                    orb -> orb.setExperience(5 * greedy));
         }
         int beheading = Enchants.level(held, "beheading");
         if (beheading <= 0 || Math.random() >= 0.1 * (beheading + 1)) {
@@ -179,6 +237,15 @@ public final class CombatListener implements Listener {
             case PIGLIN, ZOMBIFIED_PIGLIN -> Material.PIGLIN_HEAD;
             case ENDER_DRAGON -> Material.DRAGON_HEAD;
             default -> null;
+        };
+    }
+
+    private static boolean isUndead(EntityType type) {
+        return switch (type) {
+            case ZOMBIE, HUSK, DROWNED, ZOMBIE_VILLAGER, ZOMBIFIED_PIGLIN,
+                 SKELETON, STRAY, WITHER_SKELETON, PHANTOM, WITHER,
+                 ZOGLIN, GIANT, SKELETON_HORSE, ZOMBIE_HORSE -> true;
+            default -> false;
         };
     }
 }

@@ -1,0 +1,22 @@
+#
+# Adrenaline EcoEnchant
+#
+name: "Adrenaline"
+description: Gain speed when low on health
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  threshold: 0.3

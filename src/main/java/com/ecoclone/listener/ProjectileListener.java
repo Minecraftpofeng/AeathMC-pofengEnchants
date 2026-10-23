@@ -55,7 +55,8 @@ public final class ProjectileListener implements Listener {
                 Enchants.level(bow, "force"),
                 Enchants.level(bow, "optics"),
                 Enchants.level(bow, "boss_hunter"),
-                Enchants.level(bow, "zeus")
+                Enchants.level(bow, "zeus"),
+                Enchants.level(bow, "explosive_arrow")
         });
 
         // Tripleshot：再射出两支略偏的箭
@@ -85,7 +86,7 @@ public final class ProjectileListener implements Listener {
         if (!(proj.getShooter() instanceof Player player)) {
             return;
         }
-        int force = s[0], optics = s[1], bossHunter = s[2], zeus = s[3];
+        int force = s[0], optics = s[1], bossHunter = s[2], zeus = s[3], explosive = s[4];
 
         double dmg = event.getDamage();
         boolean changed = false;
@@ -111,6 +112,11 @@ public final class ProjectileListener implements Listener {
                 && !manager.isOnCooldown(player.getUniqueId(), "zeus")) {
             victim.getWorld().strikeLightning(victim.getLocation());
             manager.startCooldown(player.getUniqueId(), "zeus", manager.cooldownSeconds());
+        }
+
+        // Explosive Arrow：命中爆炸
+        if (explosive > 0) {
+            victim.getWorld().createExplosion(victim.getLocation(), 1.5f + 0.5f * explosive, false, false);
         }
     }
 }

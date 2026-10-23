@@ -1,0 +1,23 @@
+#
+# Explosive Arrow EcoEnchant
+#
+name: "Explosive Arrow"
+description: Arrows explode on impact
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - bow
+  - crossbow
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config:
+  power: 1.5
