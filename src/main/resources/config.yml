@@ -13,6 +13,9 @@ cost-exponent: 0.0
 # 附魔冷却时间（秒），作用于带冷却的附魔（如 Thor / Zeus 的雷电）
 default-cooldown: 3.0
 
+# 每件物品的自定义附魔槽上限（附魔槽系统）
+enchantment-slots: 5
+
 # 是否让自定义附魔在附魔台中出现
 enchanting-table:
   enabled: true

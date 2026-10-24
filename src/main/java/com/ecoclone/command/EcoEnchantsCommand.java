@@ -123,6 +123,71 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                         + manager.color("&a已将附魔书 " + args[1] + " " + level + " 给予 " + target.getName() + "。"));
                 return true;
             }
+            case "gui" -> {
+                if (!sender.hasPermission("ecoenchants.command.gui")) {
+                    noPerm(sender);
+                    return true;
+                }
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(manager.prefix() + manager.msg("commands.player-only"));
+                    return true;
+                }
+                plugin.guiListener().open(player);
+                return true;
+            }
+            case "scroll" -> {
+                if (!sender.hasPermission("ecoenchants.command.scroll")) {
+                    noPerm(sender);
+                    return true;
+                }
+                if (args.length < 3) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c用法：/ecoenchants scroll <附魔键> <等级> [玩家]"));
+                    return true;
+                }
+                org.bukkit.enchantments.Enchantment ench = Enchants.get(args[1].toLowerCase());
+                if (ench == null) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c找不到附魔 " + args[1] + "。"));
+                    return true;
+                }
+                int level;
+                try {
+                    level = Integer.parseInt(args[2]);
+                } catch (NumberFormatException e) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c等级必须是数字。"));
+                    return true;
+                }
+                if (level < 1 || level > ench.getMaxLevel()) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c等级需在 1-" + ench.getMaxLevel() + " 之间。"));
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 3 ? args[3] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(manager.scrollOf(ench, level));
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&a已将附魔卷轴 " + args[1] + " " + level + " 给予 " + target.getName() + "。"));
+                return true;
+            }
+            case "wipe" -> {
+                if (!sender.hasPermission("ecoenchants.command.wipe")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 1 ? args[1] : null);
+                if (target == null) {
+                    return true;
+                }
+                ItemStack held = target.getInventory().getItemInMainHand();
+                if (held == null || held.getType().isAir()) {
+                    sender.sendMessage(manager.prefix() + manager.msg("commands.no-item"));
+                    return true;
+                }
+                target.getInventory().setItemInMainHand(manager.stripCustom(held));
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&a已清除 " + target.getName() + " 手中物品的全部自定义附魔。"));
+                return true;
+            }
             default -> sender.sendMessage(manager.prefix() + manager.msg("commands.invalid-args"));
         }
         return true;

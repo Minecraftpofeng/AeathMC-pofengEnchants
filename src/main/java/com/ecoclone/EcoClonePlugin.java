@@ -5,6 +5,7 @@ import com.ecoclone.command.EnchantInfoCommand;
 import com.ecoclone.listener.ArmorListener;
 import com.ecoclone.listener.CombatListener;
 import com.ecoclone.listener.DeathListener;
+import com.ecoclone.listener.GuiListener;
 import com.ecoclone.listener.MiningListener;
 import com.ecoclone.listener.ProjectileListener;
 import com.ecoclone.listener.UtilityListener;
@@ -20,6 +21,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class EcoClonePlugin extends JavaPlugin {
 
     private EnchantManager manager;
+    private GuiListener guiListener;
+
+    public GuiListener guiListener() {
+        return guiListener;
+    }
 
     private void registerCommand(String name, CommandExecutor executor) {
         CommandMap cm = getServer().getCommandMap();
@@ -65,6 +71,8 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new ArmorListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new UtilityListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new DeathListener(this, manager), this);
+            guiListener = new GuiListener(this, manager);
+            getServer().getPluginManager().registerEvents(guiListener, this);
         } catch (Throwable t) {
             getLogger().severe("AeathMC-pofengEnchants 启用失败，原因如下:");
             t.printStackTrace();

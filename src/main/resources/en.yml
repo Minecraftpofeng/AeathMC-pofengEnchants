@@ -5,7 +5,7 @@ prefix: '&8[&6AeathMC&8] '
 
 commands:
   no-permission: '&c你没有权限执行此指令。'
-  invalid-args: '&c参数错误。用法：/ecoenchants <giverandombook|randomenchant|givebook|reload>'
+  invalid-args: '&c参数错误。用法：/ecoenchants <giverandombook|randomenchant|givebook|reload|gui|scroll|wipe>'
   player-not-found: '&c找不到玩家 %player%。'
   player-only: '&c该指令只能由玩家执行。'
   reload: '&a配置已重载。'
@@ -14,6 +14,14 @@ commands:
   givebook: '&a已将附魔书 %enchant% %level% 给予 %player%。'
   no-item: '&c请先手持一件物品。'
   enchant-not-found: '&c找不到附魔 %enchant%。'
+  gui: '&a已打开附魔工作台。'
+  scroll: '&a已将附魔卷轴 %enchant% %level% 给予 %player%。'
+  wipe: '&a已清除 %player% 手中物品的全部自定义附魔。'
+  gui-no-item: '&c请先把要附魔的物品放到输入槽。'
+  gui-need-source: '&c请放入附魔卷轴或附魔书作为来源。'
+  gui-no-slot: '&c该物品的自定义附魔已满（上限 %slots% 个）。'
+  gui-applied: '&a已应用附魔 %enchant% %level%。'
+  gui-washed: '&a已清除该物品的全部自定义附魔。'
 
 enchantinfo:
   header: '&6%name%'

@@ -1,14 +1,18 @@
 package com.ecoclone;
 
 import io.papermc.paper.registry.TypedKey;
+import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.io.File;
 import java.io.InputStream;
@@ -314,6 +318,97 @@ public final class EnchantManager {
             return null;
         }
         return pool.get((int) (Math.random() * pool.size()));
+    }
+
+    // ---------- 卷轴 / 附魔槽 / 洗附魔 ----------
+
+    /** 每件物品的自定义附魔槽上限 */
+    public int enchantmentSlots() {
+        return config.getInt("enchantment-slots", 5);
+    }
+
+    /** 物品上已有的自定义附魔（ecoclone 命名空间）数量 */
+    public int customCount(ItemStack item) {
+        if (item == null) {
+            return 0;
+        }
+        int n = 0;
+        for (Enchantment e : item.getEnchantments().keySet()) {
+            if (e.getKey().getNamespace().equals("ecoclone")) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /** 是否还能在物品上再添加该自定义附魔（已拥有则不占新槽） */
+    public boolean canAddCustom(ItemStack item, Enchantment e) {
+        if (item == null) {
+            return false;
+        }
+        if (item.getEnchantments().containsKey(e)) {
+            return true;
+        }
+        return customCount(item) < enchantmentSlots();
+    }
+
+    /** 制作一张附魔卷轴（PAPER + NBT 存附魔键/等级） */
+    public ItemStack scrollOf(Enchantment e, int level) {
+        ItemStack s = new ItemStack(Material.PAPER);
+        s.editMeta(meta -> {
+            meta.displayName(Component.text(color("&d[AeathMC] 附魔卷轴")));
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text(color("&7附魔：&f" + name(e.getKey().getKey()) + " &7Lv." + level)));
+            lore.add(Component.text(color("&7描述：&f" + description(e.getKey().getKey()))));
+            lore.add(Component.text(color("&7在附魔工作台中与物品一起放入即可上附魔")));
+            meta.lore(lore);
+            PersistentDataContainer pdc = meta.getPersistentDataContainer();
+            pdc.set(new NamespacedKey(plugin, "scroll_key"), PersistentDataType.STRING, e.getKey().getKey());
+            pdc.set(new NamespacedKey(plugin, "scroll_level"), PersistentDataType.INTEGER, level);
+        });
+        return s;
+    }
+
+    /** 是否为有效附魔卷轴 */
+    public boolean isScroll(ItemStack item) {
+        if (item == null || item.getType() != Material.PAPER || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "scroll_key"), PersistentDataType.STRING);
+    }
+
+    /** 从卷轴读取附魔，返回 {附魔, 等级}；不是有效卷轴返回 null */
+    public Map.Entry<Enchantment, Integer> scrollContent(ItemStack item) {
+        if (!isScroll(item)) {
+            return null;
+        }
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+        String key = pdc.get(new NamespacedKey(plugin, "scroll_key"), PersistentDataType.STRING);
+        Integer level = pdc.get(new NamespacedKey(plugin, "scroll_level"), PersistentDataType.INTEGER);
+        Enchantment e = Enchants.get(key);
+        if (e == null || level == null || level < 1) {
+            return null;
+        }
+        return Map.entry(e, level);
+    }
+
+    /** 清除物品上的全部自定义附魔（洗附魔），返回新物品 */
+    public ItemStack stripCustom(ItemStack item) {
+        if (item == null) {
+            return item;
+        }
+        ItemStack clone = item.clone();
+        clone.editMeta(meta -> {
+            Map<Enchantment, Integer> toRemove = new HashMap<>();
+            for (Enchantment e : meta.getEnchants().keySet()) {
+                if (e.getKey().getNamespace().equals("ecoclone")) {
+                    toRemove.put(e, meta.getEnchantLevel(e));
+                }
+            }
+            toRemove.keySet().forEach(meta::removeEnchant);
+        });
+        return clone;
     }
 
     public YamlConfiguration rawConfig() {
