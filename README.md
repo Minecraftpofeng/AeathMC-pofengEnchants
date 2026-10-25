@@ -83,15 +83,7 @@ config:
 - `general-config.targets` 对应 `targets.yml` 中的物品分组。
 - `rarity.yml` 定义稀有度权重。
 
-## 六、已实现附魔（32 个）
-
-- **剑/斧**：Beheading、Criticals、First Strike、Bleed、Leeching、Thor、Supercritical、Toxic、Wither Aspect、Razor(特)
-- **挖掘**：Blast Mining、Vein、Infernal Touch、Telekinesis、Wisdom、Energizing(特)
-- **弓弩**：Boss Hunter、Optics、Tripleshot、Force(特)、Zeus
-- **护甲**：Evasion、Preservation(特)、Thrive
-- **靴子**：Magnetic、Spring(特)、Freerunner
-- **通用**：Soulbound、Indestructibility(特)、Repairing(特)
-- **诅咒**：Curse of Fragility、Curse of Misfortune
+## 六、已实现附魔109个
 
 ## 七、如何新增附魔
 
