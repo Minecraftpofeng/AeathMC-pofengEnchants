@@ -1,0 +1,29 @@
+#
+# 
+Ender Shift
+ EcoEnchant
+#
+name: "
+Ender Shift
+"
+description: 
+Teleport behind your target on hit
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+mythic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+2
+
+config:
+  chance: 0.1

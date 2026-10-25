@@ -1,0 +1,29 @@
+#
+# 
+Vampiric
+ EcoEnchant
+#
+name: "
+Vampiric
+"
+description: 
+Greatly heals a portion of damage dealt
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+5
+
+config:
+  chance: 0.1

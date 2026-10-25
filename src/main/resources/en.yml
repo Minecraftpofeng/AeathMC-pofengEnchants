@@ -5,7 +5,7 @@ prefix: '&8[&6AeathMC&8] '
 
 commands:
   no-permission: '&c你没有权限执行此指令。'
-  invalid-args: '&c参数错误。用法：/ecoenchants <giverandombook|randomenchant|givebook|reload|gui|scroll|wipe>'
+  invalid-args: '&c参数错误。用法：/ecoenchants <giverandombook|randomenchant|givebook|reload|gui|scroll|wipe|artifact|admin|enchant>'
   player-not-found: '&c找不到玩家 %player%。'
   player-only: '&c该指令只能由玩家执行。'
   reload: '&a配置已重载。'

@@ -1,0 +1,29 @@
+#
+# 
+Aura of Light
+ EcoEnchant
+#
+name: "
+Aura of Light
+"
+description: 
+Light up your surroundings
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+1
+
+config:
+  chance: 0.1

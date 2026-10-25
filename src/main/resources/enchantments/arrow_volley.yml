@@ -1,0 +1,29 @@
+#
+# 
+Arrow Volley
+ EcoEnchant
+#
+name: "
+Arrow Volley
+"
+description: 
+Shoot extra arrows
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+epic
+
+general-config:
+  targets:
+  - ranged
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

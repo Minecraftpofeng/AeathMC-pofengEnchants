@@ -90,6 +90,13 @@ public final class Enchants {
         list.add(def("chain_lightning", "Chain Lightning", "Chance to strike lightning on nearby enemies", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
         list.add(def("blind", "Blind", "Chance to blind your opponent", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
         list.add(def("nausea", "Nausea", "Chance to give your opponent nausea", 3, 3, false, false, "common", swords(), 10, 10, 20, 10, 4));
+        list.add(def("insomnia", "Insomnia", "Chance to fatigue your opponent", 2, 4, false, false, "epic", swords(), 10, 10, 25, 10, 6));
+        list.add(def("king_descent", "King's Descent", "Deal more damage in the Overworld and End", 2, 1, false, false, "mythic", swords(), 25, 10, 50, 10, 12));
+        list.add(def("conductive", "Conductive", "Strike lightning above your target", 2, 2, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("explosive", "Explosive", "Strikes cause an explosion", 2, 2, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("phantom", "Phantom", "Chance to dodge incoming damage", 10, 2, false, false, "rare", swords(), 10, 10, 20, 10, 5));
+        list.add(def("sneak_attack", "Sneak Attack", "Deal bonus damage when attacking from behind", 2, 4, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("eclipse", "Eclipse", "Chance to plunge your target into darkness", 2, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
         list.add(def("execute", "Execute", "Chance to instantly kill enemies at low health", 1, 1, false, true, "mythic", swords(), 20, 10, 40, 10, 10));
         list.add(def("bloodlust", "Bloodlust", "Heal and gain speed after a kill", 5, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
         list.add(def("soul_siphon", "Soul Siphon", "Restore hunger after a kill", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
@@ -140,6 +147,52 @@ public final class Enchants {
         list.add(def("curse_of_fragility", "Curse of Fragility", "Decreases item durability", 1, 4, true, false, "common", everything(), 5, 5, 10, 5, 5));
         list.add(def("curse_of_misfortune", "Curse of Misfortune", "Chance of blocks to not drop items", 1, 4, true, false, "common", tools(), 5, 5, 10, 5, 5));
         list.add(def("curse_of_weakness", "Curse of Weakness", "Reduces damage you deal while equipped", 3, 4, true, false, "common", everything(), 5, 5, 10, 5, 5));
+        // ===== 新增 40 个附魔 =====
+        // 剑/近战
+        list.add(def("frost_aura", "Frost Aura", "Chance to freeze your opponent", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("cripple", "Cripple", "Reduces your opponent's attack speed", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("vampiric", "Vampiric", "Greatly heals a portion of damage dealt", 5, 3, false, false, "epic", swords(), 15, 10, 30, 10, 8));
+        list.add(def("guardian", "Guardian", "Reduces damage taken while blocking", 3, 3, false, false, "rare", swAx(), 10, 10, 20, 10, 6));
+        list.add(def("venomous", "Venomous", "Chance to apply strong poison", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
+        list.add(def("storm_call", "Storm Call", "Strike lightning on your opponent", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("ender_shift", "Ender Shift", "Teleport behind your target on hit", 2, 2, false, false, "mythic", swords(), 20, 10, 40, 10, 10));
+        list.add(def("dual_strike", "Dual Strike", "Chance to strike a second time", 5, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("fear", "Fear", "Chance to make your opponent flee", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("cleave", "Cleave", "Deal splash damage to nearby enemies", 5, 3, false, false, "rare", swAx(), 10, 10, 20, 10, 6));
+        // 弓/远程
+        list.add(def("pierce_shot", "Pierce Shot", "Arrows pierce through enemies", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("arrow_volley", "Arrow Volley", "Shoot extra arrows", 3, 3, false, false, "epic", ranged(), 10, 10, 25, 10, 8));
+        list.add(def("gravitational", "Gravitational", "Arrows pull enemies toward you", 3, 3, false, false, "epic", ranged(), 10, 10, 25, 10, 8));
+        list.add(def("frost_arrow", "Frost Arrow", "Arrows slow enemies", 3, 3, false, false, "uncommon", ranged(), 10, 10, 20, 10, 5));
+        list.add(def("venom_arrow", "Venom Arrow", "Arrows poison enemies", 3, 3, false, false, "uncommon", ranged(), 10, 10, 20, 10, 5));
+        list.add(def("blood_arrow", "Blood Arrow", "Arrows heal you on hit", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("penetrate", "Penetrate", "Arrows ignore enemy armor", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("explosive_tip", "Explosive Tip", "Arrows explode on impact", 2, 3, false, false, "epic", ranged(), 10, 10, 25, 10, 8));
+        // 护甲/防具
+        list.add(def("thorns_reflect", "Thorns Reflect", "Reflect damage back to attackers", 3, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("iron_body", "Iron Body", "Reduces incoming damage", 4, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("vitality", "Vitality", "Increases maximum health", 3, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("fire_ward", "Fire Ward", "Reduces fire damage", 3, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
+        list.add(def("poison_ward", "Poison Ward", "Cures poison", 3, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
+        list.add(def("wither_ward", "Wither Ward", "Reduces wither damage", 3, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
+        list.add(def("explosion_ward", "Explosion Ward", "Reduces explosion damage", 3, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
+        list.add(def("undying", "Undying", "Chance to survive a fatal blow", 1, 1, false, true, "mythic", armor(), 20, 10, 40, 10, 10));
+        list.add(def("aura_light", "Aura of Light", "Light up your surroundings", 1, 2, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("resistance", "Resistance", "Reduces all incoming damage", 4, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        // 靴子/头盔
+        list.add(def("aqua_step", "Aqua Step", "Walk on water with a frozen path", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        list.add(def("rocket_boots", "Rocket Boots", "Boost forward when sprinting", 3, 3, false, false, "epic", boots(), 10, 10, 25, 10, 8));
+        list.add(def("speed_boots", "Speed Boots", "Grants speed while worn", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
+        list.add(def("feather_fall", "Feather Fall", "Negate fall damage", 3, 3, false, false, "common", boots(), 5, 5, 15, 5, 4));
+        list.add(def("night_eye", "Night Eye", "Grants night vision while worn", 1, 2, false, false, "uncommon", helmets(), 10, 10, 20, 10, 4));
+        list.add(def("water_breath", "Water Breath", "Breathe underwater", 2, 2, false, false, "common", helmets(), 10, 10, 20, 10, 5));
+        // 工具
+        list.add(def("excavation", "Excavation", "Mines blocks in a large area", 5, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
+        list.add(def("prospector", "Prospector", "Chance to reveal ores", 3, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
+        list.add(def("harvest", "Harvest", "Harvest crops in a wide area", 5, 3, false, false, "rare", tools(), 10, 10, 20, 10, 6));
+        list.add(def("auto_repair", "Auto Repair", "Slowly repairs the tool", 3, 2, false, true, "mythic", tools(), 20, 10, 40, 10, 10));
+        list.add(def("smelter", "Smelter", "Automatically smelt mined blocks", 1, 3, false, false, "rare", tools(), 10, 10, 20, 10, 8));
+        list.add(def("lucky_mining", "Lucky Mining", "Chance of double drops", 5, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
         return list;
     }
 

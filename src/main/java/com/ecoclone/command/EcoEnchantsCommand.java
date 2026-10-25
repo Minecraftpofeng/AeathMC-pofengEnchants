@@ -18,6 +18,12 @@ import java.util.Map;
  *   /ecoenchants randomenchant [player]
  *   /ecoenchants reload
  *   /ecoenchants givebook <附魔键> <等级> [player]
+ *   /ecoenchants gui
+ *   /ecoenchants scroll <附魔键> <等级> [player]
+ *   /ecoenchants wipe [player]
+ *   /ecoenchants artifact [player]
+ *   /ecoenchants admin [player]   （管理员之刃：创世神刃）
+ *   /ecoenchants enchant <附魔> <等级> [player]  （可突破原版附魔等级上限）
  */
 public final class EcoEnchantsCommand implements CommandExecutor {
 
@@ -186,6 +192,78 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                 target.getInventory().setItemInMainHand(manager.stripCustom(held));
                 sender.sendMessage(manager.prefix()
                         + manager.color("&a已清除 " + target.getName() + " 手中物品的全部自定义附魔。"));
+                return true;
+            }
+            case "artifact" -> {
+                if (!sender.hasPermission("ecoenchants.command.artifact")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 1 ? args[1] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(manager.artifactSword());
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&a已将寰宇支配之剑·最终幻想给予 " + target.getName() + "。"));
+                return true;
+            }
+            case "admin" -> {
+                if (!sender.hasPermission("ecoenchants.command.admin")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 1 ? args[1] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(manager.adminSword());
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&c已将创世神刃·管理之怒给予 " + target.getName() + "。"));
+                return true;
+            }
+            case "enchant" -> {                if (!sender.hasPermission("ecoenchants.command.enchant")) {
+                    noPerm(sender);
+                    return true;
+                }
+                if (args.length < 3) {
+                    sender.sendMessage(manager.prefix() + manager.color(
+                            "&c用法：/ecoenchants enchant <附魔> <等级> [玩家]  （可突破原版上限，如 sharpness 256）"));
+                    return true;
+                }
+                org.bukkit.enchantments.Enchantment ench = Enchants.get(args[1].toLowerCase());
+                if (ench == null) {
+                    ench = org.bukkit.enchantments.Enchantment.getByKey(
+                            org.bukkit.NamespacedKey.minecraft(args[1].toLowerCase()));
+                }
+                if (ench == null) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c找不到附魔 " + args[1] + "。"));
+                    return true;
+                }
+                int level;
+                try {
+                    level = Integer.parseInt(args[2]);
+                } catch (NumberFormatException e) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c等级必须是数字。"));
+                    return true;
+                }
+                if (level < 1) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c等级必须至少为 1。"));
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 3 ? args[3] : null);
+                if (target == null) {
+                    return true;
+                }
+                ItemStack held = target.getInventory().getItemInMainHand();
+                if (held == null || held.getType().isAir()) {
+                    sender.sendMessage(manager.prefix() + manager.msg("commands.no-item"));
+                    return true;
+                }
+                held.addUnsafeEnchantment(ench, level);
+                target.getInventory().setItemInMainHand(held);
+                sender.sendMessage(manager.prefix() + manager.color(
+                        "&a已为 " + target.getName() + " 手持物品附加 " + args[1] + " " + level + "。"));
                 return true;
             }
             default -> sender.sendMessage(manager.prefix() + manager.msg("commands.invalid-args"));

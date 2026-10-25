@@ -1,0 +1,29 @@
+#
+# 
+Penetrate
+ EcoEnchant
+#
+name: "
+Penetrate
+"
+description: 
+Arrows ignore enemy armor
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - ranged
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

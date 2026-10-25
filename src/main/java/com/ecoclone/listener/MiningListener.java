@@ -33,6 +33,23 @@ public final class MiningListener implements Listener {
     public MiningListener(EcoClonePlugin plugin, EnchantManager manager) {
         this.plugin = plugin;
         this.manager = manager;
+        // Auto Repair：缓慢修复带该附魔的工具（每 2 秒）
+        new org.bukkit.scheduler.BukkitRunnable() {
+            @Override
+            public void run() {
+                for (org.bukkit.entity.Player p : plugin.getServer().getOnlinePlayers()) {
+                    for (ItemStack it : p.getInventory().getContents()) {
+                        if (it == null) {
+                            continue;
+                        }
+                        int ar = Enchants.level(it, "auto_repair");
+                        if (ar > 0 && it.getType().getMaxDurability() > 0 && it.getDurability() > 0) {
+                            it.setDurability((short) Math.max(0, it.getDurability() - ar));
+                        }
+                    }
+                }
+            }
+        }.runTaskTimer(plugin, 0L, 40L);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -160,6 +177,77 @@ public final class MiningListener implements Listener {
         if (drill > 0) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 40, Math.min(2, drill - 1)));
         }
+
+        // Excavation：大范围挖掘
+        int exca = Enchants.level(held, "excavation");
+        if (exca > 0) {
+            int r = Math.min(3, 1 + exca);
+            double hardness = block.getType().getHardness();
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dy = -r; dy <= r; dy++) {
+                    for (int dz = -r; dz <= r; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) {
+                            continue;
+                        }
+                        Block b = block.getRelative(dx, dy, dz);
+                        if (breakable(b, hardness)) {
+                            b.breakNaturally(held);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Smelter：自动熔炼
+        if (Enchants.has(held, "smelter") && event.isDropItems()) {
+            for (ItemStack d : block.getDrops(held)) {
+                Material sm = smelt(d.getType());
+                if (sm != null) {
+                    ItemStack out = d.clone();
+                    out.setType(sm);
+                    event.setDropItems(false);
+                    block.getWorld().dropItemNaturally(block.getLocation(), out);
+                }
+            }
+        }
+
+        // Lucky Mining：概率双倍掉落
+        int lucky = Enchants.level(held, "lucky_mining");
+        if (lucky > 0 && event.isDropItems() && Math.random() < 0.1 * lucky) {
+            for (ItemStack d : new ArrayList<>(block.getDrops(held))) {
+                block.getWorld().dropItemNaturally(block.getLocation(), d);
+            }
+        }
+
+        // Prospector：探矿（概率额外掉落矿石）
+        int prosp = Enchants.level(held, "prospector");
+        if (prosp > 0 && block.getType().name().contains("ORE") && Math.random() < 0.15 * prosp) {
+            for (ItemStack d : new ArrayList<>(block.getDrops(held))) {
+                block.getWorld().dropItemNaturally(block.getLocation(), d);
+            }
+        }
+
+        // Harvest：丰收（大范围收割作物）
+        int harv = Enchants.level(held, "harvest");
+        if (harv > 0 && isCrop(block.getType())) {
+            int r = 1 + harv;
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    if (dx == 0 && dz == 0) {
+                        continue;
+                    }
+                    Block b = block.getRelative(dx, 0, dz);
+                    if (b.getType() == block.getType()) {
+                        b.breakNaturally(held);
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isCrop(Material m) {
+        return m == Material.WHEAT || m == Material.CARROTS || m == Material.POTATOES
+                || m == Material.BEETROOTS || m == Material.NETHER_WART;
     }
 
     private void chopTree(Block origin, ItemStack held) {

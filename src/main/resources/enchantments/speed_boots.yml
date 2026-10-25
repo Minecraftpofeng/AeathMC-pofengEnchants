@@ -1,0 +1,29 @@
+#
+# 
+Speed Boots
+ EcoEnchant
+#
+name: "
+Speed Boots
+"
+description: 
+Grants speed while worn
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+uncommon
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

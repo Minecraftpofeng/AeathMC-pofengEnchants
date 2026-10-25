@@ -1,0 +1,21 @@
+#
+# Sneak Attack EcoEnchant
+#
+name: "Sneak Attack"
+description: Deal bonus damage when attacking from behind
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config: {}

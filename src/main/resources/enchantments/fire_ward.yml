@@ -1,0 +1,29 @@
+#
+# 
+Fire Ward
+ EcoEnchant
+#
+name: "
+Fire Ward
+"
+description: 
+Reduces fire damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+uncommon
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

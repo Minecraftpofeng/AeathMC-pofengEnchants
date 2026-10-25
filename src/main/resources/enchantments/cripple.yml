@@ -1,0 +1,29 @@
+#
+# 
+Cripple
+ EcoEnchant
+#
+name: "
+Cripple
+"
+description: 
+Reduces your opponent's attack speed
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

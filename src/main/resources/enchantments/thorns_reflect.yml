@@ -1,0 +1,29 @@
+#
+# 
+Thorns Reflect
+ EcoEnchant
+#
+name: "
+Thorns Reflect
+"
+description: 
+Reflect damage back to attackers
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

@@ -1,0 +1,29 @@
+#
+# 
+Dual Strike
+ EcoEnchant
+#
+name: "
+Dual Strike
+"
+description: 
+Chance to strike a second time
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+5
+
+config:
+  chance: 0.1

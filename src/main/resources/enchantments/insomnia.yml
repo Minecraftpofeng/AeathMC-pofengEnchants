@@ -1,0 +1,21 @@
+#
+# Insomnia EcoEnchant
+#
+name: "Insomnia"
+description: Chance to fatigue your opponent
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config: {}

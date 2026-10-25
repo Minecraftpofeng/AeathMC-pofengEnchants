@@ -3,6 +3,8 @@ package com.ecoclone;
 import com.ecoclone.command.EcoEnchantsCommand;
 import com.ecoclone.command.EnchantInfoCommand;
 import com.ecoclone.listener.ArmorListener;
+import com.ecoclone.listener.AdminSwordListener;
+import com.ecoclone.listener.ArtifactListener;
 import com.ecoclone.listener.CombatListener;
 import com.ecoclone.listener.DeathListener;
 import com.ecoclone.listener.GuiListener;
@@ -22,9 +24,14 @@ public final class EcoClonePlugin extends JavaPlugin {
 
     private EnchantManager manager;
     private GuiListener guiListener;
+    private ArtifactListener artifactListener;
 
     public GuiListener guiListener() {
         return guiListener;
+    }
+
+    public ArtifactListener artifactListener() {
+        return artifactListener;
     }
 
     private void registerCommand(String name, CommandExecutor executor) {
@@ -73,6 +80,9 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new DeathListener(this, manager), this);
             guiListener = new GuiListener(this, manager);
             getServer().getPluginManager().registerEvents(guiListener, this);
+            artifactListener = new ArtifactListener(this, manager);
+            getServer().getPluginManager().registerEvents(artifactListener, this);
+            getServer().getPluginManager().registerEvents(new AdminSwordListener(this, manager), this);
         } catch (Throwable t) {
             getLogger().severe("AeathMC-pofengEnchants 启用失败，原因如下:");
             t.printStackTrace();

@@ -1,0 +1,29 @@
+#
+# 
+Water Breath
+ EcoEnchant
+#
+name: "
+Water Breath
+"
+description: 
+Breathe underwater
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+common
+
+general-config:
+  targets:
+  - helmets
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+2
+
+config:
+  chance: 0.1

@@ -1,0 +1,29 @@
+#
+# 
+Rocket Boots
+ EcoEnchant
+#
+name: "
+Rocket Boots
+"
+description: 
+Boost forward when sprinting
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+epic
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

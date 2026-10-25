@@ -1,0 +1,29 @@
+#
+# 
+Lucky Mining
+ EcoEnchant
+#
+name: "
+Lucky Mining
+"
+description: 
+Chance of double drops
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+uncommon
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+5
+
+config:
+  chance: 0.1

@@ -1,0 +1,29 @@
+#
+# 
+Excavation
+ EcoEnchant
+#
+name: "
+Excavation
+"
+description: 
+Mines blocks in a large area
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - pickaxes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+5
+
+config:
+  chance: 0.1

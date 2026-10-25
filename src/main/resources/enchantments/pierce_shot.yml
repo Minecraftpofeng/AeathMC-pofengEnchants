@@ -1,0 +1,29 @@
+#
+# 
+Pierce Shot
+ EcoEnchant
+#
+name: "
+Pierce Shot
+"
+description: 
+Arrows pierce through enemies
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - ranged
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

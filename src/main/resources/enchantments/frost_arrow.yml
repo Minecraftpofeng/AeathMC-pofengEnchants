@@ -1,0 +1,29 @@
+#
+# 
+Frost Arrow
+ EcoEnchant
+#
+name: "
+Frost Arrow
+"
+description: 
+Arrows slow enemies
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+uncommon
+
+general-config:
+  targets:
+  - ranged
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

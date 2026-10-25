@@ -1,0 +1,29 @@
+#
+# 
+Explosive Tip
+ EcoEnchant
+#
+name: "
+Explosive Tip
+"
+description: 
+Arrows explode on impact
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+epic
+
+general-config:
+  targets:
+  - ranged
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+2
+
+config:
+  chance: 0.1

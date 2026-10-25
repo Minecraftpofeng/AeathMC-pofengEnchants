@@ -1,0 +1,29 @@
+#
+# 
+Iron Body
+ EcoEnchant
+#
+name: "
+Iron Body
+"
+description: 
+Reduces incoming damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+4
+
+config:
+  chance: 0.1

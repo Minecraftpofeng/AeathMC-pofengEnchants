@@ -411,6 +411,159 @@ public final class EnchantManager {
         return clone;
     }
 
+    /** 神器主人 */
+    public String artifactOwner() {
+        return "ClowmPierce";
+    }
+
+    /** 是否为神器（寰宇支配之剑） */
+    public boolean isArtifact(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "artifact"), PersistentDataType.BOOLEAN);
+    }
+
+    /** 神器：寰宇支配之剑·最终幻想 */
+    public ItemStack artifactSword() {
+        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD);
+        sword.editMeta(meta -> {
+            meta.displayName(Component.text(color("&d&l寰宇支配之剑&f&l•&b&l最终幻想")));
+            meta.lore(artifactLore(false));
+            meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "artifact"),
+                    PersistentDataType.BOOLEAN, true);
+            // 移除攻击属性修饰符，隐藏"在主手时"属性提示
+            meta.setAttributeModifiers(com.google.common.collect.ImmutableMultimap.of());
+        });
+        // 附魔（强制叠加，忽略冲突与等级上限）
+        java.util.Map<org.bukkit.enchantments.Enchantment, Integer> ench = new java.util.HashMap<>();
+        ench.put(Enchantment.SHARPNESS, 256);
+        ench.put(Enchantment.BANE_OF_ARTHROPODS, 50);
+        ench.put(Enchantment.SMITE, 50);
+        ench.put(Enchantment.UNBREAKING, 50);
+        ench.put(Enchantment.SWEEPING_EDGE, 20);
+        ench.put(Enchantment.FIRE_ASPECT, 20);
+        putIf(ench, "leeching", 10);       // 吸血
+        putIf(ench, "frost", 5);           // 冻结
+        putIf(ench, "armor_piercing", 10); // 破甲
+        putIf(ench, "criticals", 1);       // 会心一击
+        putIf(ench, "king_descent", 2);    // 王的降临（虚空恐惧）
+        putIf(ench, "nausea", 2);          // 反胃
+        putIf(ench, "wither_aspect", 2);   // 凋零
+        putIf(ench, "toxic", 2);           // 中毒
+        putIf(ench, "insomnia", 2);        // 失眠
+        putIf(ench, "conductive", 2);      // 导电
+        putIf(ench, "explosive", 2);       // 爆炸
+        putIf(ench, "phantom", 10);        // 虚影
+        putIf(ench, "sneak_attack", 2);    // 偷袭
+        putIf(ench, "eclipse", 1);         // 日食
+        sword.addUnsafeEnchantments(ench);
+        return sword;
+    }
+
+    /** 是否为管理员之刃（创世神刃） */
+    public boolean isAdminSword(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "admin_sword"), PersistentDataType.BOOLEAN);
+    }
+
+    /** 管理员之刃：创世神刃 */
+    public ItemStack adminSword() {
+        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD);
+        sword.editMeta(meta -> {
+            meta.displayName(gradient("创世神刃", 230, 20, 20, 255, 200, 0)
+                    .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+            meta.lore(adminLore());
+            meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "admin_sword"),
+                    PersistentDataType.BOOLEAN, true);
+            meta.setAttributeModifiers(com.google.common.collect.ImmutableMultimap.of());
+        });
+        sword.addUnsafeEnchantments(java.util.Map.of(Enchantment.SHARPNESS, 256));
+        return sword;
+    }
+
+    /** 管理员之刃 lore（创世神刃） */
+    public List<Component> adminLore() {
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(color("&7Lv.&fInfinity")));
+        lore.add(Component.text(color("&6特性&7:&c管理之怒")));
+        lore.add(Component.text(color("&8[&7仅 OP 持有触发&8]&7 瞬间血量为0，释放扣血动画")));
+        lore.add(Component.text(color("&7秒杀前召唤闪电 &8(不起火)")));
+        lore.add(Component.text(color("&7击杀后半径 &f1000 &7格内玩家 &c反胃&7+&9失明&7 5秒")));
+        lore.add(Component.text(color("&7放大标题:"))
+                .append(Component.text("让整个世界为之颤抖吧!",
+                                net.kyori.adventure.text.format.TextColor.color(255, 40, 40))
+                        .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD)));
+        lore.add(Component.text(color("&dHim神力&7:&a主手自动开飞行+午夜&7 | 离手关闭飞行+白天")));
+        lore.add(Component.text("Admin", net.kyori.adventure.text.format.TextColor.color(255, 170, 0))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.OBFUSCATED));
+        lore.add(gradient("+Infinity", 255, 60, 60, 255, 200, 0)
+                .append(Component.text(color(" &7攻击伤害")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        lore.add(gradient("+Infinity", 0, 200, 255, 160, 60, 255)
+                .append(Component.text(color(" &7攻击速度")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        return lore;
+    }
+
+    private void putIf(java.util.Map<org.bukkit.enchantments.Enchantment, Integer> map,
+                       String key, int level) {
+        org.bukkit.enchantments.Enchantment e = Enchants.get(key);
+        if (e != null) {
+            map.put(e, level);
+        }
+    }
+
+    /** 神器 lore（owner 为 true 时显示"王已归位..."，否则"寻找它的主人"） */
+    public List<Component> artifactLore(boolean owner) {
+        List<Component> lore = new ArrayList<>();
+        // 精简：王的降临 + 特性 合并为一行
+        lore.add(Component.text(color(
+                "&8王的降临 &7特性：&f虚空恐惧/反胃/凋零/中毒/失眠/导电/爆炸/虚影/偷袭/日食")));
+        // 更鲜艳醒目的渐变（攻击伤害：红→金；攻击速度：青→紫），加粗
+        lore.add(gradient("Infinity", 255, 60, 60, 255, 200, 0)
+                .append(Component.text(color(" &7攻击伤害")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        lore.add(gradient("Infinity", 0, 200, 255, 160, 60, 255)
+                .append(Component.text(color(" &7攻击速度")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        if (owner) {
+            lore.add(gradient("王已归位...", 255, 220, 120, 190, 90, 255));
+        } else {
+            lore.add(Component.text(color("&7一把十分精致的剑 但它似乎正在寻找它的主人")));
+        }
+        return lore;
+    }
+
+    /** 字符级彩色渐变 */
+    public Component gradient(String text, int sr, int sg, int sb, int er, int eg, int eb) {
+        java.util.List<Component> parts = new ArrayList<>();
+        int n = text.length();
+        for (int i = 0; i < n; i++) {
+            double t = n <= 1 ? 0 : (double) i / (n - 1);
+            int r = sr + (int) ((er - sr) * t);
+            int g = sg + (int) ((eg - sg) * t);
+            int b = sb + (int) ((eb - sb) * t);
+            parts.add(Component.text(String.valueOf(text.charAt(i)))
+                    .color(net.kyori.adventure.text.format.TextColor.color(
+                            Math.max(0, Math.min(255, r)),
+                            Math.max(0, Math.min(255, g)),
+                            Math.max(0, Math.min(255, b)))));
+        }
+        return Component.join(net.kyori.adventure.text.JoinConfiguration.noSeparators(), parts);
+    }
+
+    private void addIf(org.bukkit.inventory.meta.ItemMeta meta, String key, int level) {
+        Enchantment e = Enchants.get(key);
+        if (e != null) {
+            meta.addEnchant(e, level, true);
+        }
+    }
+
     public YamlConfiguration rawConfig() {
         return config;
     }

@@ -1,0 +1,21 @@
+#
+# Eclipse EcoEnchant
+#
+name: "Eclipse"
+description: Chance to plunge your target into darkness
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config: {}

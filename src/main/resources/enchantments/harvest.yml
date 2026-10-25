@@ -1,0 +1,29 @@
+#
+# 
+Harvest
+ EcoEnchant
+#
+name: "
+Harvest
+"
+description: 
+Harvest crops in a wide area
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+5
+
+config:
+  chance: 0.1

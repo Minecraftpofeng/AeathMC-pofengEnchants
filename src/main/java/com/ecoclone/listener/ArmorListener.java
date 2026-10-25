@@ -36,6 +36,18 @@ public final class ArmorListener implements Listener {
         int fortitude = total(player, "fortitude");
         int phoenix = total(player, "phoenix");
 
+        // Phantom（虚影）：手持附有虚影的剑时概率闪避伤害
+        ItemStack held = player.getInventory().getItemInMainHand();
+        if (held != null && !held.getType().isAir()) {
+            int phantom = Enchants.level(held, "phantom");
+            if (phantom > 0 && Math.random() < Math.min(0.05 * phantom, 0.5)) {
+                event.setDamage(0);
+                event.setCancelled(true);
+                player.sendMessage(manager.prefix() + manager.color("&d虚影闪过，你避开了这次攻击。"));
+                return;
+            }
+        }
+
         // Evasion：概率无视伤害
         if (evasion > 0 && Math.random() < 0.08 * evasion) {
             event.setDamage(0);

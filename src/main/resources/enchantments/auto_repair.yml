@@ -1,0 +1,29 @@
+#
+# 
+Auto Repair
+ EcoEnchant
+#
+name: "
+Auto Repair
+"
+description: 
+Slowly repairs the tool
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+mythic
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

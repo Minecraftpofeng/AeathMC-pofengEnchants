@@ -1,0 +1,21 @@
+#
+# King's Descent EcoEnchant
+#
+name: "King's Descent"
+description: Deal more damage in the Overworld and End
+enabled: true
+
+obtaining:
+  table: false
+  villager: false
+  loot: false
+  rarity: mythic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config: {}

@@ -1,0 +1,29 @@
+#
+# 
+Vitality
+ EcoEnchant
+#
+name: "
+Vitality
+"
+description: 
+Increases maximum health
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+rare
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

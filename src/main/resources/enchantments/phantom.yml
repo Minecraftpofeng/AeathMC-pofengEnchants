@@ -1,0 +1,21 @@
+#
+# Phantom EcoEnchant
+#
+name: "Phantom"
+description: Chance to dodge incoming damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 10
+
+config: {}

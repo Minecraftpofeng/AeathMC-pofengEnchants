@@ -1,0 +1,29 @@
+#
+# 
+Venomous
+ EcoEnchant
+#
+name: "
+Venomous
+"
+description: 
+Chance to apply strong poison
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: 
+uncommon
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 
+3
+
+config:
+  chance: 0.1

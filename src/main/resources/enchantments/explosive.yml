@@ -1,0 +1,21 @@
+#
+# Explosive EcoEnchant
+#
+name: "Explosive"
+description: Strikes cause an explosion
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config: {}
