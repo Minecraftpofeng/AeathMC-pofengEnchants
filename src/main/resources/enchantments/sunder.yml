@@ -1,0 +1,23 @@
+#
+# Sunder EcoEnchant
+#
+name: "Sunder"
+description: Shatters enemy armor on hit
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3
+  duration: 0

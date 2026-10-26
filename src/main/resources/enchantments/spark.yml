@@ -1,0 +1,24 @@
+#
+# Spark EcoEnchant
+#
+name: "Spark"
+description: Arrows ignite a small area
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - bows
+  - crossbows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3
+  duration: 0

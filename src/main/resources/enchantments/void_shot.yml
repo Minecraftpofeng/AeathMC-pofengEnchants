@@ -1,0 +1,24 @@
+#
+# Void Shot EcoEnchant
+#
+name: "Void Shot"
+description: Chance to instantly kill low-health targets
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - bows
+  - crossbows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1
+
+config:
+  chance: 0.05
+  duration: 0

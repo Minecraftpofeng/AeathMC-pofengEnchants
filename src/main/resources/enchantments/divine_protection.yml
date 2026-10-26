@@ -1,0 +1,23 @@
+#
+# Divine Protection EcoEnchant
+#
+name: "Divine Protection"
+description: Chance to completely negate damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config:
+  chance: 0.05
+  duration: 0

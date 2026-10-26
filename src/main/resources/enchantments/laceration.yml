@@ -1,0 +1,23 @@
+#
+# Laceration EcoEnchant
+#
+name: "Laceration"
+description: Tears open wounds that bleed heavily over time
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 4
+
+config:
+  chance: 0.25
+  duration: 60

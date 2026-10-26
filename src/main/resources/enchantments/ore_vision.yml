@@ -1,0 +1,23 @@
+#
+# Ore Vision EcoEnchant
+#
+name: "Ore Vision"
+description: Nearby ores glow
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - pickaxes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1
+
+config:
+  chance: 1.0
+  duration: 0

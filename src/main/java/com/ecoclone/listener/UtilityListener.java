@@ -148,7 +148,7 @@ public final class UtilityListener implements Listener {
         ItemStack item = event.getItem();
         int indestructible = Enchants.level(item, "indestructibility");
         if (indestructible > 0) {
-            event.setDamage(Math.max(0, (int) Math.ceil(event.getDamage() / (1.0 + indestructible))));
+            event.setDamage(0);
             return;
         }
         int fragile = Enchants.level(item, "curse_of_fragility");

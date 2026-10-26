@@ -1,0 +1,23 @@
+#
+# Rapid Fire EcoEnchant
+#
+name: "Rapid Fire"
+description: Draws and fires arrows faster
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - bows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

@@ -1,0 +1,23 @@
+#
+# Stomper EcoEnchant
+#
+name: "Stomper"
+description: Landing stomp damages enemies
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3
+  duration: 0

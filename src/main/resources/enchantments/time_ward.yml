@@ -1,0 +1,23 @@
+#
+# Time Ward EcoEnchant
+#
+name: "Time Ward"
+description: Keep experience on death
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - everything
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1
+
+config:
+  chance: 1.0
+  duration: 0

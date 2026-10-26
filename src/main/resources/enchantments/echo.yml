@@ -1,0 +1,23 @@
+#
+# Echo EcoEnchant
+#
+name: "Echo"
+description: Leave a ghostly trail while moving
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

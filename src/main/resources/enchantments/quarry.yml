@@ -1,0 +1,23 @@
+#
+# Quarry EcoEnchant
+#
+name: "Quarry"
+description: Mine downward in a shaft
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - pickaxes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config:
+  chance: 1.0
+  duration: 0

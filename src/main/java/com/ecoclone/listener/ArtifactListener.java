@@ -191,9 +191,9 @@ public final class ArtifactListener implements Listener {
             le.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40, 254));
             le.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 0));
         }
-        stunCooldown.put(p.getUniqueId(), System.currentTimeMillis() + 120_000);
+        stunCooldown.put(p.getUniqueId(), System.currentTimeMillis());
         p.sendMessage(manager.prefix() + manager.color(
-                "&b震慑已释放！震飞了半径 " + (int) radius + " 格内的所有生物（冷却 120 秒）。"));
+                "&b震慑已释放！震飞了半径 " + (int) radius + " 格内的所有生物（冷却已移除）。"));
     }
 
     // ---------- 动态 lore ----------

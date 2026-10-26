@@ -74,6 +74,10 @@ public final class Enchants {
         list.add(def("criticals", "Criticals", "Increases critical damage", 3, 5, false, false, "uncommon", swAx(), 10, 8, 20, 8, 5));
         list.add(def("first_strike", "First Strike", "Increases damage dealt when entity is on max health", 5, 4, false, false, "rare", swords(), 10, 10, 20, 10, 6));
         list.add(def("bleed", "Bleed", "Causes your opponent to bleed, damaging them repeatedly", 7, 3, false, false, "rare", swords(), 10, 10, 20, 10, 8));
+        list.add(def("corrosion", "Corrosion", "Melts your opponent, dealing damage over time", 5, 3, false, false, "rare", swords(), 10, 10, 20, 10, 8));
+        list.add(def("laceration", "Laceration", "Tears open wounds that bleed heavily over time", 4, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("scorching", "Scorching", "Burns your opponent with soul fire over time", 5, 4, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("rotting", "Rotting", "Inflicts a rotting decay that drains health over time", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
         list.add(def("leeching", "Leeching", "Heals a portion of damage dealt", 6, 3, false, false, "epic", swAx(), 15, 10, 30, 10, 8));
         list.add(def("thor", "Thor", "Chance of striking lightning on your opponent", 6, 3, false, false, "epic", swords(), 20, 10, 35, 10, 8));
         list.add(def("supercritical", "Supercritical", "Small chance to deal extreme damage", 3, 2, false, false, "mythic", swords(), 20, 10, 40, 10, 10));
@@ -193,6 +197,63 @@ public final class Enchants {
         list.add(def("auto_repair", "Auto Repair", "Slowly repairs the tool", 3, 2, false, true, "mythic", tools(), 20, 10, 40, 10, 10));
         list.add(def("smelter", "Smelter", "Automatically smelt mined blocks", 1, 3, false, false, "rare", tools(), 10, 10, 20, 10, 8));
         list.add(def("lucky_mining", "Lucky Mining", "Chance of double drops", 5, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
+        // ===== v1.4.2 新增 50 个附魔 =====
+        // 近战
+        list.add(def("gale_strike", "Gale Strike", "Knocks back and slows your opponent", 4, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("thunder_clap", "Thunder Clap", "Chance to stun with a thunder shock", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("sunder", "Sunder", "Shatters enemy armor on hit", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("momentum", "Momentum", "Consecutive hits deal increasing damage", 5, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("parry", "Parry", "Blocking negates damage and counters", 3, 3, false, false, "rare", swAx(), 10, 10, 20, 10, 6));
+        list.add(def("rend", "Rend", "Slows and bleeds your opponent", 4, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("stagger", "Stagger", "Chance to weaken your opponent's attacks", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
+        list.add(def("ghost_blade", "Ghost Blade", "Attacks partially ignore armor and dodge", 3, 2, false, false, "mythic", swords(), 20, 10, 40, 10, 10));
+        list.add(def("echo_strike", "Echo Strike", "Chance to strike multiple times", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("pursuit", "Pursuit", "Deal more damage to sprinting targets", 4, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("counter", "Counter", "Counterattack when hit", 3, 3, false, false, "epic", swAx(), 10, 10, 20, 10, 8));
+        list.add(def("blade_fury", "Blade Fury", "Increases attack speed", 4, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        // 弓
+        list.add(def("rapid_fire", "Rapid Fire", "Draws and fires arrows faster", 3, 3, false, false, "rare", bows(), 10, 10, 20, 10, 6));
+        list.add(def("scattershot", "Scattershot", "Shoots a spread of extra arrows", 3, 3, false, false, "epic", ranged(), 10, 10, 25, 10, 8));
+        list.add(def("chilling", "Chilling", "Arrows chill and slow enemies", 3, 3, false, false, "uncommon", ranged(), 10, 10, 20, 10, 5));
+        list.add(def("marking", "Marking", "Marked targets take more damage", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("trajectory", "Trajectory", "Arrows fly further with less drop", 3, 3, false, false, "uncommon", ranged(), 10, 10, 20, 10, 5));
+        list.add(def("spark", "Spark", "Arrows ignite a small area", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("void_shot", "Void Shot", "Chance to instantly kill low-health targets", 1, 1, false, true, "mythic", ranged(), 20, 10, 40, 10, 10));
+        list.add(def("arrow_rain", "Arrow Rain", "Strike arrows from above", 2, 2, false, false, "epic", ranged(), 10, 10, 25, 10, 8));
+        // 工具
+        list.add(def("greed", "Greed", "Extra drops from mining", 5, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
+        list.add(def("resourceful", "Resourceful", "Chance for bonus ores while mining", 3, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
+        list.add(def("mining_fury", "Mining Fury", "Gain strength after breaking blocks", 3, 3, false, false, "epic", tools(), 10, 10, 25, 10, 8));
+        list.add(def("ore_vision", "Ore Vision", "Nearby ores glow", 1, 2, false, false, "epic", pickaxes(), 10, 10, 25, 10, 8));
+        list.add(def("compact", "Compact", "Mined blocks grant bonus experience", 4, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
+        list.add(def("tunneling", "Tunneling", "Mine a horizontal tunnel", 2, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
+        list.add(def("quarry", "Quarry", "Mine downward in a shaft", 2, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
+        list.add(def("xp_boost", "XP Boost", "Bonus experience from mining", 3, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
+        // 护甲
+        list.add(def("fortress", "Fortress", "Chance to block incoming attacks", 4, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("aegis", "Aegis", "Reduces incoming damage", 4, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("blessing", "Blessing", "Chance to remove negative effects", 3, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("warmth", "Warmth", "Immune to slowness and freeze", 3, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
+        list.add(def("last_stand", "Last Stand", "Greatly reduce damage at low health", 3, 2, false, false, "epic", armor(), 10, 10, 25, 10, 8));
+        list.add(def("ironclad", "Ironclad", "Increases armor", 4, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("blood_armor", "Blood Armor", "Heal a portion of damage taken", 3, 3, false, false, "epic", armor(), 10, 10, 25, 10, 8));
+        list.add(def("divine_protection", "Divine Protection", "Chance to completely negate damage", 2, 1, false, true, "mythic", armor(), 20, 10, 40, 10, 10));
+        // 靴/盔
+        list.add(def("stomper", "Stomper", "Landing stomp damages enemies", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        list.add(def("long_jump", "Long Jump", "Sprint jump launches further", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        list.add(def("echo", "Echo", "Leave a ghostly trail while moving", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
+        list.add(def("mountain_climber", "Mountain Climber", "Move faster while climbing", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
+        list.add(def("glider", "Glider", "Descend slowly", 3, 2, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        list.add(def("clear_mind", "Clear Mind", "Immune to blindness", 2, 3, false, false, "uncommon", helmets(), 10, 10, 20, 10, 5));
+        list.add(def("hunter_vision", "Hunter Vision", "Highlight nearby hostile mobs", 2, 2, false, false, "epic", helmets(), 10, 10, 25, 10, 8));
+        list.add(def("frost_walker", "Frost Walker", "Freeze water beneath your feet", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        // 通用
+        list.add(def("curse_break", "Curse Break", "Reduces the penalty of curses", 3, 3, false, false, "rare", everything(), 10, 10, 20, 10, 6));
+        list.add(def("enhance", "Enhance", "Slightly boosts all attributes", 3, 3, false, false, "epic", everything(), 10, 10, 25, 10, 8));
+        list.add(def("gold_rush", "Gold Rush", "Kills grant bonus experience and drops", 4, 3, false, false, "uncommon", everything(), 10, 10, 20, 10, 5));
+        list.add(def("time_ward", "Time Ward", "Keep experience on death", 1, 1, false, true, "mythic", everything(), 20, 10, 40, 10, 10));
+        list.add(def("prosperity", "Prosperity", "Increases all earned experience", 3, 3, false, false, "rare", everything(), 10, 10, 20, 10, 6));
+        list.add(def("lucky", "Lucky", "Small chance for bonus loot", 3, 3, false, false, "uncommon", everything(), 10, 10, 20, 10, 5));
         return list;
     }
 

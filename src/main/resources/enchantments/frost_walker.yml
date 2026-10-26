@@ -1,0 +1,23 @@
+#
+# Frost Walker EcoEnchant
+#
+name: "Frost Walker"
+description: Freeze water beneath your feet
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

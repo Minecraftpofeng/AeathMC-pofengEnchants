@@ -1,0 +1,23 @@
+#
+# Scorching EcoEnchant
+#
+name: "Scorching"
+description: Burns your opponent with soul fire over time
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 0.30
+  duration: 80

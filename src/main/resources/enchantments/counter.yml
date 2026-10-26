@@ -1,0 +1,24 @@
+#
+# Counter EcoEnchant
+#
+name: "Counter"
+description: Counterattack when hit
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  - axes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3
+  duration: 0

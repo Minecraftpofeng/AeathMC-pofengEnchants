@@ -1,0 +1,23 @@
+#
+# Hunter Vision EcoEnchant
+#
+name: "Hunter Vision"
+description: Highlight nearby hostile mobs
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - helmet
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config:
+  chance: 1.0
+  duration: 0

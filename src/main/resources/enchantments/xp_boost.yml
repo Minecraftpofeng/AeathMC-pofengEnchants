@@ -1,0 +1,23 @@
+#
+# XP Boost EcoEnchant
+#
+name: "XP Boost"
+description: Bonus experience from mining
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

@@ -1,0 +1,23 @@
+#
+# Gold Rush EcoEnchant
+#
+name: "Gold Rush"
+description: Kills grant bonus experience and drops
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - everything
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 4
+
+config:
+  chance: 1.0
+  duration: 0

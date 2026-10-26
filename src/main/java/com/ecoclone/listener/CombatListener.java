@@ -4,6 +4,7 @@ import com.ecoclone.EcoClonePlugin;
 import com.ecoclone.EnchantManager;
 import com.ecoclone.Enchants;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -37,6 +38,8 @@ public final class CombatListener implements Listener {
 
     /** 正在流血的实体 (uuid -> 剩余 tick) */
     private static final Map<UUID, Integer> BLEEDING = new ConcurrentHashMap<>();
+    /** 持续掉血 (uuid -> {剩余tick, 每秒掉血量})：腐蚀/撕裂/炽烧/腐烂 */
+    private static final Map<UUID, int[]> DOTS = new ConcurrentHashMap<>();
 
     public CombatListener(EcoClonePlugin plugin, EnchantManager manager) {
         this.plugin = plugin;
@@ -56,6 +59,27 @@ public final class CombatListener implements Listener {
                         BLEEDING.put(id, ticks - 20);
                         if (ticks - 20 <= 0) {
                             BLEEDING.remove(id);
+                        }
+                    }
+                });
+            }
+        }.runTaskTimer(plugin, 0L, 20L);
+
+        // DOT 持续掉血任务（腐蚀/撕裂/炽烧/腐烂）
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                DOTS.forEach((id, arr) -> {
+                    Entity e = plugin.getServer().getEntity(id);
+                    if (e == null) {
+                        DOTS.remove(id);
+                    } else if (e.isDead()) {
+                        DOTS.remove(id);
+                    } else if (e instanceof LivingEntity le) {
+                        le.damage(arr[1]);
+                        DOTS.put(id, new int[]{arr[0] - 20, arr[1]});
+                        if (arr[0] - 20 <= 0) {
+                            DOTS.remove(id);
                         }
                     }
                 });
@@ -158,6 +182,8 @@ public final class CombatListener implements Listener {
         if (held == null || held.getType().isAir()) {
             return;
         }
+        // 神器（寰宇支配之剑）：所有技能 100% 概率触发且无视冷却
+        boolean artifact = manager.isArtifact(held);
 
         double dmg = event.getDamage();
         boolean changed = false;
@@ -185,7 +211,7 @@ public final class CombatListener implements Listener {
 
         // Supercritical：极小概率暴击 3 倍
         int sup = Enchants.level(held, "supercritical");
-        if (sup > 0 && Math.random() < 0.02 * sup) {
+        if (sup > 0 && (artifact || Math.random() < 0.02 * sup)) {
             dmg *= 3;
             changed = true;
         }
@@ -203,33 +229,66 @@ public final class CombatListener implements Listener {
 
         // Bleed：概率流血
         int bleed = Enchants.level(held, "bleed");
-        if (bleed > 0 && Math.random() < 0.1 * bleed) {
+        if (bleed > 0 && (artifact || Math.random() < 0.1 * bleed)) {
             BLEEDING.put(victim.getUniqueId(), 40 + bleed * 20); // 持续 2-4 秒 + 每级
         }
 
         // Thor：概率雷电
         int thor = Enchants.level(held, "thor");
-        if (thor > 0 && Math.random() < 0.03 * thor
-                && !manager.isOnCooldown(attacker.getUniqueId(), "thor")) {
+        if (thor > 0 && (artifact || Math.random() < 0.03 * thor)
+                && (artifact || !manager.isOnCooldown(attacker.getUniqueId(), "thor"))) {
             victim.getWorld().strikeLightning(victim.getLocation());
             manager.startCooldown(attacker.getUniqueId(), "thor", manager.cooldownSeconds());
         }
 
         // Toxic：概率中毒
         int toxic = Enchants.level(held, "toxic");
-        if (toxic > 0 && Math.random() < 0.2 * toxic) {
+        if (toxic > 0 && (artifact || Math.random() < 0.2 * toxic)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 60, 0));
         }
 
         // Wither Aspect：概率凋零
         int wither = Enchants.level(held, "wither_aspect");
-        if (wither > 0 && Math.random() < 0.15 * wither) {
+        if (wither > 0 && (artifact || Math.random() < 0.15 * wither)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 60, 0));
+        }
+
+        // Corrosion：腐蚀持续掉血（每秒 1+lv，无视护甲）
+        int corrosion = Enchants.level(held, "corrosion");
+        if (corrosion > 0 && (artifact || Math.random() < 0.25 * corrosion)) {
+            DOTS.put(victim.getUniqueId(), new int[]{40 + 20 * corrosion, 1 + corrosion});
+            victim.getWorld().spawnParticle(Particle.DRIPPING_LAVA,
+                    victim.getLocation().add(0, 1, 0), 8, 0.3, 0.3, 0.3, 0.01);
+        }
+
+        // Laceration：撕裂持续大量掉血（每秒 2*lv）
+        int laceration = Enchants.level(held, "laceration");
+        if (laceration > 0 && (artifact || Math.random() < 0.25 * laceration)) {
+            DOTS.put(victim.getUniqueId(), new int[]{60, 2 * laceration});
+            victim.getWorld().spawnParticle(Particle.CRIT,
+                    victim.getLocation().add(0, 1, 0), 10, 0.3, 0.3, 0.3, 0.1);
+        }
+
+        // Scorching（灵魂火焰）：灵魂火持续灼烧，每秒 1+lv，蓝焰视觉
+        int scorching = Enchants.level(held, "scorching");
+        if (scorching > 0 && (artifact || Math.random() < 0.3 * scorching)) {
+            DOTS.put(victim.getUniqueId(), new int[]{80, 1 + scorching});
+            victim.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME,
+                    victim.getLocation().add(0, 1, 0), 12, 0.3, 0.3, 0.3, 0.01);
+        }
+
+        // Rotting：腐烂凋零持续掉血（每秒 1+lv）
+        int rotting = Enchants.level(held, "rotting");
+        if (rotting > 0 && (artifact || Math.random() < 0.2 * rotting)) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 60, 0));
+            DOTS.put(victim.getUniqueId(), new int[]{60, 1 + rotting});
+            victim.getWorld().spawnParticle(Particle.ASH,
+                    victim.getLocation().add(0, 1, 0), 8, 0.3, 0.3, 0.3, 0.01);
         }
 
         // Frost：概率附加缓慢
         int frost = Enchants.level(held, "frost");
-        if (frost > 0 && Math.random() < 0.5 * frost) {
+        if (frost > 0 && (artifact || Math.random() < 0.5 * frost)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40 * frost, 0));
         }
 
@@ -264,8 +323,8 @@ public final class CombatListener implements Listener {
 
         // Chain Lightning：概率对附近敌人落雷
         int chain = Enchants.level(held, "chain_lightning");
-        if (chain > 0 && Math.random() < 0.2 * chain
-                && !manager.isOnCooldown(attacker.getUniqueId(), "chain_lightning")) {
+        if (chain > 0 && (artifact || Math.random() < 0.2 * chain)
+                && (artifact || !manager.isOnCooldown(attacker.getUniqueId(), "chain_lightning"))) {
             victim.getWorld().strikeLightning(victim.getLocation());
             int extra = chain;
             for (Entity e : victim.getNearbyEntities(6, 6, 6)) {
@@ -282,20 +341,20 @@ public final class CombatListener implements Listener {
 
         // Blind：致盲
         int blind = Enchants.level(held, "blind");
-        if (blind > 0 && Math.random() < 0.3 * blind) {
+        if (blind > 0 && (artifact || Math.random() < 0.3 * blind)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40 * blind, 0));
         }
 
         // Nausea：恶心
         int nausea = Enchants.level(held, "nausea");
-        if (nausea > 0 && Math.random() < 0.3 * nausea) {
+        if (nausea > 0 && (artifact || Math.random() < 0.3 * nausea)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 40 * nausea, 0));
         }
 
         // Execute：处决（低血概率秒杀非玩家）
         int exe = Enchants.level(held, "execute");
         if (exe > 0 && !(victim instanceof Player)
-                && victim.getHealth() < victim.getMaxHealth() * 0.1 && Math.random() < 0.3) {
+                && victim.getHealth() < victim.getMaxHealth() * 0.1 && (artifact || Math.random() < 0.3)) {
             victim.setHealth(0);
         }
 
@@ -313,7 +372,7 @@ public final class CombatListener implements Listener {
 
         // Insomnia：命中概率使目标疲劳（困倦）
         int ins = Enchants.level(held, "insomnia");
-        if (ins > 0 && Math.random() < 0.3 * ins) {
+        if (ins > 0 && (artifact || Math.random() < 0.3 * ins)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 40 * ins, 1));
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40 * ins, 0));
         }
@@ -331,8 +390,8 @@ public final class CombatListener implements Listener {
 
         // Conductive（导电）：命中在目标正上方生成闪电
         int cond = Enchants.level(held, "conductive");
-        if (cond > 0 && Math.random() < 0.5
-                && !manager.isOnCooldown(attacker.getUniqueId(), "conductive")) {
+        if (cond > 0 && (artifact || Math.random() < 0.5)
+                && (artifact || !manager.isOnCooldown(attacker.getUniqueId(), "conductive"))) {
             int bolts = cond >= 2 ? 3 : 1;
             for (int i = 0; i < bolts; i++) {
                 victim.getWorld().strikeLightning(victim.getLocation().add(0, 2 + i, 0));
@@ -347,8 +406,8 @@ public final class CombatListener implements Listener {
 
         // Explosive（爆炸）：命中产生爆炸
         int expl = Enchants.level(held, "explosive");
-        if (expl > 0 && Math.random() < 0.4
-                && !manager.isOnCooldown(attacker.getUniqueId(), "explosive")) {
+        if (expl > 0 && (artifact || Math.random() < 0.4)
+                && (artifact || !manager.isOnCooldown(attacker.getUniqueId(), "explosive"))) {
             victim.getWorld().createExplosion(victim.getLocation(), 1.0f + 0.5f * expl, false, false);
             manager.startCooldown(attacker.getUniqueId(), "explosive", manager.cooldownSeconds());
         }
@@ -362,21 +421,21 @@ public final class CombatListener implements Listener {
 
         // Eclipse（日食）：概率使目标陷入黑暗（失明+缓慢）
         int eclipse = Enchants.level(held, "eclipse");
-        if (eclipse > 0 && Math.random() < 0.2 * eclipse) {
+        if (eclipse > 0 && (artifact || Math.random() < 0.2 * eclipse)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40 * eclipse, 0));
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40 * eclipse, 0));
         }
 
         // Frost Aura：概率冰冻（缓慢+弱化跳跃）
         int fa = Enchants.level(held, "frost_aura");
-        if (fa > 0 && Math.random() < 0.4 * fa) {
+        if (fa > 0 && (artifact || Math.random() < 0.4 * fa)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 60 * fa, 1));
             victim.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 60 * fa, -1));
         }
 
         // Cripple：致残（降低对方挖掘/攻速）
         int cri = Enchants.level(held, "cripple");
-        if (cri > 0 && Math.random() < 0.4 * cri) {
+        if (cri > 0 && (artifact || Math.random() < 0.4 * cri)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 60 * cri, 1));
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 60 * cri, 0));
         }
@@ -390,21 +449,21 @@ public final class CombatListener implements Listener {
 
         // Venomous：强毒
         int ven = Enchants.level(held, "venomous");
-        if (ven > 0 && Math.random() < 0.2 * ven) {
+        if (ven > 0 && (artifact || Math.random() < 0.2 * ven)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 80, 1));
         }
 
         // Storm Call：概率召唤闪电
         int sc = Enchants.level(held, "storm_call");
-        if (sc > 0 && Math.random() < 0.15 * sc
-                && !manager.isOnCooldown(attacker.getUniqueId(), "storm_call")) {
+        if (sc > 0 && (artifact || Math.random() < 0.15 * sc)
+                && (artifact || !manager.isOnCooldown(attacker.getUniqueId(), "storm_call"))) {
             victim.getWorld().strikeLightning(victim.getLocation());
             manager.startCooldown(attacker.getUniqueId(), "storm_call", manager.cooldownSeconds());
         }
 
         // Ender Shift：命中概率瞬移到目标背后
         int es = Enchants.level(held, "ender_shift");
-        if (es > 0 && Math.random() < 0.25 * es) {
+        if (es > 0 && (artifact || Math.random() < 0.25 * es)) {
             org.bukkit.Location behind = victim.getLocation()
                     .add(victim.getLocation().getDirection().multiply(-2.0));
             attacker.teleport(behind);
@@ -412,14 +471,14 @@ public final class CombatListener implements Listener {
 
         // Dual Strike：概率二段伤害（直接扣血，避免事件递归）
         int ds = Enchants.level(held, "dual_strike");
-        if (ds > 0 && Math.random() < 0.2 * ds && victim instanceof LivingEntity) {
+        if (ds > 0 && (artifact || Math.random() < 0.2 * ds) && victim instanceof LivingEntity) {
             double extra = event.getDamage() * 0.5 * ds;
             victim.setHealth(Math.max(0, victim.getHealth() - extra));
         }
 
         // Fear：恐惧（使对方虚弱）
         int fear = Enchants.level(held, "fear");
-        if (fear > 0 && Math.random() < 0.3 * fear) {
+        if (fear > 0 && (artifact || Math.random() < 0.3 * fear)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 60 * fear, 0));
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 30 * fear, 0));
         }
@@ -433,6 +492,11 @@ public final class CombatListener implements Listener {
                             ((LivingEntity) e).getHealth() - event.getDamage() * 0.2 * cle));
                 }
             }
+        }
+
+        // 抹杀（代码层面）：神器命中目标，无视血量/护甲/无敌直接归零
+        if (artifact && victim.isValid() && !victim.isDead()) {
+            victim.setHealth(0);
         }
 
         if (changed) {

@@ -1,0 +1,23 @@
+#
+# Rotting EcoEnchant
+#
+name: "Rotting"
+description: Inflicts a rotting decay that drains health over time
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.20
+  duration: 60

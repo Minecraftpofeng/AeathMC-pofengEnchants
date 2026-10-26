@@ -1,0 +1,24 @@
+#
+# Parry EcoEnchant
+#
+name: "Parry"
+description: Blocking negates damage and counters
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  - axes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.2
+  duration: 0

@@ -1,0 +1,23 @@
+#
+# Long Jump EcoEnchant
+#
+name: "Long Jump"
+description: Sprint jump launches further
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

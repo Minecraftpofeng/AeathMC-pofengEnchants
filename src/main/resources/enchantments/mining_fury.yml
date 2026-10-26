@@ -1,0 +1,23 @@
+#
+# Mining Fury EcoEnchant
+#
+name: "Mining Fury"
+description: Gain strength after breaking blocks
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

@@ -2,6 +2,7 @@ package com.ecoclone;
 
 import io.papermc.paper.registry.TypedKey;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -510,12 +511,470 @@ public final class EnchantManager {
         return lore;
     }
 
+    /** 是否为彩虹猫之刃 */
+    public boolean isRainbowBlade(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "rainbow_blade"), PersistentDataType.BOOLEAN);
+    }
+
+    /** 彩虹猫之刃（Rainbow Cat Blade / Nyan Blade） */
+    public ItemStack rainbowBlade() {
+        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD);
+        sword.editMeta(meta -> {
+            meta.displayName(gradient("彩虹猫之刃", 255, 60, 60, 200, 0, 255)
+                    .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+            meta.lore(rainbowLore());
+            meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "rainbow_blade"),
+                    PersistentDataType.BOOLEAN, true);
+            meta.setAttributeModifiers(com.google.common.collect.ImmutableMultimap.of());
+        });
+        java.util.Map<org.bukkit.enchantments.Enchantment, Integer> ench = new java.util.HashMap<>();
+        ench.put(Enchantment.SHARPNESS, 256);
+        putIf(ench, "leeching", 10);       // 吸血
+        putIf(ench, "frost", 5);           // 冻结
+        putIf(ench, "conductive", 2);      // 导电
+        putIf(ench, "explosive", 2);       // 爆炸
+        putIf(ench, "toxic", 2);           // 中毒
+        putIf(ench, "wither_aspect", 2);   // 凋零
+        putIf(ench, "nausea", 2);          // 反胃
+        putIf(ench, "phantom", 10);        // 虚影
+        putIf(ench, "sneak_attack", 2);    // 偷袭
+        putIf(ench, "eclipse", 1);         // 日食
+        putIf(ench, "criticals", 1);       // 会心一击
+        sword.addUnsafeEnchantments(ench);
+        return sword;
+    }
+
+    /** 彩虹猫之刃 lore */
+    public List<Component> rainbowLore() {
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(color("&7Lv.&fInfinity")));
+        lore.add(Component.text(color("&6特性&f：彩虹尾迹 / 喵喵弹射 / 彩虹闪电 / 霓虹狂飙 / 彩虹护盾")));
+        lore.add(Component.text(color("&7移动时拖出七彩彩虹尾迹")));
+        lore.add(Component.text(color("&7命中击退并喵叫，引下彩虹闪电")));
+        lore.add(Component.text(color("&7攻速 +100% &7· &7移速 +40% &7· &7受击反弹 30%")));
+        lore.add(Component.text("Nyan", net.kyori.adventure.text.format.TextColor.color(255, 120, 220))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.OBFUSCATED));
+        lore.add(gradient("+Infinity", 255, 60, 60, 255, 200, 0)
+                .append(Component.text(color(" &7攻击伤害")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        lore.add(gradient("+Infinity", 0, 200, 255, 160, 60, 255)
+                .append(Component.text(color(" &7攻击速度")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        lore.add(Component.text(color("&7喵~ (ฅ'ω'ฅ)")));
+        return lore;
+    }
+
+    // ==================== 以太之剑 · 升级链（阶段 I~V） ====================
+
+    /** 是否为以太之剑 */
+    public boolean isAetherBlade(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "aether_blade"), PersistentDataType.BOOLEAN);
+    }
+
+    /** 以太之剑当前阶段（1~5，默认 1） */
+    public int aetherStage(ItemStack item) {
+        if (!isAetherBlade(item)) {
+            return 1;
+        }
+        Integer s = item.getItemMeta().getPersistentDataContainer()
+                .get(new NamespacedKey(plugin, "aether_stage"), PersistentDataType.INTEGER);
+        return s == null ? 1 : Math.max(1, Math.min(5, s));
+    }
+
+    /** 以太之剑累计击杀数 */
+    public int aetherKills(ItemStack item) {
+        if (!isAetherBlade(item)) {
+            return 0;
+        }
+        Integer k = item.getItemMeta().getPersistentDataContainer()
+                .get(new NamespacedKey(plugin, "aether_kills"), PersistentDataType.INTEGER);
+        return k == null ? 0 : k;
+    }
+
+    /** 写入以太之剑击杀数 */
+    public void setAetherKills(ItemStack item, int kills) {
+        item.editMeta(meta -> meta.getPersistentDataContainer().set(
+                new NamespacedKey(plugin, "aether_kills"), PersistentDataType.INTEGER, kills));
+    }
+
+    /** 觉醒下一阶段的击杀阈值 */
+    public int aetherThreshold(int stage) {
+        switch (stage) {
+            case 2: return 50;
+            case 3: return 150;
+            case 4: return 350;
+            case 5: return 750;
+            default: return 50;
+        }
+    }
+
+    /** 以太之剑各阶段名称 */
+    public String aetherName(int stage) {
+        switch (stage) {
+            case 2: return "星穹以太 · 裁决之刃";
+            case 3: return "永恒以太 · 虚空裁决";
+            case 4: return "以太洪荒 · 弑神之刃";
+            case 5: return "以太湮灭 · 万象归墟";
+            default: return "以太 · 溯洄终焉";
+        }
+    }
+
+    /** 以太之剑：按阶段创建 */
+    public ItemStack aetherBlade(int stage) {
+        final int s = Math.max(1, Math.min(5, stage));
+        int[] c = stageColors(s);
+        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD);
+        sword.editMeta(meta -> {
+            meta.displayName(gradient(aetherName(s), c[0], c[1], c[2], c[3], c[4], c[5])
+                    .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+            meta.lore(aetherLore(s, 0));
+            var pdc = meta.getPersistentDataContainer();
+            pdc.set(new NamespacedKey(plugin, "aether_blade"), PersistentDataType.BOOLEAN, true);
+            pdc.set(new NamespacedKey(plugin, "aether_stage"), PersistentDataType.INTEGER, s);
+            pdc.set(new NamespacedKey(plugin, "aether_kills"), PersistentDataType.INTEGER, 0);
+            meta.setAttributeModifiers(com.google.common.collect.ImmutableMultimap.of());
+        });
+        java.util.Map<org.bukkit.enchantments.Enchantment, Integer> ench = new java.util.HashMap<>();
+        ench.put(Enchantment.SHARPNESS, 256);
+        putIf(ench, "criticals", 1);
+        putIf(ench, "leeching", s >= 4 ? 10 : 5);
+        if (s >= 2) {
+            putIf(ench, "conductive", 2);
+        }
+        if (s >= 3) {
+            putIf(ench, "explosive", 2);
+            putIf(ench, "toxic", 2);
+        }
+        if (s >= 4) {
+            ench.put(Enchantment.FIRE_ASPECT, 20);
+            putIf(ench, "wither_aspect", 2);
+            putIf(ench, "insomnia", 2);
+        }
+        if (s >= 5) {
+            putIf(ench, "phantom", 10);
+            putIf(ench, "eclipse", 1);
+            putIf(ench, "sneak_attack", 2);
+            putIf(ench, "nausea", 2);
+        }
+        sword.addUnsafeEnchantments(ench);
+        return sword;
+    }
+
+    /** 以太之剑 lore（含击杀进度） */
+    public List<Component> aetherLore(int stage, int kills) {
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(color("&7Lv.&fInfinity")));
+        lore.add(Component.text(color("&d阶段 &f" + roman(stage)
+                + " &8· &7" + aetherName(stage))));
+        lore.add(Component.text(color("&6特性&f：星辰爆裂 / 以太吸灵 / 深渊吞噬 / 以太护体")));
+        if (stage >= 2) {
+            lore.add(Component.text(color("&7觉醒：&c以太爆裂")));
+        }
+        if (stage >= 4) {
+            lore.add(Component.text(color("&7觉醒：&4以太烈焰")));
+        }
+        if (stage >= 5) {
+            lore.add(Component.text(color("&7觉醒：&5三重雷暴 · 万象归墟 &c· 吞噬必至")));
+        }
+        if (stage < 5) {
+            lore.add(Component.text(color("&8击杀进度：&f" + kills + "&8 / &f"
+                    + aetherThreshold(stage + 1) + " &8（觉醒下一阶段）")));
+        } else {
+            lore.add(Component.text(color("&7已觉醒至最终形态，万象尽归墟")));
+        }
+        lore.add(gradient("+Infinity", 255, 60, 60, 255, 200, 0)
+                .append(Component.text(color(" &7攻击伤害")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        lore.add(gradient("+Infinity", 0, 200, 255, 160, 60, 255)
+                .append(Component.text(color(" &7攻击速度")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        return lore;
+    }
+
+    private int[] stageColors(int stage) {
+        switch (stage) {
+            case 2: return new int[]{0, 229, 255, 255, 215, 0};
+            case 3: return new int[]{255, 215, 0, 180, 60, 255};
+            case 4: return new int[]{180, 60, 255, 255, 40, 40};
+            case 5: return new int[]{255, 40, 40, 60, 0, 120};
+            default: return new int[]{0, 229, 255, 30, 90, 255};
+        }
+    }
+
+    private String roman(int stage) {
+        switch (stage) {
+            case 2: return "II";
+            case 3: return "III";
+            case 4: return "IV";
+            case 5: return "V";
+            default: return "I";
+        }
+    }
+
+    // ==================== 晨曦破晓剑 ====================
+
+    /** 是否为晨曦破晓剑 */
+    public boolean isDawnBlade(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "dawn_blade"), PersistentDataType.BOOLEAN);
+    }
+
+    /** 晨曦破晓剑 */
+    public ItemStack dawnBlade() {
+        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD);
+        sword.editMeta(meta -> {
+            meta.displayName(gradient("晨曦破晓剑", 255, 215, 0, 255, 170, 60)
+                    .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+            meta.lore(dawnLore());
+            meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "dawn_blade"),
+                    PersistentDataType.BOOLEAN, true);
+            meta.setAttributeModifiers(com.google.common.collect.ImmutableMultimap.of());
+        });
+        java.util.Map<org.bukkit.enchantments.Enchantment, Integer> ench = new java.util.HashMap<>();
+        ench.put(Enchantment.SHARPNESS, 256);
+        ench.put(Enchantment.FIRE_ASPECT, 20);
+        putIf(ench, "criticals", 1);
+        putIf(ench, "leeching", 10);
+        putIf(ench, "frost", 5);
+        putIf(ench, "conductive", 2);
+        sword.addUnsafeEnchantments(ench);
+        return sword;
+    }
+
+    /** 晨曦破晓剑 lore */
+    public List<Component> dawnLore() {
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(color("&7Lv.&fInfinity")));
+        lore.add(Component.text(color("&6特性&f：破晓之光 / 太阳灼烧 / 黎明庇护 / 曙光冲锋")));
+        lore.add(Component.text(color("&7命中点燃并致盲目标，迸发太阳金辉")));
+        lore.add(Component.text(color("&7攻速 +75% &7· &7移速 +20% &7· &7受击反弹 30%")));
+        lore.add(Component.text(color("&6黎明将至，破晓即裁决")));
+        lore.add(gradient("+Infinity", 255, 60, 60, 255, 200, 0)
+                .append(Component.text(color(" &7攻击伤害")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        lore.add(gradient("+Infinity", 0, 200, 255, 160, 60, 255)
+                .append(Component.text(color(" &7攻击速度")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        return lore;
+    }
+
+    // ==================== 暗渊噬魂剑 ====================
+
+    /** 是否为暗渊噬魂剑 */
+    public boolean isAbyssBlade(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "abyss_blade"), PersistentDataType.BOOLEAN);
+    }
+
+    /** 暗渊噬魂剑 */
+    public ItemStack abyssBlade() {
+        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD);
+        sword.editMeta(meta -> {
+            meta.displayName(gradient("暗渊噬魂剑", 156, 39, 176, 74, 0, 130)
+                    .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+            meta.lore(abyssLore());
+            meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "abyss_blade"),
+                    PersistentDataType.BOOLEAN, true);
+            meta.setAttributeModifiers(com.google.common.collect.ImmutableMultimap.of());
+        });
+        java.util.Map<org.bukkit.enchantments.Enchantment, Integer> ench = new java.util.HashMap<>();
+        ench.put(Enchantment.SHARPNESS, 256);
+        putIf(ench, "toxic", 2);
+        putIf(ench, "wither_aspect", 2);
+        putIf(ench, "nausea", 2);
+        putIf(ench, "insomnia", 2);
+        putIf(ench, "leeching", 10);
+        putIf(ench, "criticals", 1);
+        putIf(ench, "phantom", 10);
+        putIf(ench, "sneak_attack", 2);
+        sword.addUnsafeEnchantments(ench);
+        return sword;
+    }
+
+    /** 暗渊噬魂剑 lore */
+    public List<Component> abyssLore() {
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(color("&7Lv.&fInfinity")));
+        lore.add(Component.text(color("&6特性&f：噬魂 / 深渊凝视 / 深渊吞噬 / 深渊契约")));
+        lore.add(Component.text(color("&7命中吸取 25% 伤害为生命，&5满级 100% 吞噬生物")));
+        lore.add(Component.text(color("&7攻速 +60% &7· &7受击反弹 35%")));
+        lore.add(Component.text(color("&8深渊之底，唯有吞噬")));
+        lore.add(gradient("+Infinity", 255, 60, 60, 255, 200, 0)
+                .append(Component.text(color(" &7攻击伤害")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        lore.add(gradient("+Infinity", 0, 200, 255, 160, 60, 255)
+                .append(Component.text(color(" &7攻击速度")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        return lore;
+    }
+
     private void putIf(java.util.Map<org.bukkit.enchantments.Enchantment, Integer> map,
                        String key, int level) {
         org.bukkit.enchantments.Enchantment e = Enchants.get(key);
         if (e != null) {
             map.put(e, level);
         }
+    }
+
+    // ==================== 神器锄头 · 万象生息 · 丰饶之锄 ====================
+
+    /** 是否为神器锄头 */
+    public boolean isHoeArtifact(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "hoe_artifact"), PersistentDataType.BOOLEAN);
+    }
+
+    /** 绑定玩家判断 */
+    public boolean isHoeOwner(String name) {
+        return name != null && (name.equals("7gzztrgv") || name.equals("Minecraft_pofeng"));
+    }
+
+    /** 锄头名字（统一为「大楚兴，陈胜王」之锄，渐变金→红） */
+    public Component hoeNameComponent(boolean owner) {
+        return gradient("「大楚兴，陈胜王」之锄", 255, 215, 0, 255, 40, 40)
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD);
+    }
+
+    /** 神器锄头（主特性为武器） */
+    public ItemStack hoeArtifact() {
+        ItemStack hoe = new ItemStack(Material.NETHERITE_HOE);
+        hoe.editMeta(meta -> {
+            meta.displayName(hoeNameComponent(false));
+            meta.lore(hoeLore(false));
+            meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "hoe_artifact"),
+                    PersistentDataType.BOOLEAN, true);
+            meta.setAttributeModifiers(com.google.common.collect.ImmutableMultimap.of());
+        });
+        java.util.Map<org.bukkit.enchantments.Enchantment, Integer> ench = new java.util.HashMap<>();
+        ench.put(Enchantment.SHARPNESS, 10);
+        ench.put(Enchantment.FIRE_ASPECT, 10);
+        putIf(ench, "criticals", 1);       // 会心
+        putIf(ench, "leeching", 10);       // 吸血
+        putIf(ench, "conductive", 2);      // 导电
+        putIf(ench, "explosive", 2);       // 爆炸
+        putIf(ench, "toxic", 2);           // 中毒
+        putIf(ench, "wither_aspect", 2);   // 凋零
+        putIf(ench, "phantom", 5);         // 虚影
+        putIf(ench, "insomnia", 2);        // 失眠
+        hoe.addUnsafeEnchantments(ench);
+        return hoe;
+    }
+
+    /** 锄头 lore（owner 时狐狸行变为渐变名言） */
+    public List<Component> hoeLore(boolean owner) {
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(color("&7Lv.&fInfinity")));
+        lore.add(Component.text(color("&8专属绑定：&f7gzztrgv &8/ &fMinecraft_pofeng")));
+        lore.add(Component.text(color("&6主特性&f（武器）：大地之怒 / 灵狐易伤 / 神农庇护 / 万象生息 / 灵狐赐福")));
+        lore.add(Component.text(color("&eMinecraft_pofeng&7 持有时：命中伤害翻倍 · 目标 1 秒内无受击无敌帧")));
+        lore.add(Component.text(color("&d7gzztrgv &7持有时：&b冰冻 · 剧毒 · 召唤灵狐 · 高攻速 · 无视无敌帧")));
+        lore.add(Component.text(color("&7受击减免并反弹 · 击杀回复生命")));
+        lore.add(Component.text(color("&8农耕：丰饶催熟 / 丰收翻倍 / 大地滋养 / 沃土永固")));
+        if (owner) {
+            lore.add(gradient("大楚兴，陈胜王", 255, 215, 0, 255, 40, 40));
+        } else {
+            lore.add(Component.text(color("&8这把锄头似乎是某个狐狸落下的")));
+        }
+        lore.add(gradient("+Infinity", 255, 60, 60, 255, 200, 0)
+                .append(Component.text(color(" &7攻击伤害")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        lore.add(gradient("+Infinity", 0, 200, 255, 160, 60, 255)
+                .append(Component.text(color(" &7攻击速度")))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+        lore.add(Component.text(color("&8万物有灵，一锄生息")));
+        return lore;
+    }
+
+    // ==================== 七宗罪 · 暴怒「嗜血重生」 ====================
+
+    public boolean isWrathBlade(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "wrath_blade"), PersistentDataType.BOOLEAN);
+    }
+
+    public boolean isWrathOwner(String name) {
+        return name != null && (name.equals("OP_KL") || name.equals("Minecraft_pofeng"));
+    }
+
+    public Component wrathNameComponent() {
+        return gradient("七宗罪 · 暴怒「嗜血重生」", 255, 30, 30, 255, 150, 0)
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD);
+    }
+
+    /** 暴怒神器（绑定 OP_KL / Minecraft_pofeng，他人持之为破烂） */
+    public ItemStack wrathBlade() {
+        ItemStack blade = new ItemStack(Material.NETHERITE_SWORD);
+        blade.editMeta(meta -> {
+            meta.displayName(wrathNameComponent());
+            meta.lore(wrathLore(true));
+            meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "wrath_blade"),
+                    PersistentDataType.BOOLEAN, true);
+        });
+        java.util.Map<org.bukkit.enchantments.Enchantment, Integer> ench = new java.util.HashMap<>();
+        ench.put(Enchantment.SHARPNESS, 10);
+        ench.put(Enchantment.FIRE_ASPECT, 10);
+        ench.put(Enchantment.VANISHING_CURSE, 1);
+        ench.put(Enchantment.BINDING_CURSE, 1);
+        putIf(ench, "criticals", 1);      // 会心
+        putIf(ench, "leeching", 10);      // 吸血
+        putIf(ench, "explosive", 2);      // 爆炸
+        putIf(ench, "conductive", 2);     // 导电
+        putIf(ench, "razor", 5);          // 利刃
+        blade.addUnsafeEnchantments(ench);
+        return blade;
+    }
+
+    /** 暴怒神器 lore（owner 为 true 时完整展示，否则破烂） */
+    public List<Component> wrathLore(boolean owner) {
+        List<Component> lore = new ArrayList<>();
+        if (!owner) {
+            lore.add(Component.text(color("&7破烂")));
+            lore.add(Component.text(color("&8被抛弃的废物……")));
+            return lore;
+        }
+        lore.add(Component.text(color("&7Lv.&fInfinity")));
+        lore.add(Component.text(color("&6专属绑定：&fOP_KL &8/ &fMinecraft_pofeng")));
+        lore.add(Component.text(color("&8灵魂契约之物，只忠于契约之人，身死，此物不离")));
+        lore.add(Component.text(color("&c嗜血重生&f：生命低于&415%&f时回复全部生命，获得&e20秒抗性提升1&f与&e20颗黄心")));
+        lore.add(Component.text(color("&c狂怒&f：生命低于&460%&f时伤害&c×3.7&f，&b速度2&f、&b命中燃烧6秒&f、&b急迫3")));
+        lore.add(Component.text(color("&c嗜血&f：攻击恢复&c10%&f生命，获得&e抗性1")));
+        lore.add(Component.text(color("&c受伤&f：生命恢复2、抗性提升1、伤害吸收2（低于&410%&f：抗性3、生命恢复5）")));
+        lore.add(Component.text(color("&c赎罪&f：死亡时以最大生命复活&e(ovo)")));
+        lore.add(Component.text(color("&c禁咒&f：固定&c30&f点伤害，每次攻击削减对方&c5%&f生命值")));
+        lore.add(Component.text(color("&c诅咒之刃&f：常驻伤害&c×2&f，免疫中毒/凋零/虚弱/缓慢/反胃")));
+        lore.add(Component.text(color("&c暴戾&f：每附魔&a+4%攻速&7/&a+3%护甲&7/&a+0.25击退抗性&f；每诅咒&a+2%实体范围&7/&a+2护甲韧性")));
+        lore.add(Component.empty());
+        lore.add(Component.text("暴怒", TextColor.fromHexString("#FF4444"))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.OBFUSCATED));
+        lore.add(Component.text("愤怒是不加掩饰的原罪。", TextColor.fromHexString("#9AA0A6"))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.OBFUSCATED));
+        lore.add(Component.text("它会撕碎冷静，纵容杀戮，", TextColor.fromHexString("#FF4444"))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.OBFUSCATED));
+        lore.add(Component.text("使持有者沉溺于复仇与狂暴之中，", TextColor.fromHexString("#9AA0A6"))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.OBFUSCATED));
+        lore.add(Component.text("在无休止的厮杀里，沉沦不返。", TextColor.fromHexString("#FF4444"))
+                .decorate(net.kyori.adventure.text.format.TextDecoration.OBFUSCATED));
+        return lore;
     }
 
     /** 神器 lore（owner 为 true 时显示"王已归位..."，否则"寻找它的主人"） */

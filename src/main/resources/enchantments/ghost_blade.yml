@@ -1,0 +1,23 @@
+#
+# Ghost Blade EcoEnchant
+#
+name: "Ghost Blade"
+description: Attacks partially ignore armor and dodge
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: mythic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3
+  duration: 0

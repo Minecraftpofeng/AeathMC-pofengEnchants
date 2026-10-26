@@ -222,6 +222,98 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                         + manager.color("&c已将创世神刃·管理之怒给予 " + target.getName() + "。"));
                 return true;
             }
+            case "rainbow" -> {
+                if (!sender.hasPermission("ecoenchants.command.rainbow")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 1 ? args[1] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(manager.rainbowBlade());
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&b已将彩虹猫之刃给予 " + target.getName() + "。"));
+                return true;
+            }
+            case "aether" -> {
+                if (!sender.hasPermission("ecoenchants.command.aether")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 1 ? args[1] : null);
+                if (target == null) {
+                    return true;
+                }
+                int stage = 1;
+                if (args.length > 2) {
+                    try {
+                        stage = Integer.parseInt(args[2]);
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+                target.getInventory().addItem(manager.aetherBlade(stage));
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&d已将以太之剑·" + manager.aetherName(stage)
+                        + "（阶段 " + stage + "/5）给予 " + target.getName() + "。"));
+                return true;
+            }
+            case "dawn" -> {
+                if (!sender.hasPermission("ecoenchants.command.dawn")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 1 ? args[1] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(manager.dawnBlade());
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&6已将晨曦破晓剑给予 " + target.getName() + "。"));
+                return true;
+            }
+            case "abyss" -> {
+                if (!sender.hasPermission("ecoenchants.command.abyss")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 1 ? args[1] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(manager.abyssBlade());
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&5已将暗渊噬魂剑给予 " + target.getName() + "。"));
+                return true;
+            }
+            case "hoe" -> {
+                if (!sender.hasPermission("ecoenchants.command.hoe")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 1 ? args[1] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(manager.hoeArtifact());
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&a已将万象生息 · 丰饶之锄给予 " + target.getName() + "。"));
+                return true;
+            }
+            case "wrath" -> {
+                if (!sender.hasPermission("ecoenchants.command.wrath")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 1 ? args[1] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(manager.wrathBlade());
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&c已将七宗罪 · 暴怒「嗜血重生」给予 " + target.getName() + "。"));
+                return true;
+            }
             case "enchant" -> {                if (!sender.hasPermission("ecoenchants.command.enchant")) {
                     noPerm(sender);
                     return true;

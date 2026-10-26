@@ -1,0 +1,23 @@
+#
+# Stagger EcoEnchant
+#
+name: "Stagger"
+description: Chance to weaken your opponent's attacks
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3
+  duration: 0

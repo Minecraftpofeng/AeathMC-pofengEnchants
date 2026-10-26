@@ -1,0 +1,23 @@
+#
+# Curse Break EcoEnchant
+#
+name: "Curse Break"
+description: Reduces the penalty of curses
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - everything
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

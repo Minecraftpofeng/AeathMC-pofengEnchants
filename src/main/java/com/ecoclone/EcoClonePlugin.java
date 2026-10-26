@@ -10,6 +10,13 @@ import com.ecoclone.listener.DeathListener;
 import com.ecoclone.listener.GuiListener;
 import com.ecoclone.listener.MiningListener;
 import com.ecoclone.listener.ProjectileListener;
+import com.ecoclone.listener.RainbowBladeListener;
+import com.ecoclone.listener.AetherBladeListener;
+import com.ecoclone.listener.DawnBladeListener;
+import com.ecoclone.listener.AbyssBladeListener;
+import com.ecoclone.listener.HoeArtifactListener;
+import com.ecoclone.listener.WrathBladeListener;
+import com.ecoclone.listener.NewEnchantListener;
 import com.ecoclone.listener.UtilityListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -83,6 +90,13 @@ public final class EcoClonePlugin extends JavaPlugin {
             artifactListener = new ArtifactListener(this, manager);
             getServer().getPluginManager().registerEvents(artifactListener, this);
             getServer().getPluginManager().registerEvents(new AdminSwordListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new RainbowBladeListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new AetherBladeListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new DawnBladeListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new AbyssBladeListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new HoeArtifactListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new WrathBladeListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new NewEnchantListener(this, manager), this);
         } catch (Throwable t) {
             getLogger().severe("AeathMC-pofengEnchants 启用失败，原因如下:");
             t.printStackTrace();
@@ -97,7 +111,7 @@ public final class EcoClonePlugin extends JavaPlugin {
     /** 启动鸣谢弹幕：控制台 + 在线玩家各弹两行（Adventure 组件，16 进制颜色，中文后附英文） */
     private void sendSplash() {
         Component line1 = Component.text("鸣谢 / Thanks to: ", TextColor.fromHexString("#FFD700"))
-                .append(Component.text("SKY_qwq  clowm贺  shadow_agent  H1111111", TextColor.fromHexString("#00E5FF")));
+                .append(Component.text("SKY_qwq  clowm贺  shadow_agent  H1111111  7gzztrgv", TextColor.fromHexString("#00E5FF")));
         Component line2 = Component.text("——长风破浪会有时 ", TextColor.fromHexString("#7DF9FF"))
                 .append(Component.text("(Someday I'll ride the wind and break the waves) ", TextColor.fromHexString("#AAAAAA")))
                 .append(Component.text("[AeathMC 总开发 / Lead Developer ", TextColor.fromHexString("#FFD700")))
