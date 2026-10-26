@@ -79,7 +79,12 @@ public final class NewEnchantListener implements Listener {
     }
 
     private static boolean chance(double c) {
-        return Math.random() < c;
+        return Math.random() < EnchantManager.clamp01(c);
+    }
+
+    /** config 生效示范：读取附魔 yml 的 config.chance 作为基础概率（已 clamp 到 [0,1]），再乘等级 */
+    private boolean chance(String key, double base, int level) {
+        return chance(manager.chance(key, base) * level);
     }
 
     // ================= 每秒被动：属性 + 各持续效果 =================
@@ -198,19 +203,21 @@ public final class NewEnchantListener implements Listener {
         double dmg = event.getDamage();
         boolean changed = false;
         int gale = held(p, "gale_strike");
-        if (gale > 0 && chance(0.3 * gale)) {
-            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 60, 0));
+        if (gale > 0 && chance("gale_strike", 0.3, gale)) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
+                    manager.duration("gale_strike", 60), 0));
             victim.setVelocity(victim.getLocation().getDirection().multiply(1.5).setY(0.6));
         }
         int thunder = held(p, "thunder_clap");
-        if (thunder > 0 && chance(0.15 * thunder)) {
+        if (thunder > 0 && chance("thunder_clap", 0.15, thunder)) {
             victim.getWorld().strikeLightningEffect(victim.getLocation());
-            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 100, 3));
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
+                    manager.duration("thunder_clap", 100), 3));
             dmg *= 1.3;
             changed = true;
         }
         int sunder = held(p, "sunder");
-        if (sunder > 0 && chance(0.25 * sunder)) {
+        if (sunder > 0 && chance("sunder", 0.25, sunder)) {
             dmg += 2.0 * sunder; // 破甲重击
             changed = true;
         }
@@ -224,12 +231,13 @@ public final class NewEnchantListener implements Listener {
             changed = true;
         }
         int rend = held(p, "rend");
-        if (rend > 0 && chance(0.3 * rend)) {
-            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 80, 1));
+        if (rend > 0 && chance("rend", 0.3, rend)) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
+                    manager.duration("rend", 80), 1));
             victim.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 40, 0));
         }
         int stagger = held(p, "stagger");
-        if (stagger > 0 && chance(0.25 * stagger)) {
+        if (stagger > 0 && chance("stagger", 0.25, stagger)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 60, 0));
         }
         int ghost = held(p, "ghost_blade");
@@ -238,7 +246,7 @@ public final class NewEnchantListener implements Listener {
             changed = true;
         }
         int echo = held(p, "echo_strike");
-        if (echo > 0 && chance(0.2 * echo)) {
+        if (echo > 0 && chance("echo_strike", 0.2, echo)) {
             dmg *= (1 + 0.4 * echo); // 多段爆发
             changed = true;
         }
@@ -278,7 +286,7 @@ public final class NewEnchantListener implements Listener {
                     le.damage(finalDmg * 0.5, p);
                 }
                 p.getWorld().playSound(p.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_ATTACK_CRIT, 1, 1);
-            } else if (counter > 0 && chance(0.2 * counter)) {
+            } else if (counter > 0 && chance("counter", 0.2, counter)) {
                 event.setDamage(event.getDamage() * 0.5);
                 if (damager instanceof LivingEntity le && le != p) {
                     le.damage(finalDmg * 0.5, p);
@@ -286,13 +294,13 @@ public final class NewEnchantListener implements Listener {
             }
         }
         // ghost_blade：概率闪避
-        if (held(p, "ghost_blade") > 0 && chance(0.12 * held(p, "ghost_blade"))) {
+        if (held(p, "ghost_blade") > 0 && chance("ghost_blade", 0.12, held(p, "ghost_blade"))) {
             event.setDamage(0);
             return;
         }
         // 护甲附魔
         int fortress = armorTotal(p, "fortress");
-        if (fortress > 0 && chance(0.25 * fortress)) {
+        if (fortress > 0 && chance("fortress", 0.25, fortress)) {
             event.setDamage(event.getDamage() * 0.4);
         }
         int aegis = armorTotal(p, "aegis");
@@ -308,11 +316,11 @@ public final class NewEnchantListener implements Listener {
             p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() + finalDmg * 0.2 * bloodArmor));
         }
         int divine = armorTotal(p, "divine_protection");
-        if (divine > 0 && chance(0.08 * divine)) {
+        if (divine > 0 && chance("divine_protection", 0.08, divine)) {
             event.setDamage(0);
         }
         int blessing = armorTotal(p, "blessing");
-        if (blessing > 0 && chance(0.2 * blessing)) {
+        if (blessing > 0 && chance("blessing", 0.2, blessing)) {
             for (PotionEffectType t : new PotionEffectType[]{
                     PotionEffectType.POISON, PotionEffectType.WITHER, PotionEffectType.WEAKNESS,
                     PotionEffectType.BLINDNESS, PotionEffectType.SLOWNESS}) {
@@ -372,7 +380,7 @@ public final class NewEnchantListener implements Listener {
             }
         }
         int rain = Enchants.level(bow, "arrow_rain");
-        if (rain > 0 && chance(0.15 * rain)) {
+        if (rain > 0 && chance("arrow_rain", 0.15, rain)) {
             for (int i = 0; i < rain * 3; i++) {
                 org.bukkit.Location loc = p.getTargetBlock(null, 30).getLocation()
                         .add(Math.random() * 4 - 2, 20, Math.random() * 4 - 2);
@@ -402,8 +410,8 @@ public final class NewEnchantListener implements Listener {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 60, 0));
         }
         int spark = Enchants.level(bow, "spark");
-        if (spark > 0 && chance(0.3 * spark)) {
-            victim.setFireTicks(60);
+        if (spark > 0 && chance("spark", 0.3, spark)) {
+            victim.setFireTicks(manager.duration("spark", 60));
             for (Entity e : victim.getNearbyEntities(2, 2, 2)) {
                 if (e instanceof LivingEntity le) {
                     le.setFireTicks(40);
@@ -435,13 +443,13 @@ public final class NewEnchantListener implements Listener {
         Block b = event.getBlock();
         Material m = b.getType();
         int greed = Enchants.level(held, "greed");
-        if (greed > 0 && chance(0.2 * greed) && m.isItem()) {
+        if (greed > 0 && chance("greed", 0.2, greed) && m.isItem()) {
             for (ItemStack it : b.getDrops(held)) {
                 b.getWorld().dropItemNaturally(b.getLocation(), it.clone());
             }
         }
         int resource = Enchants.level(held, "resourceful");
-        if (resource > 0 && isOre(m) && chance(0.15 * resource)) {
+        if (resource > 0 && isOre(m) && chance("resourceful", 0.15, resource)) {
             b.getWorld().dropItemNaturally(b.getLocation(), new ItemStack(m));
         }
         int fury = Enchants.level(held, "mining_fury");
@@ -496,7 +504,7 @@ public final class NewEnchantListener implements Listener {
                     new ItemStack(Material.GOLD_NUGGET, gold));
         }
         int lucky = Enchants.level(held, "lucky");
-        if (lucky > 0 && chance(0.1 * lucky)) {
+        if (lucky > 0 && chance("lucky", 0.1, lucky)) {
             for (ItemStack drop : new ArrayList<>(event.getDrops())) {
                 p.getWorld().dropItemNaturally(dead.getLocation(), drop.clone());
             }
@@ -521,5 +529,11 @@ public final class NewEnchantListener implements Listener {
             event.setKeepInventory(true);
             p.sendMessage(manager.prefix() + manager.color("&e时间护符护住了你的经验。"));
         }
+    }
+
+    /** 热重载时清理运行时状态（连击计数 / 标记目标），避免 reload 后残留旧数据 */
+    public void clearState() {
+        combo.clear();
+        marked.clear();
     }
 }

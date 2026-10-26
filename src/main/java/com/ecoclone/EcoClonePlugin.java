@@ -32,6 +32,7 @@ public final class EcoClonePlugin extends JavaPlugin {
     private EnchantManager manager;
     private GuiListener guiListener;
     private ArtifactListener artifactListener;
+    private NewEnchantListener newEnchantListener;
 
     public GuiListener guiListener() {
         return guiListener;
@@ -96,7 +97,8 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new AbyssBladeListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new HoeArtifactListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new WrathBladeListener(this, manager), this);
-            getServer().getPluginManager().registerEvents(new NewEnchantListener(this, manager), this);
+            newEnchantListener = new NewEnchantListener(this, manager);
+            getServer().getPluginManager().registerEvents(newEnchantListener, this);
         } catch (Throwable t) {
             getLogger().severe("AeathMC-pofengEnchants 启用失败，原因如下:");
             t.printStackTrace();
@@ -131,6 +133,10 @@ public final class EcoClonePlugin extends JavaPlugin {
 
     public void reload() {
         manager.load();
+        manager.clearCooldowns();
+        if (newEnchantListener != null) {
+            newEnchantListener.clearState();
+        }
         UtilityListener.reapply(Bukkit.getServer(), this);
     }
 }

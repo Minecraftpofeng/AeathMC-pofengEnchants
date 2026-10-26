@@ -231,6 +231,42 @@ public final class EnchantManager {
         return config.getDouble("default-cooldown", 3.0);
     }
 
+    /** 热重载时清空全部冷却记录 */
+    public void clearCooldowns() {
+        cooldowns.clear();
+    }
+
+    // ---------- 核心数值（config 生效：附魔 yml 的 config 段） ----------
+
+    /** 概率 clamp 到 [0,1]，防止配置里写入超界值导致必触发或永不触发 */
+    public static double clamp01(double v) {
+        return Math.max(0.0, Math.min(1.0, v));
+    }
+
+    /** 读取附魔触发概率（config.chance），缺省用 def，已 clamp 到 [0,1] */
+    public double chance(String key, double def) {
+        YamlConfiguration c = ench(key);
+        return c != null && c.contains("config.chance")
+                ? clamp01(c.getDouble("config.chance", def))
+                : clamp01(def);
+    }
+
+    /** 读取附魔持续时长（config.duration，单位 tick），缺省用 def，下限 0 */
+    public int duration(String key, int def) {
+        YamlConfiguration c = ench(key);
+        return c != null && c.contains("config.duration")
+                ? Math.max(0, c.getInt("config.duration", def))
+                : def;
+    }
+
+    /** 读取附魔独立冷却（config.cooldown 秒），缺省用 def，下限 0 */
+    public double cooldown(String key, double def) {
+        YamlConfiguration c = ench(key);
+        double v = c != null && c.contains("config.cooldown")
+                ? c.getDouble("config.cooldown", def) : def;
+        return Math.max(0, v);
+    }
+
     // ---------- 消息 ----------
 
     public String color(String s) {
