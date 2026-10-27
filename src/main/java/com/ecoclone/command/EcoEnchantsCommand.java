@@ -358,13 +358,115 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                         "&a已为 " + target.getName() + " 手持物品附加 " + args[1] + " " + level + "。"));
                 return true;
             }
+            case "gem" -> {
+                if (!sender.hasPermission("ecoenchants.command.gem")) {
+                    noPerm(sender);
+                    return true;
+                }
+                if (args.length < 2) {
+                    sender.sendMessage(manager.prefix() + manager.color(
+                            "&c用法：/ecoenchants gem <宝石> [数量] [玩家]   （宝石：ruby/sapphire/emerald/amethyst/topaz/onyx/diamond/dragon）"));
+                    return true;
+                }
+                com.ecoclone.GemManager.GemDef d = plugin.gemManager().get(args[1]);
+                if (d == null) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c找不到宝石 " + args[1] + "。"));
+                    return true;
+                }
+                int amount = args.length > 2 ? parseInt(args[2], 1) : 1;
+                Player target = resolvePlayer(sender, args.length > 3 ? args[3] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(plugin.gemManager().gemOf(d.key, 1, amount));
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&a已将宝石 " + d.name + " Lv.1 ×" + amount + " 给予 " + target.getName() + "。"));
+                return true;
+            }
+            case "socket" -> {
+                if (!sender.hasPermission("ecoenchants.command.socket")) {
+                    noPerm(sender);
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 2 ? args[2] : null);
+                if (target == null) {
+                    return true;
+                }
+                ItemStack held = target.getInventory().getItemInMainHand();
+                if (held == null || held.getType().isAir()) {
+                    sender.sendMessage(manager.prefix() + manager.msg("commands.no-item"));
+                    return true;
+                }
+                if (plugin.gemManager().locked(held)) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c该物品不支持开槽（书/卷轴/宝石）。"));
+                    return true;
+                }
+                int count = args.length > 1 ? parseInt(args[1], 1) : 1;
+                int base = plugin.gemManager().slotsOf(held);
+                int add = Math.max(1, count);
+                int total = Math.min(base + add, com.ecoclone.GemManager.MAX_SLOTS);
+                target.getInventory().setItemInMainHand(plugin.gemManager().setSlots(held, total));
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&a已为装备开槽至 &f" + total + "&a/&f" + com.ecoclone.GemManager.MAX_SLOTS + "。"));
+                return true;
+            }
+            case "gems" -> {
+                if (!sender.hasPermission("ecoenchants.command.gems")) {
+                    noPerm(sender);
+                    return true;
+                }
+                sender.sendMessage(manager.prefix() + manager.color("&6宝石一览："));
+                for (com.ecoclone.GemManager.GemDef g : plugin.gemManager().defs().values()) {
+                    String tgt = "weapon".equals(g.target) ? "武器" : "armor".equals(g.target) ? "护甲" : "通用";
+                    sender.sendMessage(manager.color(
+                            " &f" + g.key + " &7- &6" + g.name + " §7(" + tgt + ", Lv.1-" + g.maxLevel + ")"));
+                    sender.sendMessage(manager.color("   &8" + g.desc));
+                }
+                sender.sendMessage(manager.color("&7用 &e/ecoenchants gem <宝石> [数量] [玩家] &7获得，右键或背包点击镶嵌。"));
+                return true;
+            }
+            case "geminfo" -> {
+                if (!sender.hasPermission("ecoenchants.command.geminfo")) {
+                    noPerm(sender);
+                    return true;
+                }
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(manager.prefix() + manager.msg("commands.player-only"));
+                    return true;
+                }
+                ItemStack held = player.getInventory().getItemInMainHand();
+                if (held == null || held.getType().isAir()) {
+                    sender.sendMessage(manager.prefix() + manager.msg("commands.no-item"));
+                    return true;
+                }
+                int slots = plugin.gemManager().slotsOf(held);
+                var gemsList = plugin.gemManager().gemsOf(held);
+                sender.sendMessage(manager.prefix() + manager.color("&6宝石槽位：&f" + slots));
+                if (gemsList.isEmpty()) {
+                    sender.sendMessage(manager.color("&8◇ 未镶嵌任何宝石。"));
+                } else {
+                    for (com.ecoclone.GemManager.SlotEntry ge : gemsList) {
+                        var gd = plugin.gemManager().get(ge.key);
+                        sender.sendMessage(manager.color(" &f" + (gd == null ? ge.key : gd.name)
+                                + " §7Lv." + ge.level));
+                    }
+                }
+                return true;
+            }
             default -> sender.sendMessage(manager.prefix() + manager.msg("commands.invalid-args"));
         }
         return true;
     }
 
-    private Player resolvePlayer(CommandSender sender, String name) {
-        if (name != null) {
+    private static int parseInt(String s, int def) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return def;
+        }
+    }
+
+    private Player resolvePlayer(CommandSender sender, String name) {        if (name != null) {
             Player p = Bukkit.getPlayerExact(name);
             if (p == null) {
                 sender.sendMessage(manager.prefix() + manager.msg("commands.player-not-found")

@@ -33,6 +33,8 @@ public final class EcoClonePlugin extends JavaPlugin {
     private GuiListener guiListener;
     private ArtifactListener artifactListener;
     private NewEnchantListener newEnchantListener;
+    private GemManager gemManager;
+    private GemListener gemListener;
 
     public GuiListener guiListener() {
         return guiListener;
@@ -40,6 +42,10 @@ public final class EcoClonePlugin extends JavaPlugin {
 
     public ArtifactListener artifactListener() {
         return artifactListener;
+    }
+
+    public GemManager gemManager() {
+        return gemManager;
     }
 
     private void registerCommand(String name, CommandExecutor executor) {
@@ -99,6 +105,11 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new WrathBladeListener(this, manager), this);
             newEnchantListener = new NewEnchantListener(this, manager);
             getServer().getPluginManager().registerEvents(newEnchantListener, this);
+
+            gemManager = new GemManager(this);
+            gemListener = new GemListener(this);
+            getServer().getPluginManager().registerEvents(gemListener, this);
+            gemListener.startTick();
         } catch (Throwable t) {
             getLogger().severe("AeathMC-pofengEnchants 启用失败，原因如下:");
             t.printStackTrace();
