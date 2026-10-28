@@ -103,6 +103,26 @@ public final class GemManager {
                 "穿戴时伤害吸收 Lv，受击减免 2%×Lv"));
         defs.put("dragon", new GemDef("dragon", "龙鳞", Material.NETHERITE_SCRAP, "&#B388FF", "both", 5,
                 "武器：全伤害 +3%×Lv；穿戴：力量+抗性 Lv"));
+        defs.put("moonstone", new GemDef("moonstone", "月光石", Material.QUARTZ, "&#C0C0FF", "armor", 5,
+                "穿戴时获得夜视 Lv 与速度 Lv"));
+        defs.put("tiger_eye", new GemDef("tiger_eye", "虎眼石", Material.BROWN_DYE, "&#C98A2D", "weapon", 5,
+                "命中追加 Lv 点伤害，命中后自身获得力量 Lv（1 秒）"));
+        defs.put("aquamarine", new GemDef("aquamarine", "海蓝宝石", Material.LIGHT_BLUE_DYE, "&#7FE0FF", "armor", 5,
+                "穿戴时获得水下呼吸与速度 Lv"));
+        defs.put("sunstone", new GemDef("sunstone", "日耀石", Material.GLOWSTONE_DUST, "&#FFC94D", "both", 5,
+                "武器：命中 30% 概率点燃 Lv 秒；穿戴：火抗+急迫 Lv"));
+        defs.put("spinel", new GemDef("spinel", "尖晶石", Material.PINK_DYE, "&#FF4D8D", "armor", 5,
+                "穿戴时受击反射 5%×Lv 的伤害给攻击者"));
+        defs.put("malachite", new GemDef("malachite", "孔雀石", Material.GREEN_DYE, "&#3DDC8E", "armor", 5,
+                "穿戴时急迫 Lv 与速度 Lv（挖矿提速）"));
+        defs.put("shadowstone", new GemDef("shadowstone", "影石", Material.GRAY_DYE, "&#6B5BFF", "armor", 5,
+                "穿戴时获得夜视与隐身 Lv"));
+        defs.put("starstone", new GemDef("starstone", "星辰石", Material.PRISMARINE_CRYSTALS, "&#5B7BFF", "both", 5,
+                "武器：命中 10%×Lv 概率引雷；穿戴：抗性 Lv+伤害吸收"));
+        defs.put("vitality", new GemDef("vitality", "生命石", Material.REDSTONE_BLOCK, "&#FF6E6E", "armor", 5,
+                "穿戴时生命恢复 Lv 与伤害吸收 Lv"));
+        defs.put("arcane", new GemDef("arcane", "秘法石", Material.MAGENTA_DYE, "&#A55AFF", "both", 5,
+                "武器：全伤 +1%×Lv，命中自身速度 Lv（1 秒）；穿戴：力量+速度 Lv"));
     }
 
     // ---------- 访问器 ----------
@@ -211,6 +231,7 @@ public final class GemManager {
     // ---------- 宝石与装备部位匹配 ----------
 
     private static boolean isArmorType(Material t) {
+        if (t == Material.ELYTRA) return true;
         String n = t.name();
         return n.endsWith("_HELMET") || n.endsWith("_CHESTPLATE")
                 || n.endsWith("_LEGGINGS") || n.endsWith("_BOOTS");
@@ -220,7 +241,7 @@ public final class GemManager {
         String n = t.name();
         return n.endsWith("_SWORD") || n.endsWith("_AXE") || n.endsWith("_TRIDENT")
                 || n.endsWith("_BOW") || n.endsWith("_CROSSBOW") || n.endsWith("_MACE")
-                || n.endsWith("_SHIELD");
+                || n.endsWith("_SHIELD") || n.endsWith("_HOE");
     }
 
     /** 装备部位：weapon / armor / both（工具等通用装备只接受通用宝石） */

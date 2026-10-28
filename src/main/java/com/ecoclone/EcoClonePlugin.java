@@ -71,6 +71,8 @@ public final class EcoClonePlugin extends JavaPlugin {
             getLogger().info("正在启用 AeathMC-pofengEnchants...");
             manager = new EnchantManager(this);
             manager.load();
+            detectVersion();
+            checkUpdate(true);
             int n = Enchants.loadFromRegistry();
             getLogger().info("已启用 " + n + " 个自定义附魔。");
             sendSplash();
@@ -119,6 +121,103 @@ public final class EcoClonePlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         UtilityListener.clearAll(Bukkit.getServer());
+    }
+
+    /** 启动时检测服务端 MC 版本是否在支持范围 1.21.x - 1.26.3 内 */
+    public boolean detectVersion() {
+        int[] v = parseMcVersion(Bukkit.getBukkitVersion());
+        if (v == null) {
+            getLogger().warning("版本检测失败：无法解析服务端版本 " + Bukkit.getBukkitVersion());
+            return false;
+        }
+        boolean ok = inSupportedRange(v);
+        String disp = v[0] + "." + v[1] + (v[2] > 0 ? "." + v[2] : "");
+        console("服务端版本检测 (Server version check): MC " + disp
+                + " - " + (ok ? "兼容 Compatible" : "超出支持范围 Out of range")
+                + " | 支持范围 Supported: 1.21.x - 1.26.3");
+        if (!ok) {
+            console("警告 WARNING: 当前 MC " + disp + " 不在支持范围 1.21.x-1.26.3 内，部分功能可能异常。");
+        }
+        return ok;
+    }
+
+    /** 带统一前缀的控制台输出（前缀固定，不动插件名以免破坏 PDC 数据） */
+    private void console(String msg) {
+        getServer().getConsoleSender().sendMessage("§7[AeathMC-pofengEnchan] §f" + msg);
+    }
+
+    /** 检测 GitHub 最新 release，有新版时提醒控制台与在线玩家 */
+    public void checkUpdate(boolean notifyPlayers) {
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            String latest = fetchLatestTag();
+            String cur = getDescription().getVersion();
+            if (latest == null) {
+                console("更新检测失败：无法访问 GitHub API（检查网络/加速器）。");
+                return;
+            }
+            boolean hasNew = !latest.equalsIgnoreCase(cur);
+            console("更新检查 Update check: 当前 Current " + cur
+                    + " | 最新 Latest " + latest
+                    + (hasNew ? " - 有更新 New version available!" : " - 已是最新 Up to date"));
+            if (hasNew && notifyPlayers) {
+                getServer().getScheduler().runTask(this, () ->
+                        Bukkit.broadcastMessage("§6[AeathMC-pofengEnchan] §e检测到新版本 §f" + latest
+                                + " §e（当前 " + cur + "），请到 GitHub 下载更新插件！"));
+            }
+        });
+    }
+
+    private String fetchLatestTag() {
+        try {
+            java.net.URL u = new java.net.URL(
+                    "https://api.github.com/repos/Minecraftpofeng/AeathMC-pofengEnchants/releases/latest");
+            java.net.HttpURLConnection c = (java.net.HttpURLConnection) u.openConnection();
+            c.setConnectTimeout(4000);
+            c.setReadTimeout(4000);
+            c.setRequestProperty("Accept", "application/vnd.github+json");
+            c.setRequestProperty("User-Agent", "AeathMC-pofengEnchants");
+            int code = c.getResponseCode();
+            if (code != 200) {
+                c.disconnect();
+                return null;
+            }
+            java.io.BufferedReader r = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(c.getInputStream(), java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = r.readLine()) != null) sb.append(line);
+            r.close();
+            c.disconnect();
+            java.util.regex.Matcher m = java.util.regex.Pattern
+                    .compile("\"tag_name\"\\s*:\\s*\"([^\"]+)\"").matcher(sb.toString());
+            return m.find() ? m.group(1) : null;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private static int[] parseMcVersion(String s) {
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(\\d+)\\.(\\d+)(?:\\.(\\d+))?").matcher(s);
+        if (!m.find()) return null;
+        return new int[]{
+                Integer.parseInt(m.group(1)),
+                Integer.parseInt(m.group(2)),
+                m.group(3) == null ? 0 : Integer.parseInt(m.group(3))
+        };
+    }
+
+    private static boolean inSupportedRange(int[] v) {
+        if (compareVersion(v, 1, 21, 0) < 0) return false;
+        return compareVersion(v, 1, 26, 3) <= 0;
+    }
+
+    private static int compareVersion(int[] a, int x, int y, int z) {
+        int[] b = {x, y, z};
+        for (int i = 0; i < 3; i++) {
+            if (a[i] != b[i]) return Integer.compare(a[i], b[i]);
+        }
+        return 0;
     }
 
     /** 启动鸣谢弹幕：控制台 + 在线玩家各弹两行（Adventure 组件，16 进制颜色，中文后附英文） */

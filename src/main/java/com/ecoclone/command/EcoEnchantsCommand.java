@@ -383,6 +383,32 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                         + manager.color("&a已将宝石 " + d.name + " Lv.1 ×" + amount + " 给予 " + target.getName() + "。"));
                 return true;
             }
+            case "gemlv" -> {
+                if (!sender.hasPermission("ecoenchants.command.gem")) {
+                    noPerm(sender);
+                    return true;
+                }
+                if (args.length < 3) {
+                    sender.sendMessage(manager.prefix() + manager.color(
+                            "&c用法：/ecoenchants gemlv <宝石> <等级> [玩家]   （等级 1-5）"));
+                    return true;
+                }
+                com.ecoclone.GemManager.GemDef d = plugin.gemManager().get(args[1]);
+                if (d == null) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c找不到宝石 " + args[1] + "。"));
+                    return true;
+                }
+                int lv = parseInt(args[2], 1);
+                lv = Math.max(1, Math.min(lv, d.maxLevel));
+                Player target = resolvePlayer(sender, args.length > 3 ? args[3] : null);
+                if (target == null) {
+                    return true;
+                }
+                target.getInventory().addItem(plugin.gemManager().gemOf(d.key, lv, 1));
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&a已将宝石 " + d.name + " Lv." + lv + " 给予 " + target.getName() + "。"));
+                return true;
+            }
             case "socket" -> {
                 if (!sender.hasPermission("ecoenchants.command.socket")) {
                     noPerm(sender);
@@ -423,6 +449,35 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                     sender.sendMessage(manager.color("   &8" + g.desc));
                 }
                 sender.sendMessage(manager.color("&7用 &e/ecoenchants gem <宝石> [数量] [玩家] &7获得，右键或背包点击镶嵌。"));
+                sender.sendMessage(manager.color("&7发指定等级用 &e/ecoenchants gemlv <宝石> <等级1-5> [玩家]&7。"));
+                return true;
+            }
+            case "version" -> {
+                sender.sendMessage(manager.prefix() + manager.color("&6AeathMC-pofengEnchants 版本信息："));
+                sender.sendMessage(manager.color("  &7插件版本 Plugin Version: &f" + plugin.getDescription().getVersion()));
+                String bv = org.bukkit.Bukkit.getBukkitVersion();
+                sender.sendMessage(manager.color("  &7服务端版本 Server Version: &f" + bv));
+                sender.sendMessage(manager.color("  &7支持范围 Supported: &f1.21.x - 1.26.3"));
+                java.util.regex.Matcher m = java.util.regex.Pattern
+                        .compile("(\\d+)\\.(\\d+)(?:\\.(\\d+))?").matcher(bv);
+                if (m.find()) {
+                    int[] v = { Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)),
+                            m.group(3) == null ? 0 : Integer.parseInt(m.group(3)) };
+                    boolean ok = true;
+                    if (v[0] < 1 || (v[0] == 1 && v[1] < 21)) ok = false;
+                    if (v[0] > 1 || (v[0] == 1 && v[1] > 26)
+                            || (v[0] == 1 && v[1] == 26 && v[2] > 3)) ok = false;
+                    sender.sendMessage(manager.color("  &7检测结果 Result: &"
+                            + (ok ? "a兼容 Compatible" : "c超出支持范围 Out of range")));
+                } else {
+                    sender.sendMessage(manager.color("  &c无法解析服务端版本。"));
+                }
+                return true;
+            }
+            case "update" -> {
+                sender.sendMessage(manager.prefix()
+                        + manager.color("&a已发起更新检查，结果请看控制台（[AeathMC-pofengEnchan] 前缀）。"));
+                plugin.checkUpdate(true);
                 return true;
             }
             case "geminfo" -> {

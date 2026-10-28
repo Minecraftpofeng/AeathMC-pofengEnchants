@@ -17,9 +17,10 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
 
 /**
  * 宝石效果与镶嵌监听器。
@@ -52,21 +53,42 @@ public final class GemListener implements Listener {
         ItemStack main = inv.getItemInMainHand();
         ItemStack off = inv.getItemInOffHand();
 
-        if (gems.isGem(off) && gems.canSocket(main)) {
-            if (!gems.compatible(main, off)) {
-                GemManager.GemDef d = gems.gemDef(off);
+        ItemStack gem = null;
+        ItemStack equip = null;
+        boolean gemInMain = false;
+        if (gems.isGem(main) && off != null && !off.getType().isAir()) {
+            gem = main; equip = off; gemInMain = true;
+        } else if (gems.isGem(off) && main != null && !main.getType().isAir()) {
+            gem = off; equip = main;
+        }
+        if (gem != null && equip != null) {
+            if (!gems.compatible(equip, gem)) {
+                GemManager.GemDef d = gems.gemDef(gem);
                 String where = d != null && "weapon".equals(d.target) ? "武器" : "护甲";
                 p.sendMessage(plugin.manager().prefix()
                         + plugin.manager().color("&c该宝石只能镶嵌在 " + where + " 上。"));
                 return;
             }
-            ItemStack updated = gems.insert(main, off);
-            if (updated != null) {
-                inv.setItemInMainHand(updated);
-                off.setAmount(off.getAmount() - 1);
-                GemManager.GemDef d = gems.gemDef(off);
+            if (gems.slotsOf(equip) <= 0) {
                 p.sendMessage(plugin.manager().prefix()
-                        + plugin.manager().color("&a已镶嵌 " + (d == null ? "宝石" : d.name) + " §7Lv." + gems.gemLevel(off)));
+                        + plugin.manager().color("&c该装备尚未开槽，先用 &e/ecoenchants socket"));
+                e.setCancelled(true);
+                return;
+            }
+            if (!gems.canSocket(equip)) {
+                p.sendMessage(plugin.manager().prefix()
+                        + plugin.manager().color("&c宝石槽已满，无法再镶嵌。"));
+                e.setCancelled(true);
+                return;
+            }
+            ItemStack updated = gems.insert(equip, gem);
+            if (updated != null) {
+                if (gemInMain) inv.setItemInOffHand(updated);
+                else inv.setItemInMainHand(updated);
+                gem.setAmount(gem.getAmount() - 1);
+                GemManager.GemDef d = gems.gemDef(gem);
+                p.sendMessage(plugin.manager().prefix()
+                        + plugin.manager().color("&a已镶嵌 " + (d == null ? "宝石" : d.name) + " §7Lv." + gems.gemLevel(gem)));
                 e.setCancelled(true);
                 return;
             }
@@ -106,6 +128,18 @@ public final class GemListener implements Listener {
                 String where = d != null && "weapon".equals(d.target) ? "武器" : "护甲";
                 p.sendMessage(plugin.manager().prefix()
                         + plugin.manager().color("&c该宝石只能镶嵌在 " + where + " 上。"));
+                return;
+            }
+            if (gems.slotsOf(current) <= 0) {
+                p.sendMessage(plugin.manager().prefix()
+                        + plugin.manager().color("&c该装备尚未开槽，先用 &e/ecoenchants socket"));
+                e.setCancelled(true);
+                return;
+            }
+            if (!gems.canSocket(current)) {
+                p.sendMessage(plugin.manager().prefix()
+                        + plugin.manager().color("&c宝石槽已满，无法再镶嵌。"));
+                e.setCancelled(true);
                 return;
             }
             ItemStack updated = gems.insert(current, cursor);
@@ -162,6 +196,24 @@ public final class GemListener implements Listener {
                     if (rnd.nextDouble() < 0.05 * lv) crit = true;
                 }
                 case "dragon" -> dmg *= (1 + 0.03 * lv);
+                case "tiger_eye" -> {
+                    dmg += lv;
+                    attacker.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 20, lv - 1, false, false, false));
+                }
+                case "sunstone" -> {
+                    if (rnd.nextDouble() < 0.30 && e.getEntity() instanceof LivingEntity le) {
+                        le.setFireTicks(Math.max(le.getFireTicks(), lv * 20));
+                    }
+                }
+                case "starstone" -> {
+                    if (rnd.nextDouble() < 0.10 * lv) {
+                        e.getEntity().getWorld().strikeLightning(e.getEntity().getLocation());
+                    }
+                }
+                case "arcane" -> {
+                    dmg *= (1 + 0.01 * lv);
+                    attacker.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20, lv - 1, false, false, false));
+                }
                 default -> {
                 }
             }
@@ -170,20 +222,28 @@ public final class GemListener implements Listener {
         e.setDamage(dmg);
     }
 
-    // ---------- 受击减伤（钻石之心，护甲） ----------
+    // ---------- 受击（钻石之心减伤 / 尖晶石反伤） ----------
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onHurt(EntityDamageEvent e) {
         if (!(e.getEntity() instanceof Player p)) return;
-        double reduce = 0;
+        double reduce = 0, reflect = 0;
         for (ItemStack piece : p.getInventory().getArmorContents()) {
             if (piece == null || piece.getType().isAir() || !gems.hasGems(piece)) continue;
             for (GemManager.SlotEntry gem : gems.gemsOf(piece)) {
                 if ("diamond".equals(gem.key)) reduce += 0.02 * gem.level;
+                else if ("spinel".equals(gem.key)) reflect += 0.05 * gem.level;
             }
         }
+        double dmg = e.getDamage();
         if (reduce > 0) {
-            e.setDamage(e.getDamage() * (1 - Math.min(reduce, 0.6)));
+            dmg *= (1 - Math.min(reduce, 0.6));
+            e.setDamage(dmg);
+        }
+        if (reflect > 0 && e instanceof EntityDamageByEntityEvent be
+                && be.getDamager() instanceof LivingEntity dl) {
+            double r = e.getFinalDamage() * Math.min(reflect, 0.6);
+            if (r > 0) dl.damage(r);
         }
     }
 
@@ -201,29 +261,62 @@ public final class GemListener implements Listener {
     }
 
     private void applyArmorGems(Player p) {
-        boolean regen = false, resist = false, absorb = false, haste = false, dragon = false;
-        int regenLv = 0, resistLv = 0, absorbLv = 0, hasteLv = 0, dragonLv = 0;
+        Map<PotionEffectType, Integer> fx = new HashMap<>();
+        double absorb = 0;
         for (ItemStack piece : p.getInventory().getArmorContents()) {
             if (piece == null || piece.getType().isAir() || !gems.hasGems(piece)) continue;
             for (GemManager.SlotEntry gem : gems.gemsOf(piece)) {
+                int lv = gem.level;
                 switch (gem.key) {
-                    case "emerald" -> { regen = true; regenLv = Math.max(regenLv, gem.level); }
-                    case "amethyst" -> { resist = true; resistLv = Math.max(resistLv, gem.level); }
-                    case "diamond" -> { absorb = true; absorbLv = Math.max(absorbLv, gem.level); }
-                    case "topaz" -> { haste = true; hasteLv = Math.max(hasteLv, gem.level); }
-                    case "dragon" -> { dragon = true; dragonLv = Math.max(dragonLv, gem.level); }
+                    case "emerald" -> fx.merge(PotionEffectType.REGENERATION, lv, Math::max);
+                    case "amethyst" -> fx.merge(PotionEffectType.RESISTANCE, lv, Math::max);
+                    case "diamond" -> absorb = Math.max(absorb, lv);
+                    case "topaz" -> fx.merge(PotionEffectType.HASTE, lv, Math::max);
+                    case "dragon" -> {
+                        fx.merge(PotionEffectType.STRENGTH, lv, Math::max);
+                        fx.merge(PotionEffectType.RESISTANCE, lv, Math::max);
+                    }
+                    case "moonstone" -> {
+                        fx.merge(PotionEffectType.NIGHT_VISION, lv, Math::max);
+                        fx.merge(PotionEffectType.SPEED, lv, Math::max);
+                    }
+                    case "aquamarine" -> {
+                        fx.merge(PotionEffectType.WATER_BREATHING, lv, Math::max);
+                        fx.merge(PotionEffectType.SPEED, lv, Math::max);
+                    }
+                    case "sunstone" -> {
+                        fx.merge(PotionEffectType.FIRE_RESISTANCE, lv, Math::max);
+                        fx.merge(PotionEffectType.HASTE, lv, Math::max);
+                    }
+                    case "malachite" -> {
+                        fx.merge(PotionEffectType.HASTE, lv, Math::max);
+                        fx.merge(PotionEffectType.SPEED, lv, Math::max);
+                    }
+                    case "shadowstone" -> {
+                        fx.merge(PotionEffectType.NIGHT_VISION, lv, Math::max);
+                        fx.merge(PotionEffectType.INVISIBILITY, lv, Math::max);
+                    }
+                    case "starstone" -> {
+                        fx.merge(PotionEffectType.RESISTANCE, lv, Math::max);
+                        absorb = Math.max(absorb, lv);
+                    }
+                    case "vitality" -> {
+                        fx.merge(PotionEffectType.REGENERATION, lv, Math::max);
+                        absorb = Math.max(absorb, lv);
+                    }
+                    case "arcane" -> {
+                        fx.merge(PotionEffectType.STRENGTH, lv, Math::max);
+                        fx.merge(PotionEffectType.SPEED, lv, Math::max);
+                    }
                     default -> {
                     }
                 }
             }
         }
-        if (regen) p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 80, regenLv - 1, false, false, false));
-        if (resist) p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 80, resistLv - 1, false, false, false));
-        if (haste) p.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 80, hasteLv - 1, false, false, false));
-        if (absorb) p.setAbsorptionAmount(Math.max(p.getAbsorptionAmount(), 2.0 * absorbLv));
-        if (dragon) {
-            p.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 80, dragonLv - 1, false, false, false));
-            p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 80, dragonLv - 1, false, false, false));
+        fx.forEach((type, lv) ->
+                p.addPotionEffect(new PotionEffect(type, 80, lv - 1, false, false, false)));
+        if (absorb > 0) {
+            p.setAbsorptionAmount(Math.max(p.getAbsorptionAmount(), 2.0 * absorb));
         }
     }
 }
