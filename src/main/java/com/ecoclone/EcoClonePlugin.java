@@ -16,6 +16,7 @@ import com.ecoclone.listener.DawnBladeListener;
 import com.ecoclone.listener.AbyssBladeListener;
 import com.ecoclone.listener.HoeArtifactListener;
 import com.ecoclone.listener.WrathBladeListener;
+import com.ecoclone.listener.ArmorArtifactListener;
 import com.ecoclone.listener.NewEnchantListener;
 import com.ecoclone.listener.UtilityListener;
 import net.kyori.adventure.text.Component;
@@ -105,6 +106,7 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new AbyssBladeListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new HoeArtifactListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new WrathBladeListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new ArmorArtifactListener(this, manager), this);
             newEnchantListener = new NewEnchantListener(this, manager);
             getServer().getPluginManager().registerEvents(newEnchantListener, this);
 

@@ -1059,6 +1059,123 @@ public final class EnchantManager {
         }
     }
 
+    // ==================== 概念性防具 · 无尽系列（4 件套，绑定 ClowmPierce） ====================
+
+    public static final String ARMOR_OWNER = "ClowmPierce";
+
+    /** 是否为无尽系列防具 */
+    public boolean isArmorArtifact(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .has(new NamespacedKey(plugin, "armor_artifact"), PersistentDataType.BOOLEAN);
+    }
+
+    /** 部位：helmet / chest / legs / boots */
+    public String armorPiece(ItemStack item) {
+        if (!isArmorArtifact(item)) {
+            return null;
+        }
+        return item.getItemMeta().getPersistentDataContainer()
+                .get(new NamespacedKey(plugin, "armor_piece"), PersistentDataType.STRING);
+    }
+
+    /** 绑定判断：本人 ClowmPierce / Minecraft_pofeng */
+    public boolean isArmorOwner(String name) {
+        return name != null && (name.equals(ARMOR_OWNER) || name.equals("Minecraft_pofeng"));
+    }
+
+    public String armorName(String piece) {
+        return switch (piece) {
+            case "helmet" -> "无尽头盔·寰宇支配";
+            case "chest" -> "无尽胸甲·世界崩解";
+            case "legs" -> "无尽护腿·自然荒芜";
+            default -> "无尽鞋子·星球吞噬";
+        };
+    }
+
+    public Material armorMat(String piece) {
+        return switch (piece) {
+            case "helmet" -> Material.NETHERITE_HELMET;
+            case "chest" -> Material.NETHERITE_CHESTPLATE;
+            case "legs" -> Material.NETHERITE_LEGGINGS;
+            default -> Material.NETHERITE_BOOTS;
+        };
+    }
+
+    public String ownerBonusName(String piece) {
+        return switch (piece) {
+            case "helmet" -> "怒火中烧";
+            case "chest" -> "终结";
+            case "legs" -> "审判之眼";
+            default -> "暗黑戒指";
+        };
+    }
+
+    public Component armorNameComponent(String piece) {
+        return gradient(armorName(piece), 120, 220, 255, 200, 120, 255)
+                .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD);
+    }
+
+    /** 创建单件无尽防具 */
+    public ItemStack armorArtifact(String piece) {
+        ItemStack it = new ItemStack(armorMat(piece));
+        it.editMeta(meta -> {
+            meta.displayName(armorNameComponent(piece));
+            meta.lore(armorLore(piece));
+            var pdc = meta.getPersistentDataContainer();
+            pdc.set(new NamespacedKey(plugin, "armor_artifact"), PersistentDataType.BOOLEAN, true);
+            pdc.set(new NamespacedKey(plugin, "armor_piece"), PersistentDataType.STRING, piece);
+            meta.setUnbreakable(true);
+            meta.setAttributeModifiers(com.google.common.collect.ImmutableMultimap.of());
+            meta.addAttributeModifier(org.bukkit.attribute.Attribute.GENERIC_KNOCKBACK_RESISTANCE,
+                    new org.bukkit.attribute.AttributeModifier(
+                            new NamespacedKey(plugin, "armor_kb_" + piece), 1.0,
+                            org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER,
+                            org.bukkit.inventory.EquipmentSlotGroup.ANY));
+        });
+        java.util.Map<Enchantment, Integer> ench = new java.util.HashMap<>();
+        ench.put(Enchantment.PROTECTION, 50);
+        ench.put(Enchantment.BLAST_PROTECTION, 50);
+        ench.put(Enchantment.FIRE_PROTECTION, 50);
+        ench.put(Enchantment.PROJECTILE_PROTECTION, 50);
+        ench.put(Enchantment.FEATHER_FALLING, 50);
+        ench.put(Enchantment.RESPIRATION, 50);
+        ench.put(Enchantment.DEPTH_STRIDER, 50);
+        ench.put(Enchantment.FROST_WALKER, 5);
+        ench.put(Enchantment.SWIFT_SNEAK, 10);
+        ench.put(Enchantment.THORNS, 80);
+        ench.put(Enchantment.UNBREAKING, 50);
+        ench.put(Enchantment.LUCK_OF_THE_SEA, 50);
+        it.addUnsafeEnchantments(ench);
+        return it;
+    }
+
+    public List<Component> armorLore(String piece) {
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(color("&7Lv.&fInfinity")));
+        lore.add(Component.text(color("&8无尽防具系列 · 概念性防御")));
+        lore.add(Component.text(color("&6专属绑定：&fClowmPierce")));
+        lore.add(Component.text(color("&8特性：&f巫师袍2 / 概念性防御3 / 无尽反应胸甲 / 衔尾蛇2 / 龙之愤怒 / 无尽力量 / 魔童")));
+        lore.add(Component.text(color("&e专属 " + armorName(piece) + "：")));
+        switch (piece) {
+            case "helmet" -> lore.add(Component.text(color("  &d寰宇支配&7：持剑者伤害+30%（无视强制限伤）")));
+            case "chest" -> lore.add(Component.text(color("  &d世界崩解&7：额外潜影箱（潜行+左键打开）")));
+            case "legs" -> lore.add(Component.text(color("  &d自然荒芜&7：潜行+右键，15格内植物枯萎（冷却180s）")));
+            default -> lore.add(Component.text(color("  &d星球吞噬&7：铲子挖掘范围提升至3x3")));
+        }
+        if ("helmet".equals(piece) || "chest".equals(piece)) {
+            lore.add(Component.text(color("  &d地蕴复生&7：生命恢复速度+15%")));
+        }
+        if ("legs".equals(piece) || "boots".equals(piece)) {
+            lore.add(Component.text(color("  &d天堂陨落&7：弓造成的伤害+100%")));
+        }
+        lore.add(Component.text(color("&8穿齐4件：全套无尽药水buff（30s）+ 全套抗性减免")));
+        lore.add(Component.text(color("&7绑定者 ClowmPierce 装备时解锁专属：&d" + ownerBonusName(piece))));
+        return lore;
+    }
+
     public YamlConfiguration rawConfig() {
         return config;
     }

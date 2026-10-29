@@ -177,6 +177,56 @@ public final class GemListener implements Listener {
         boolean crit = false;
         for (GemManager.SlotEntry gem : gems.gemsOf(main)) {
             int lv = gem.level;
+            GemManager.GemDef d = gems.get(gem.key);
+            if (d != null && d.fx != null) {
+                // 新宝石：fx 效果模板
+                switch (d.fx) {
+                    case "DMG_FLAT" -> dmg += lv;
+                    case "DMG_PCT" -> dmg *= (1 + 0.02 * lv);
+                    case "FIRE" -> {
+                        if (e.getEntity() instanceof LivingEntity le) {
+                            le.setFireTicks(Math.max(le.getFireTicks(), lv * 20));
+                        }
+                    }
+                    case "SLOWNESS" -> {
+                        if (e.getEntity() instanceof LivingEntity le) {
+                            le.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40, lv - 1, false, false, false));
+                        }
+                    }
+                    case "POISON" -> {
+                        if (e.getEntity() instanceof LivingEntity le) {
+                            le.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 60, lv - 1, false, false, false));
+                        }
+                    }
+                    case "WITHER" -> {
+                        if (e.getEntity() instanceof LivingEntity le) {
+                            le.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 60, lv - 1, false, false, false));
+                        }
+                    }
+                    case "LIGHTNING" -> {
+                        if (rnd.nextDouble() < 0.10 * lv) {
+                            e.getEntity().getWorld().strikeLightning(e.getEntity().getLocation());
+                        }
+                    }
+                    case "LIFESTEAL" -> attacker.setHealth(Math.min(attacker.getMaxHealth(),
+                            attacker.getHealth() + e.getDamage() * 0.05 * lv));
+                    case "CRIT" -> {
+                        if (rnd.nextDouble() < 0.05 * lv) crit = true;
+                    }
+                    case "TRUE_DMG" -> {
+                        if (rnd.nextDouble() < 0.05 * lv && e.getEntity() instanceof LivingEntity le) {
+                            le.damage(e.getDamage() * 0.5, attacker);
+                        }
+                    }
+                    case "SPEED_ON_HIT" -> attacker.addPotionEffect(
+                            new PotionEffect(PotionEffectType.SPEED, 20, lv - 1, false, false, false));
+                    case "STRENGTH_ON_HIT" -> attacker.addPotionEffect(
+                            new PotionEffect(PotionEffectType.STRENGTH, 20, lv - 1, false, false, false));
+                    default -> {
+                    }
+                }
+                continue;
+            }
             switch (gem.key) {
                 case "ruby" -> {
                     dmg *= (1 + 0.02 * lv);
@@ -213,6 +263,22 @@ public final class GemListener implements Listener {
                 case "arcane" -> {
                     dmg *= (1 + 0.01 * lv);
                     attacker.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20, lv - 1, false, false, false));
+                }
+                case "frost" -> {
+                    dmg += lv;
+                    if (e.getEntity() instanceof LivingEntity le) {
+                        le.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40, lv - 1, false, false, false));
+                    }
+                }
+                case "venom" -> {
+                    if (e.getEntity() instanceof LivingEntity le) {
+                        le.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 60, lv - 1, false, false, false));
+                    }
+                }
+                case "void" -> {
+                    if (rnd.nextDouble() < 0.05 * lv && e.getEntity() instanceof LivingEntity le) {
+                        le.damage(e.getDamage() * 0.5, attacker);
+                    }
                 }
                 default -> {
                 }
@@ -267,6 +333,26 @@ public final class GemListener implements Listener {
             if (piece == null || piece.getType().isAir() || !gems.hasGems(piece)) continue;
             for (GemManager.SlotEntry gem : gems.gemsOf(piece)) {
                 int lv = gem.level;
+                GemManager.GemDef d = gems.get(gem.key);
+                if (d != null && d.fx != null) {
+                    // 新宝石：fx 效果模板
+                    switch (d.fx) {
+                        case "REGEN" -> fx.merge(PotionEffectType.REGENERATION, lv, Math::max);
+                        case "RESISTANCE" -> fx.merge(PotionEffectType.RESISTANCE, lv, Math::max);
+                        case "SPEED" -> fx.merge(PotionEffectType.SPEED, lv, Math::max);
+                        case "HASTE" -> fx.merge(PotionEffectType.HASTE, lv, Math::max);
+                        case "NIGHT_VISION" -> fx.merge(PotionEffectType.NIGHT_VISION, lv, Math::max);
+                        case "FIRE_RESIST" -> fx.merge(PotionEffectType.FIRE_RESISTANCE, lv, Math::max);
+                        case "ABSORB" -> absorb = Math.max(absorb, lv);
+                        case "INVIS" -> fx.merge(PotionEffectType.INVISIBILITY, lv, Math::max);
+                        case "WATER_BREATH" -> fx.merge(PotionEffectType.WATER_BREATHING, lv, Math::max);
+                        case "JUMP" -> fx.merge(PotionEffectType.JUMP_BOOST, lv, Math::max);
+                        case "STRENGTH" -> fx.merge(PotionEffectType.STRENGTH, lv, Math::max);
+                        default -> {
+                        }
+                    }
+                    continue;
+                }
                 switch (gem.key) {
                     case "emerald" -> fx.merge(PotionEffectType.REGENERATION, lv, Math::max);
                     case "amethyst" -> fx.merge(PotionEffectType.RESISTANCE, lv, Math::max);
@@ -307,6 +393,18 @@ public final class GemListener implements Listener {
                     case "arcane" -> {
                         fx.merge(PotionEffectType.STRENGTH, lv, Math::max);
                         fx.merge(PotionEffectType.SPEED, lv, Math::max);
+                    }
+                    case "guardian" -> {
+                        fx.merge(PotionEffectType.RESISTANCE, lv, Math::max);
+                        absorb = Math.max(absorb, lv);
+                    }
+                    case "phoenix" -> {
+                        fx.merge(PotionEffectType.FIRE_RESISTANCE, lv, Math::max);
+                        fx.merge(PotionEffectType.REGENERATION, lv, Math::max);
+                    }
+                    case "void" -> {
+                        fx.merge(PotionEffectType.RESISTANCE, lv, Math::max);
+                        fx.merge(PotionEffectType.NIGHT_VISION, lv, Math::max);
                     }
                     default -> {
                     }

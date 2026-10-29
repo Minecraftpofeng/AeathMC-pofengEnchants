@@ -480,6 +480,39 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                 plugin.checkUpdate(true);
                 return true;
             }
+            case "armor" -> {
+                if (!sender.hasPermission("ecoenchants.command.artifact")) {
+                    noPerm(sender);
+                    return true;
+                }
+                if (args.length < 2) {
+                    sender.sendMessage(manager.prefix() + manager.color(
+                            "&c用法：/ecoenchants armor <helmet|chest|legs|boots|set> [玩家]"));
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 2 ? args[2] : null);
+                if (target == null) {
+                    return true;
+                }
+                if (args[1].equalsIgnoreCase("set")) {
+                    for (String s : new String[]{"helmet", "chest", "legs", "boots"}) {
+                        target.getInventory().addItem(manager.armorArtifact(s));
+                    }
+                    sender.sendMessage(manager.prefix()
+                            + manager.color("&a已给予 " + target.getName() + " 整套无尽防具（4 件）。"));
+                } else {
+                    String p = args[1].toLowerCase();
+                    if (!(p.equals("helmet") || p.equals("chest") || p.equals("legs") || p.equals("boots"))) {
+                        sender.sendMessage(manager.prefix()
+                                + manager.color("&c部位需为 helmet / chest / legs / boots / set。"));
+                        return true;
+                    }
+                    target.getInventory().addItem(manager.armorArtifact(p));
+                    sender.sendMessage(manager.prefix()
+                            + manager.color("&a已给予 " + target.getName() + " " + manager.armorName(p) + "。"));
+                }
+                return true;
+            }
             case "geminfo" -> {
                 if (!sender.hasPermission("ecoenchants.command.geminfo")) {
                     noPerm(sender);
