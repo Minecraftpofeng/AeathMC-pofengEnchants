@@ -26,13 +26,14 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -78,8 +79,6 @@ public final class ArmorArtifactListener implements Listener {
     private final Map<UUID, Long> furyExpire = new HashMap<>();
     /** 不死图腾剩余次数 */
     private final Map<UUID, Integer> totem = new HashMap<>();
-    /** 世界崩解潜影箱（内存） */
-    private final Map<UUID, Inventory> shulkers = new HashMap<>();
     /** 本插件开启飞行的玩家（非创造，需还原） */
     private final Set<UUID> armorFlight = new HashSet<>();
 
@@ -228,6 +227,27 @@ public final class ArmorArtifactListener implements Listener {
             vic.damage(dmg * 0.45, p);
             p.getWorld().spawnParticle(Particle.WITCH, vic.getLocation().add(0, 1, 0), 10, 0.4, 0.4, 0.4, 0.01);
         }
+        // 狂热：命中后 3 秒攻击速度提升（cd 0）
+        applyFrenzy(p);
+    }
+
+    private void applyFrenzy(Player p) {
+        var atk = p.getAttribute(org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED);
+        if (atk == null) {
+            return;
+        }
+        org.bukkit.NamespacedKey key = new org.bukkit.NamespacedKey(plugin, "armor_frenzy");
+        atk.removeModifier(key);
+        atk.addTransientModifier(new org.bukkit.attribute.AttributeModifier(
+                key, 1.5, org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER,
+                org.bukkit.inventory.EquipmentSlotGroup.MAINHAND));
+        p.getWorld().spawnParticle(Particle.FLAME, p.getLocation().add(0, 0.5, 0), 6, 0.2, 0.2, 0.2, 0.01);
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            var a = p.getAttribute(org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED);
+            if (a != null) {
+                a.removeModifier(key);
+            }
+        }, 60L);
     }
 
     // ---------- 受击：概念性防御 / 全套抗性 / 衔尾蛇 / 无尽反应胸甲 / 龙之愤怒 / 魔童 / 怒火中烧 ----------
@@ -252,10 +272,8 @@ public final class ArmorArtifactListener implements Listener {
         dragonExpire.put(p.getUniqueId(), System.currentTimeMillis() + DRAGON_MS);
         spawnDragonBreath(p);
         long now = System.currentTimeMillis();
-        // 魔童：低血崩飞
-        if (p.getHealth() < p.getMaxHealth() * 0.25
-                && magickCd.getOrDefault(p.getUniqueId(), 0L) < now) {
-            magickCd.put(p.getUniqueId(), now + 20000);
+        // 魔童：低血崩飞（cd 0）
+        if (p.getHealth() < p.getMaxHealth() * 0.25) {
             for (Entity en : p.getWorld().getNearbyEntities(p.getLocation(), 30, 30, 30)) {
                 if (en instanceof LivingEntity le && le != p) {
                     le.damage(40, p);
@@ -313,22 +331,15 @@ public final class ArmorArtifactListener implements Listener {
         }
         Player p = e.getPlayer();
         boolean owner = manager.isArmorOwner(p.getName());
-        // 自然荒芜（护腿）：潜行 + 右键
+        // 自然荒芜（护腿）：潜行 + 右键（cd 0）
         if (p.isSneaking() && owner && wearing(p, "legs")) {
-            long now = System.currentTimeMillis();
-            if (witherCd.getOrDefault(p.getUniqueId(), 0L) < now) {
-                witherCd.put(p.getUniqueId(), now + WITHER_CD_MS);
-                int count = witherPlants(p);
-                p.sendMessage(manager.prefix()
-                        + manager.color("&a自然荒芜已释放，枯萎 &f" + count + "&a 株植物（冷却 180s）。"));
-            } else {
-                long left = (witherCd.getOrDefault(p.getUniqueId(), 0L) - now) / 1000;
-                p.sendMessage(manager.prefix() + manager.color("&c自然荒芜冷却中，还需 &f" + left + "&c 秒。"));
-            }
+            int count = witherPlants(p);
+            p.sendMessage(manager.prefix()
+                    + manager.color("&a自然荒芜已释放，枯萎 &f" + count + "&a 株植物。"));
             e.setCancelled(true);
             return;
         }
-        // 无尽反应胸甲释放：空手右键
+        // 无尽反应胸甲释放（空手右键）+ 震撼
         ItemStack hand = p.getInventory().getItemInMainHand();
         if (hand != null && !hand.getType().isAir()) {
             return;
@@ -336,9 +347,21 @@ public final class ArmorArtifactListener implements Listener {
         if (!wearing(p, "chest")) {
             return;
         }
+        // 震撼：震飞周围生物 + 2 秒眩晕（cd 0）
+        for (Entity en : p.getWorld().getNearbyEntities(p.getLocation(), 6, 6, 6)) {
+            if (en instanceof LivingEntity le && le != p) {
+                le.setVelocity(le.getLocation().toVector().subtract(p.getLocation().toVector())
+                        .normalize().multiply(2.0).setY(1.1));
+                le.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 40, 7, false, false, false));
+                le.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 40, 3, false, false, false));
+            }
+        }
+        p.getWorld().spawnParticle(Particle.EXPLOSION, p.getLocation().add(0, 1, 0), 1, 0, 0, 0, 0);
+        p.sendMessage(manager.prefix() + manager.color("&d震撼！&7震飞周围生物并眩晕 2 秒。"));
+        // 无尽反应胸甲释放存储伤害
         Double st = stored.get(p.getUniqueId());
         if (st == null || st <= 0) {
-            p.sendMessage(manager.prefix() + manager.color("&7无尽反应胸甲当前无存储伤害。"));
+            e.setCancelled(true);
             return;
         }
         stored.remove(p.getUniqueId());
@@ -388,7 +411,7 @@ public final class ArmorArtifactListener implements Listener {
         };
     }
 
-    // ---------- 世界崩解（胸甲）：潜行 + 左键 打开额外潜影箱 ----------
+    // ---------- 世界崩解（胸甲）：空手左键秒挖单方块；潜行+左键 32x32 区域挖掘 ----------
 
     @EventHandler(ignoreCancelled = true)
     public void onLeftClick(PlayerInteractEvent e) {
@@ -396,13 +419,101 @@ public final class ArmorArtifactListener implements Listener {
             return;
         }
         Player p = e.getPlayer();
-        if (!p.isSneaking() || !manager.isArmorOwner(p.getName()) || !wearing(p, "chest")) {
+        if (!manager.isArmorOwner(p.getName()) || !wearing(p, "chest")) {
             return;
         }
-        Inventory inv = shulkers.computeIfAbsent(p.getUniqueId(), k ->
-                Bukkit.createInventory(null, 54, "无尽潜影箱 · 世界崩解"));
-        p.openInventory(inv);
+        Block target = e.getClickedBlock();
+        if (target == null) {
+            return;
+        }
         e.setCancelled(true);
+        if (p.isSneaking()) {
+            // 模式2：32x32 区域挖掘，掉落整理入潜影箱
+            startAreaMine(p, target);
+        } else {
+            // 模式1：秒挖单方块
+            target.breakNaturally(p.getInventory().getItemInMainHand());
+            p.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0.5, 0.5, 0.5), 8, 0.3, 0.3, 0.3, 0.01);
+        }
+    }
+
+    /** 进行中的 32x32 区域挖掘（防止重复触发） */
+    private final Map<UUID, Boolean> mining = new HashMap<>();
+
+    private void startAreaMine(Player p, Block center) {
+        if (Boolean.TRUE.equals(mining.get(p.getUniqueId()))) {
+            p.sendMessage(manager.prefix() + manager.color("&c世界崩解·区域挖掘进行中，请稍候。"));
+            return;
+        }
+        World w = center.getWorld();
+        int y0 = Math.max(w.getMinHeight(), center.getY() - 6);
+        int y1 = Math.min(w.getMaxHeight() - 1, center.getY() + 6);
+        List<Block> blocks = new ArrayList<>();
+        for (int dx = -16; dx <= 15; dx++) {
+            for (int dz = -16; dz <= 15; dz++) {
+                for (int y = y0; y <= y1; y++) {
+                    Block b = center.getRelative(dx, y - center.getY(), dz);
+                    Material t = b.getType();
+                    if (t.isAir() || t == Material.BEDROCK || t == Material.WATER
+                            || t == Material.LAVA || t == Material.BARRIER || t == Material.COMMAND_BLOCK) {
+                        continue;
+                    }
+                    if (b.getType().getHardness() < 0) {
+                        continue;
+                    }
+                    blocks.add(b);
+                }
+            }
+        }
+        if (blocks.isEmpty()) {
+            p.sendMessage(manager.prefix() + manager.color("&c该区域无可挖掘方块。"));
+            return;
+        }
+        final List<ItemStack> drops = new ArrayList<>();
+        final int[] idx = {0};
+        mining.put(p.getUniqueId(), true);
+        p.sendMessage(manager.prefix() + manager.color("&a世界崩解·区域挖掘开始：&f" + blocks.size()
+                + "&a 个方块，掉落将整理入潜影箱。"));
+        plugin.getServer().getScheduler().runTaskTimer(plugin, task -> {
+            int per = 200;
+            for (int i = 0; i < per && idx[0] < blocks.size(); i++) {
+                Block b = blocks.get(idx[0]++);
+                try {
+                    for (ItemStack it : b.getDrops(p.getInventory().getItemInMainHand())) {
+                        drops.add(it);
+                    }
+                } catch (Throwable ignored) {
+                }
+                b.setType(Material.AIR, false);
+            }
+            p.spawnParticle(Particle.POOF, center.getLocation().add(0, 1, 0), 5, 16, 1, 16, 0);
+            if (idx[0] >= blocks.size()) {
+                mining.remove(p.getUniqueId());
+                task.cancel();
+                giveShulker(p, drops, center.getLocation());
+            }
+        }, 0L, 2L);
+    }
+
+    private void giveShulker(Player p, List<ItemStack> drops, Location at) {
+        ItemStack sh = new ItemStack(Material.SHULKER_BOX);
+        org.bukkit.inventory.meta.BlockStateMeta bsm =
+                (org.bukkit.inventory.meta.BlockStateMeta) sh.getItemMeta();
+        org.bukkit.block.ShulkerBox sb = (org.bukkit.block.ShulkerBox) bsm.getBlockState();
+        org.bukkit.inventory.Inventory sinv = sb.getInventory();
+        for (ItemStack it : drops) {
+            java.util.Map<Integer, ItemStack> left = sinv.addItem(it);
+            for (ItemStack r : left.values()) {
+                p.getWorld().dropItemNaturally(at.add(0, 1, 0), r);
+            }
+        }
+        bsm.setBlockState(sb);
+        sh.setItemMeta(bsm);
+        java.util.Map<Integer, ItemStack> over = p.getInventory().addItem(sh);
+        for (ItemStack r : over.values()) {
+            p.getWorld().dropItemNaturally(p.getLocation(), r);
+        }
+        p.sendMessage(manager.prefix() + manager.color("&a世界崩解·区域挖掘完成，掉落已整理入潜影箱。"));
     }
 
     // ---------- 星球吞噬（鞋子）：铲子挖掘 3x3 ----------

@@ -6,7 +6,7 @@
 
     <groupId>com.ecoclone</groupId>
     <artifactId>EcoClone</artifactId>
-    <version>r-v1.4.4</version>
+    <version>v-1.4.5</version>
     <packaging>jar</packaging>
 
     <name>AeathMC-pofengEnchants</name>

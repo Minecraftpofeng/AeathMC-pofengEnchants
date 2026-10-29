@@ -1156,13 +1156,13 @@ public final class EnchantManager {
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text(color("&7Lv.&fInfinity")));
         lore.add(Component.text(color("&8无尽防具系列 · 概念性防御")));
-        lore.add(Component.text(color("&6专属绑定：&fClowmPierce")));
-        lore.add(Component.text(color("&8特性：&f巫师袍2 / 概念性防御3 / 无尽反应胸甲 / 衔尾蛇2 / 龙之愤怒 / 无尽力量 / 魔童")));
+        lore.add(Component.text(color("&6专属绑定：&fClowmPierce / Minecraft_pofeng")));
+        lore.add(Component.text(color("&8特性：&f巫师袍2 / 概念性防御3 / 无尽反应胸甲 / 衔尾蛇2 / 龙之愤怒 / 无尽力量 / 魔童 / 狂热 / 震撼")));
         lore.add(Component.text(color("&e专属 " + armorName(piece) + "：")));
         switch (piece) {
             case "helmet" -> lore.add(Component.text(color("  &d寰宇支配&7：持剑者伤害+30%（无视强制限伤）")));
-            case "chest" -> lore.add(Component.text(color("  &d世界崩解&7：额外潜影箱（潜行+左键打开）")));
-            case "legs" -> lore.add(Component.text(color("  &d自然荒芜&7：潜行+右键，15格内植物枯萎（冷却180s）")));
+            case "chest" -> lore.add(Component.text(color("  &d世界崩解&7：空手左键秒挖单方块；潜行+左键 32x32 区域挖掘（掉落整理入潜影箱）")));
+            case "legs" -> lore.add(Component.text(color("  &d自然荒芜&7：潜行+右键，15格内植物枯萎")));
             default -> lore.add(Component.text(color("  &d星球吞噬&7：铲子挖掘范围提升至3x3")));
         }
         if ("helmet".equals(piece) || "chest".equals(piece)) {
@@ -1171,8 +1171,10 @@ public final class EnchantManager {
         if ("legs".equals(piece) || "boots".equals(piece)) {
             lore.add(Component.text(color("  &d天堂陨落&7：弓造成的伤害+100%")));
         }
-        lore.add(Component.text(color("&8穿齐4件：全套无尽药水buff（30s）+ 全套抗性减免")));
-        lore.add(Component.text(color("&7绑定者 ClowmPierce 装备时解锁专属：&d" + ownerBonusName(piece))));
+        lore.add(Component.text(color("&8穿齐4件：全套无尽药水buff（30s）+ 全套抗性减免 + 生存/冒险自动飞行")));
+        lore.add(Component.text(color("&8狂热&7：命中后自身攻击速度提升（3秒） / &8震撼&7：空手右键震飞周围生物并眩晕")));
+        lore.add(Component.text(color("&6✦ 王的降临 ✦")));
+        lore.add(Component.text(color("&7绑定者装备时解锁专属：&d" + ownerBonusName(piece))));
         return lore;
     }
 
