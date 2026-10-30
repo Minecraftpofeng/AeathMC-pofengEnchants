@@ -9,3 +9,11 @@ softdepend:
   - PlaceholderAPI
   - Vault
   - ProtocolLib
+
+commands:
+  aeath:
+    description: AeathMC-pofengEnchants main command
+    usage: /aeath <subcommand>
+  enchantinfo:
+    description: Show info about an enchant
+    usage: /enchantinfo <enchant-key>
