@@ -1,0 +1,23 @@
+#
+# Ember EcoEnchant
+#
+name: "Ember"
+description: Arrows set your opponent on soul fire
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - bows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 0.3
+  duration: 80

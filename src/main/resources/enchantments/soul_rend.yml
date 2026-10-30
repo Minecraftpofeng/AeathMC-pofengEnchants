@@ -1,0 +1,23 @@
+#
+# Soul Rend EcoEnchant
+#
+name: "Soul Rend"
+description: Hits inflict wither
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 4
+
+config:
+  chance: 0.35
+  duration: 60

@@ -1,0 +1,23 @@
+#
+# Deep Mine EcoEnchant
+#
+name: "Deep Mine"
+description: Grants haste while holding a pickaxe
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 1.0
+  duration: 0

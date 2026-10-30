@@ -94,7 +94,7 @@ public final class EnchantManager {
         }
         for (EnchantDef def : Enchants.definitions()) {
             File f = new File(dir, def.key + ".yml");
-            if (!f.exists()) {
+            if (!f.exists() && plugin.getResource("enchantments/" + def.key + ".yml") != null) {
                 plugin.saveResource("enchantments/" + def.key + ".yml", false);
             }
         }

@@ -1,0 +1,23 @@
+#
+# Thunder Fury EcoEnchant
+#
+name: "Thunder Fury"
+description: Hits strike lightning and deal bonus damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 0.15
+  duration: 0

@@ -1,0 +1,23 @@
+#
+# Granite Skin EcoEnchant
+#
+name: "Granite Skin"
+description: Bonus armor while worn
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 1.0
+  duration: 0

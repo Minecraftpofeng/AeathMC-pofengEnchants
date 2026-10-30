@@ -1,0 +1,23 @@
+#
+# Hex EcoEnchant
+#
+name: "Hex"
+description: Hits inflict weakness
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 4
+
+config:
+  chance: 0.4
+  duration: 80

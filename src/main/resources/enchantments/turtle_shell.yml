@@ -1,0 +1,23 @@
+#
+# Turtle Shell EcoEnchant
+#
+name: "Turtle Shell"
+description: Grants resistance while worn
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 1.0
+  duration: 0

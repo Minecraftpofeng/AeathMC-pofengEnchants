@@ -1,0 +1,23 @@
+#
+# Siphoning EcoEnchant
+#
+name: "Siphoning"
+description: Heal a portion of damage dealt
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 1.0
+  duration: 0
