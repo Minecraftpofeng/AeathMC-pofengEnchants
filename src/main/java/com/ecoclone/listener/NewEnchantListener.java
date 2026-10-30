@@ -51,7 +51,7 @@ public final class NewEnchantListener implements Listener {
     private final Map<UUID, Map<UUID, Integer>> combo = new HashMap<>();
     /** marking：被标记的目标 -> 标记者 */
     private final Map<UUID, UUID> marked = new HashMap<>();
-    private final NamespacedKey furyKey, enhanceSpd, enhanceMove, enhanceArm, ironKey;
+    private final NamespacedKey furyKey, enhanceSpd, enhanceMove, enhanceArm, ironKey, graniteKey;
 
     public NewEnchantListener(EcoClonePlugin plugin, EnchantManager manager) {
         this.plugin = plugin;
@@ -61,6 +61,7 @@ public final class NewEnchantListener implements Listener {
         this.enhanceMove = new NamespacedKey(plugin, "n_emove");
         this.enhanceArm = new NamespacedKey(plugin, "n_earm");
         this.ironKey = new NamespacedKey(plugin, "n_iron");
+        this.graniteKey = new NamespacedKey(plugin, "n_granite");
         plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 0L, 20L);
     }
 
@@ -80,6 +81,17 @@ public final class NewEnchantListener implements Listener {
 
     private static boolean chance(double c) {
         return Math.random() < EnchantManager.clamp01(c);
+    }
+
+    /** v1.4.6 被动药水：有等级则补药水，无则清除 */
+    private void passiveBuff(Player p, String key, int lvl, PotionEffectType type, int ticks) {
+        if (lvl > 0) {
+            if (!p.hasPotionEffect(type)) {
+                p.addPotionEffect(new PotionEffect(type, ticks, Math.max(0, lvl - 1)));
+            }
+        } else if (p.hasPotionEffect(type)) {
+            p.removePotionEffect(type);
+        }
     }
 
     /** config 生效示范：读取附魔 yml 的 config.chance 作为基础概率（已 clamp 到 [0,1]），再乘等级 */
@@ -144,6 +156,14 @@ public final class NewEnchantListener implements Listener {
             if (armorTotal(p, "warmth") > 0) {
                 p.removePotionEffect(PotionEffectType.SLOWNESS);
             }
+            // ===== v1.4.6 新增附魔：被动效果 =====
+            passiveBuff(p, "turtle_shell", armorTotal(p, "turtle_shell"), PotionEffectType.RESISTANCE, 25 * 20);
+            passiveBuff(p, "swift_step", Enchants.level(p.getInventory().getBoots(), "swift_step"), PotionEffectType.SPEED, 25 * 20);
+            passiveBuff(p, "nightguard", Enchants.level(p.getInventory().getHelmet(), "nightguard"), PotionEffectType.NIGHT_VISION, 25 * 20);
+            passiveBuff(p, "deep_mine", Enchants.level(p.getInventory().getItemInMainHand(), "deep_mine"), PotionEffectType.HASTE, 25 * 20);
+            int granite = armorTotal(p, "granite_skin");
+            setMod(p, Attribute.GENERIC_ARMOR, graniteKey,
+                    granite > 0 ? 1.5 * granite : 0, AttributeModifier.Operation.ADD_NUMBER);
             // echo：移动残影
             if (Enchants.level(p.getInventory().getBoots(), "echo") > 0 && p.isSprinting()) {
                 p.getWorld().spawnParticle(Particle.DUST,
@@ -257,6 +277,26 @@ public final class NewEnchantListener implements Listener {
         }
         if (changed) {
             event.setDamage(dmg);
+        }
+        // ===== v1.4.6 新增附魔：命中效果 =====
+        int soul = held(p, "soul_rend");
+        if (soul > 0 && chance("soul_rend", 0.35, soul)) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 60, 1));
+        }
+        int hexLvl = held(p, "hex");
+        if (hexLvl > 0 && chance("hex", 0.4, hexLvl)) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 80, 1));
+        }
+        int thunderFury = held(p, "thunder_fury");
+        if (thunderFury > 0 && chance("thunder_fury", 0.15, thunderFury)) {
+            victim.getWorld().strikeLightningEffect(victim.getLocation());
+            dmg *= 1.2;
+            event.setDamage(dmg);
+        }
+        int siphon = held(p, "siphoning");
+        if (siphon > 0) {
+            double heal = event.getDamage() * 0.05 * siphon;
+            p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() + heal));
         }
         // marking：命中标记目标（下一次增伤）
         int mark = held(p, "marking");
@@ -427,6 +467,12 @@ public final class NewEnchantListener implements Listener {
         int trajectory = Enchants.level(bow, "trajectory");
         if (trajectory > 0) {
             projectile.setGravity(false);
+        }
+        // ===== v1.4.6 新增附魔：余烬（箭点燃灵魂火） =====
+        int ember = Enchants.level(bow, "ember");
+        if (ember > 0 && chance("ember", 0.3, ember)) {
+            victim.setFireTicks(80);
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 40, 0));
         }
         // marking：被标记者被近战/箭攻击增伤（此处箭也触发）
         if (marked.containsKey(victim.getUniqueId())) {

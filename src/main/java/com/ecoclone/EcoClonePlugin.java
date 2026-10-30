@@ -86,8 +86,9 @@ public final class EcoClonePlugin extends JavaPlugin {
                                 + " 个附魔注册失败，原因已写入 registration-errors.txt，请截图发给腐竹"), 20L);
             }
 
-            registerCommand("ecoenchants", new EcoEnchantsCommand(this, manager));
+            registerCommand("aeath", new EcoEnchantsCommand(this, manager));
             registerCommand("enchantinfo", new EnchantInfoCommand(this, manager));
+            hookSoftDependencies();
 
             getServer().getPluginManager().registerEvents(new CombatListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new ProjectileListener(this, manager), this);
@@ -123,6 +124,27 @@ public final class EcoClonePlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         UtilityListener.clearAll(Bukkit.getServer());
+    }
+
+    /**
+     * 软依赖集成主流插件：PlaceholderAPI / Vault / ProtocolLib。
+     * 已在 paper-plugin.yml 的 softdepend 声明。此处启动时探测已装插件并打日志；
+     * 未安装则静默跳过，不影响启动。
+     */
+    private void hookSoftDependencies() {
+        String[] soft = {"PlaceholderAPI", "Vault", "ProtocolLib"};
+        java.util.List<String> found = new java.util.ArrayList<>();
+        for (String name : soft) {
+            org.bukkit.plugin.Plugin p = Bukkit.getPluginManager().getPlugin(name);
+            if (p != null) {
+                found.add(name + " v" + p.getDescription().getVersion());
+            }
+        }
+        if (found.isEmpty()) {
+            getLogger().info("未检测到软依赖插件（PlaceholderAPI/Vault/ProtocolLib），可选集成跳过。");
+        } else {
+            getLogger().info("软依赖插件就绪 Soft-dependencies loaded: " + String.join(", ", found));
+        }
     }
 
     /** 启动时检测服务端 MC 版本是否在支持范围 1.21.x - 1.26.3 内 */

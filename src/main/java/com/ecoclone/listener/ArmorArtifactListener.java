@@ -2,10 +2,12 @@ package com.ecoclone.listener;
 
 import com.ecoclone.EcoClonePlugin;
 import com.ecoclone.EnchantManager;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -27,10 +29,16 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.io.BukkitObjectInputStream;
+import org.bukkit.util.io.BukkitObjectOutputStream;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -85,6 +93,7 @@ public final class ArmorArtifactListener implements Listener {
     public ArmorArtifactListener(EcoClonePlugin plugin, EnchantManager manager) {
         this.plugin = plugin;
         this.manager = manager;
+        this.orbKey = new NamespacedKey(plugin, "matter_items");
         plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 0L, 40L);
     }
 
@@ -330,6 +339,15 @@ public final class ArmorArtifactListener implements Listener {
             return;
         }
         Player p = e.getPlayer();
+        // 物质球倾泻：主手或副手持物质球，右键一键倾泻
+        ItemStack orbHand = p.getInventory().getItemInMainHand();
+        ItemStack orbOff = p.getInventory().getItemInOffHand();
+        ItemStack orb = isMatterOrb(orbHand) ? orbHand : isMatterOrb(orbOff) ? orbOff : null;
+        if (orb != null) {
+            dumpMatterOrb(p, orb, p.getLocation());
+            e.setCancelled(true);
+            return;
+        }
         boolean owner = manager.isArmorOwner(p.getName());
         // 自然荒芜（护腿）：潜行 + 右键（cd 0）
         if (p.isSneaking() && owner && wearing(p, "legs")) {
@@ -449,8 +467,8 @@ public final class ArmorArtifactListener implements Listener {
         int y0 = Math.max(w.getMinHeight(), center.getY() - 6);
         int y1 = Math.min(w.getMaxHeight() - 1, center.getY() + 6);
         List<Block> blocks = new ArrayList<>();
-        for (int dx = -16; dx <= 15; dx++) {
-            for (int dz = -16; dz <= 15; dz++) {
+        for (int dx = -3; dx <= 4; dx++) {
+            for (int dz = -3; dz <= 4; dz++) {
                 for (int y = y0; y <= y1; y++) {
                     Block b = center.getRelative(dx, y - center.getY(), dz);
                     Material t = b.getType();
@@ -473,9 +491,9 @@ public final class ArmorArtifactListener implements Listener {
         final int[] idx = {0};
         mining.put(p.getUniqueId(), true);
         p.sendMessage(manager.prefix() + manager.color("&a世界崩解·区域挖掘开始：&f" + blocks.size()
-                + "&a 个方块，掉落将整理入潜影箱。"));
+                + "&a 个方块，掉落将收集入物质球。"));
         plugin.getServer().getScheduler().runTaskTimer(plugin, task -> {
-            int per = 200;
+            int per = 150;
             for (int i = 0; i < per && idx[0] < blocks.size(); i++) {
                 Block b = blocks.get(idx[0]++);
                 try {
@@ -486,34 +504,121 @@ public final class ArmorArtifactListener implements Listener {
                 }
                 b.setType(Material.AIR, false);
             }
-            p.spawnParticle(Particle.POOF, center.getLocation().add(0, 1, 0), 5, 16, 1, 16, 0);
+            p.spawnParticle(Particle.POOF, center.getLocation().add(0, 1, 0), 5, 8, 1, 8, 0);
             if (idx[0] >= blocks.size()) {
                 mining.remove(p.getUniqueId());
                 task.cancel();
-                giveShulker(p, drops, center.getLocation());
+                giveMatterOrb(p, drops);
             }
         }, 0L, 2L);
     }
 
-    private void giveShulker(Player p, List<ItemStack> drops, Location at) {
-        ItemStack sh = new ItemStack(Material.SHULKER_BOX);
-        org.bukkit.inventory.meta.BlockStateMeta bsm =
-                (org.bukkit.inventory.meta.BlockStateMeta) sh.getItemMeta();
-        org.bukkit.block.ShulkerBox sb = (org.bukkit.block.ShulkerBox) bsm.getBlockState();
-        org.bukkit.inventory.Inventory sinv = sb.getInventory();
-        for (ItemStack it : drops) {
-            java.util.Map<Integer, ItemStack> left = sinv.addItem(it);
-            for (ItemStack r : left.values()) {
-                p.getWorld().dropItemNaturally(at.add(0, 1, 0), r);
+    // ---------- 物质球（袋子）：容量 4096，右键倾泻 ----------
+
+    private final NamespacedKey orbKey;
+    private static final int ORB_CAPACITY = 4096;
+
+    private boolean isMatterOrb(ItemStack it) {
+        return it != null && !it.getType().isAir() && it.hasItemMeta()
+                && it.getItemMeta().getPersistentDataContainer().has(orbKey, PersistentDataType.STRING);
+    }
+
+    private String encodeItems(List<ItemStack> items) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             BukkitObjectOutputStream oos = new BukkitObjectOutputStream(bos)) {
+            oos.writeInt(items.size());
+            for (ItemStack it : items) {
+                oos.writeObject(it);
+            }
+            return Base64.getEncoder().encodeToString(bos.toByteArray());
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private List<ItemStack> decodeItems(String data) {
+        List<ItemStack> out = new ArrayList<>();
+        if (data == null || data.isEmpty()) {
+            return out;
+        }
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(data));
+             BukkitObjectInputStream ois = new BukkitObjectInputStream(bis)) {
+            int n = ois.readInt();
+            for (int i = 0; i < n; i++) {
+                Object o = ois.readObject();
+                if (o instanceof ItemStack it) {
+                    out.add(it);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return out;
+    }
+
+    private int totalCount(List<ItemStack> items) {
+        int c = 0;
+        for (ItemStack it : items) {
+            c += it.getAmount();
+        }
+        return c;
+    }
+
+    /** 在玩家背包/手中查找已有物质球 */
+    private ItemStack findOrb(Player p) {
+        for (ItemStack it : p.getInventory().getContents()) {
+            if (isMatterOrb(it)) {
+                return it;
             }
         }
-        bsm.setBlockState(sb);
-        sh.setItemMeta(bsm);
-        java.util.Map<Integer, ItemStack> over = p.getInventory().addItem(sh);
-        for (ItemStack r : over.values()) {
-            p.getWorld().dropItemNaturally(p.getLocation(), r);
+        return null;
+    }
+
+    private void giveMatterOrb(Player p, List<ItemStack> drops) {
+        ItemStack orb = findOrb(p);
+        if (orb == null) {
+            orb = new ItemStack(Material.SHULKER_BOX);
+            orb.editMeta(meta -> {
+                meta.displayName(Component.text(manager.color("&d物质球 &7· 容量 &f4096")));
+                meta.lore(List.of(Component.text(manager.color(
+                        "&8世界崩解挖掘的掉落物会自动收集于此")),
+                        Component.text(manager.color("&8持此球右键：一键倾泻全部物品"))));
+                meta.getPersistentDataContainer().set(orbKey, PersistentDataType.STRING, "");
+            });
+            p.getInventory().addItem(orb);
         }
-        p.sendMessage(manager.prefix() + manager.color("&a世界崩解·区域挖掘完成，掉落已整理入潜影箱。"));
+        List<ItemStack> cur = decodeItems(orb.getItemMeta().getPersistentDataContainer()
+                .get(orbKey, PersistentDataType.STRING));
+        List<ItemStack> overflow = new ArrayList<>();
+        for (ItemStack d : drops) {
+            if (totalCount(cur) + d.getAmount() <= ORB_CAPACITY) {
+                cur.add(d);
+            } else {
+                overflow.add(d);
+            }
+        }
+        final List<ItemStack> saved = cur;
+        orb.editMeta(meta -> meta.getPersistentDataContainer()
+                .set(orbKey, PersistentDataType.STRING, encodeItems(saved)));
+        for (ItemStack o : overflow) {
+            p.getWorld().dropItemNaturally(p.getLocation(), o);
+        }
+        p.sendMessage(manager.prefix() + manager.color("&a世界崩解·区域挖掘完成，掉落已收集入物质球（&f"
+                + totalCount(saved) + "&a/&f" + ORB_CAPACITY + "&a）。"));
+    }
+
+    private void dumpMatterOrb(Player p, ItemStack orb, Location at) {
+        List<ItemStack> cur = decodeItems(orb.getItemMeta().getPersistentDataContainer()
+                .get(orbKey, PersistentDataType.STRING));
+        int n = totalCount(cur);
+        if (n <= 0) {
+            p.sendMessage(manager.prefix() + manager.color("&7物质球是空的。"));
+            return;
+        }
+        for (ItemStack it : cur) {
+            p.getWorld().dropItemNaturally(at.add(0, 0.5, 0), it);
+        }
+        orb.editMeta(meta -> meta.getPersistentDataContainer().remove(orbKey));
+        p.sendMessage(manager.prefix() + manager.color("&a已倾泻 &f" + n + "&a 个物品。"));
     }
 
     // ---------- 星球吞噬（鞋子）：铲子挖掘 3x3 ----------

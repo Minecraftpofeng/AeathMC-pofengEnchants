@@ -254,6 +254,17 @@ public final class Enchants {
         list.add(def("time_ward", "Time Ward", "Keep experience on death", 1, 1, false, true, "mythic", everything(), 20, 10, 40, 10, 10));
         list.add(def("prosperity", "Prosperity", "Increases all earned experience", 3, 3, false, false, "rare", everything(), 10, 10, 20, 10, 6));
         list.add(def("lucky", "Lucky", "Small chance for bonus loot", 3, 3, false, false, "uncommon", everything(), 10, 10, 20, 10, 5));
+        // ===== v1.4.6 新增附魔书 10 个 =====
+        list.add(def("soul_rend", "Soul Rend", "Hits wither your opponent", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("hex", "Hex", "Hits weaken your opponent", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
+        list.add(def("thunder_fury", "Thunder Fury", "Hits strike lightning above your opponent", 2, 2, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("siphoning", "Siphoning", "Hits heal a portion of damage dealt", 5, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("ember", "Ember", "Arrows ignite targets with soul fire", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("deep_mine", "Deep Mine", "Grants haste while holding a pickaxe", 3, 3, false, false, "uncommon", pickaxes(), 10, 10, 20, 10, 5));
+        list.add(def("turtle_shell", "Turtle Shell", "Grants resistance while worn", 3, 2, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("granite_skin", "Granite Skin", "Increases armor while worn", 3, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("swift_step", "Swift Step", "Grants speed while worn", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
+        list.add(def("nightguard", "Nightguard", "Grants night vision and glowing sight", 1, 2, false, false, "rare", helmets(), 10, 10, 20, 10, 6));
         return list;
     }
 

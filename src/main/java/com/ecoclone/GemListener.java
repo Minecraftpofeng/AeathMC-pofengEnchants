@@ -71,7 +71,7 @@ public final class GemListener implements Listener {
             }
             if (gems.slotsOf(equip) <= 0) {
                 p.sendMessage(plugin.manager().prefix()
-                        + plugin.manager().color("&c该装备尚未开槽，先用 &e/ecoenchants socket"));
+                        + plugin.manager().color("&c该装备尚未开槽，先用 &e/aeath socket"));
                 e.setCancelled(true);
                 return;
             }
@@ -132,7 +132,7 @@ public final class GemListener implements Listener {
             }
             if (gems.slotsOf(current) <= 0) {
                 p.sendMessage(plugin.manager().prefix()
-                        + plugin.manager().color("&c该装备尚未开槽，先用 &e/ecoenchants socket"));
+                        + plugin.manager().color("&c该装备尚未开槽，先用 &e/aeath socket"));
                 e.setCancelled(true);
                 return;
             }

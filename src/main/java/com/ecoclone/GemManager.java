@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * 宝石 + 槽位系统。
  *
- * 槽位：普通装备可通过 /ecoenchants socket 开槽（上限 MAX_SLOTS=6），
+ * 槽位：普通装备可通过 /aeath socket 开槽（上限 MAX_SLOTS=100），
  *       已镶宝石数量记录在 PDC "gems_list"（格式 "ruby:2,sapphire:1"），
  *       槽位上限记录在 PDC "gems_slots"。
  * 宝石：独立物品，PDC "gem_key" + "gem_lv"，右键 / 背包点击可镶入装备空槽，也可取出。
@@ -26,6 +26,19 @@ import java.util.Map;
 public final class GemManager {
 
     public static final int MAX_SLOTS = 100;
+    /** 宝石最高等级 */
+    public static final int MAX_LV = 100;
+
+    /** 宝石等级段（每 10 级一档，共 10 档） */
+    public static int tierOf(int lv) {
+        return Math.max(1, Math.min(10, (Math.max(1, lv) + 9) / 10));
+    }
+
+    /** 十档等级段名称 */
+    public static String tierName(int lv) {
+        String[] names = {"凡品", "精良", "稀有", "史诗", "传说", "神话", "不朽", "神王", "混沌", "究极·超越"};
+        return names[tierOf(lv) - 1];
+    }
 
     private final EcoClonePlugin plugin;
     private final NamespacedKey kSlots;
@@ -191,6 +204,31 @@ public final class GemManager {
         defs.put("iron_pickaxe", new GemDef("iron_pickaxe", "矿工之石", Material.IRON_PICKAXE, "&#D8D8D8", "armor", 5, "穿戴时急迫 Lv", "HASTE"));
         defs.put("cobble", new GemDef("cobble", "石拳之石", Material.COBBLESTONE, "&#7A7A7A", "armor", 5, "穿戴时急迫 Lv", "HASTE"));
         defs.put("bark", new GemDef("bark", "树皮之石", Material.OAK_LOG, "&#7A6A4A", "armor", 5, "穿戴时急迫 Lv", "HASTE"));
+        // ================= 新宝石 22 种（v1.4.6，fx 效果模板驱动） =================
+        // 武器系 12
+        defs.put("sakura", new GemDef("sakura", "樱花之心", Material.CHERRY_SAPLING, "&#FFB3C7", "weapon", 5, "命中伤害 +2%×Lv", "DMG_PCT"));
+        defs.put("bamboo", new GemDef("bamboo", "青竹之刃", Material.BAMBOO, "&#7FFF6E", "weapon", 5, "命中追加 Lv 点伤害", "DMG_FLAT"));
+        defs.put("crimson", new GemDef("crimson", "绯红之心", Material.CRIMSON_FUNGUS, "&#C9001F", "weapon", 5, "命中点燃 Lv 秒", "FIRE"));
+        defs.put("warped", new GemDef("warped", "诡谲之石", Material.WARPED_FUNGUS, "&#3A9BDC", "weapon", 5, "命中附加缓慢 Lv（2 秒）", "SLOWNESS"));
+        defs.put("toxic", new GemDef("toxic", "剧毒之心", Material.SPIDER_EYE, "&#7CFC00", "weapon", 5, "命中附加中毒 Lv（3 秒）", "POISON"));
+        defs.put("necro", new GemDef("necro", "亡灵之石", Material.ZOMBIE_HEAD, "&#6B6B6B", "weapon", 5, "命中附加凋零 Lv（3 秒）", "WITHER"));
+        defs.put("volt", new GemDef("volt", "电涌之石", Material.PRISMARINE_SHARD, "&#5A6BFF", "weapon", 5, "命中 10%×Lv 概率引雷", "LIGHTNING"));
+        defs.put("lifefang", new GemDef("lifefang", "生命獠牙", Material.FERMENTED_SPIDER_EYE, "&#FF7B7B", "weapon", 5, "命中吸血 5%×Lv 伤害", "LIFESTEAL"));
+        defs.put("critstone", new GemDef("critstone", "暴击之石", Material.GLOW_INK_SAC, "&#FFD966", "weapon", 5, "命中 5%×Lv 概率暴击×2", "CRIT"));
+        defs.put("swift", new GemDef("swift", "迅捷之石", Material.RABBIT_HIDE, "&#FFE28C", "weapon", 5, "命中后自身速度 Lv（1 秒）", "SPEED_ON_HIT"));
+        defs.put("berserk", new GemDef("berserk", "狂暴之石", Material.FIREWORK_STAR, "&#FF8C1A", "weapon", 5, "命中后自身力量 Lv（1 秒）", "STRENGTH_ON_HIT"));
+        defs.put("truecut", new GemDef("truecut", "真伤之刃", Material.SHEARS, "&#E0E0E0", "weapon", 5, "命中 5%×Lv 概率造成 0.5× 真实伤害", "TRUE_DMG"));
+        // 护甲系 10
+        defs.put("pearl", new GemDef("pearl", "珍珠之心", Material.NAUTILUS_SHELL, "&#B388FF", "armor", 5, "穿戴时生命恢复 Lv", "REGEN"));
+        defs.put("prism", new GemDef("prism", "棱镜之石", Material.PRISMARINE_BRICKS, "&#6BE7FF", "armor", 5, "穿戴时抗性提升 Lv", "RESISTANCE"));
+        defs.put("sensor", new GemDef("sensor", "感应之石", Material.SCULK_SENSOR, "&#C0C0FF", "armor", 5, "穿戴时速度 Lv", "SPEED"));
+        defs.put("honey", new GemDef("honey", "蜜糖之石", Material.HONEY_BOTTLE, "&#FFC94D", "armor", 5, "穿戴时跳跃提升 Lv", "JUMP"));
+        defs.put("moss", new GemDef("moss", "苔藓之石", Material.MOSS_BLOCK, "&#7FFF6E", "armor", 5, "穿戴时急迫 Lv", "HASTE"));
+        defs.put("radiance", new GemDef("radiance", "辉光之石", Material.GLOWSTONE, "&#FFC94D", "armor", 5, "穿戴时火抗 Lv", "FIRE_RESIST"));
+        defs.put("shieldcore", new GemDef("shieldcore", "盾心之石", Material.TURTLE_SCUTE, "&#7FE0FF", "armor", 5, "穿戴时伤害吸收 Lv", "ABSORB"));
+        defs.put("ghost", new GemDef("ghost", "幽魂之石", Material.POINTED_DRIPSTONE, "&#B0B7C0", "armor", 5, "穿戴时隐身 Lv", "INVIS"));
+        defs.put("tide", new GemDef("tide", "潮汐之石", Material.KELP, "&#4C8DFF", "armor", 5, "穿戴时水下呼吸 Lv", "WATER_BREATH"));
+        defs.put("oxheart", new GemDef("oxheart", "蛮牛之心", Material.COOKED_BEEF, "&#FF8C8C", "armor", 5, "穿戴时力量 Lv", "STRENGTH"));
     }
 
     // ---------- 访问器 ----------
@@ -225,14 +263,15 @@ public final class GemManager {
     public ItemStack gemOf(String key, int lv, int amount) {
         GemDef d = get(key);
         if (d == null) return null;
-        int level = Math.max(1, Math.min(lv, d.maxLevel));
+        int level = Math.max(1, Math.min(lv, MAX_LV));
         ItemStack gem = new ItemStack(d.mat, Math.max(1, amount));
         ItemMeta meta = gem.getItemMeta();
-        meta.displayName(Component.text(col(d.color + "◆ " + d.name + " §7Lv." + level)));
+        meta.displayName(Component.text(col(d.color + "◆ " + d.name + " §7Lv." + level + " §7[" + tierName(level) + "]")));
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text(col("&7" + d.desc)));
         lore.add(Component.text(col(
                 "&8目标：&7" + ("weapon".equals(d.target) ? "武器" : "armor".equals(d.target) ? "护甲" : "通用"))));
+        lore.add(Component.text(col("&8等级段：&f" + tierName(level) + " &7(1-10=" + tierName(level) + " 档)")));
         lore.add(Component.text(col("&7手持装备+副手此宝石右键，或背包点击装备即可镶嵌")));
         meta.lore(lore);
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -399,7 +438,7 @@ public final class GemManager {
         int used = gems.size();
         int slots = slotsOf(item);
         if (slots <= 0) {
-            out.add(Component.text(col("&7尚未开槽，使用 &e/ecoenchants socket &7为装备开槽")));
+            out.add(Component.text(col("&7尚未开槽，使用 &e/aeath socket &7为装备开槽")));
         } else {
             out.add(Component.text(col("&8◆ 宝石槽位 &7(&f" + used + "&7/&f" + slots + "&7)")));
             if (used > 0) {
@@ -408,7 +447,7 @@ public final class GemManager {
                     String nm = d == null ? e.key : d.name;
                     String colorHex = d == null ? "&#FFFFFF" : d.color;
                     out.add(Component.text(col(
-                            colorHex + "◆ " + nm + " §7Lv." + e.level)));
+                            colorHex + "◆ " + nm + " §7Lv." + e.level + " §8[" + tierName(e.level) + "]")));
                 }
             }
             int empty = slots - used;

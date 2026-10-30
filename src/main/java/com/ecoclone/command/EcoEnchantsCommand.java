@@ -13,17 +13,18 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Map;
 
 /**
- * /ecoenchants 主指令，子命令与 EcoEnchants 保持一致：
- *   /ecoenchants giverandombook <player>
- *   /ecoenchants randomenchant [player]
- *   /ecoenchants reload
- *   /ecoenchants givebook <附魔键> <等级> [player]
- *   /ecoenchants gui
- *   /ecoenchants scroll <附魔键> <等级> [player]
- *   /ecoenchants wipe [player]
- *   /ecoenchants artifact [player]
- *   /ecoenchants admin [player]   （管理员之刃：创世神刃）
- *   /ecoenchants enchant <附魔> <等级> [player]  （可突破原版附魔等级上限）
+ * /aeath 主指令，子命令与 EcoEnchants 保持一致：
+ *   /aeath giverandombook <player>
+ *   /aeath randomenchant [player]
+ *   /aeath reload
+ *   /aeath givebook <附魔键> <等级> [player]
+ *   /aeath gui
+ *   /aeath scroll <附魔键> <等级> [player]
+ *   /aeath wipe [player]
+ *   /aeath artifact [player]
+ *   /aeath admin [player]   （管理员之刃：创世神刃）
+ *   /aeath enchant <附魔> <等级> [player]  （可突破原版附魔等级上限）
+ *   /aeath help             （全部指令与附魔/宝石语法）
  */
 public final class EcoEnchantsCommand implements CommandExecutor {
 
@@ -101,7 +102,7 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                     return true;
                 }
                 if (args.length < 3) {
-                    sender.sendMessage(manager.prefix() + manager.color("&c用法：/ecoenchants givebook <附魔键> <等级> [玩家]"));
+                    sender.sendMessage(manager.prefix() + manager.color("&c用法：/aeath givebook <附魔键> <等级> [玩家]"));
                     return true;
                 }
                 org.bukkit.enchantments.Enchantment ench = Enchants.get(args[1].toLowerCase());
@@ -147,7 +148,7 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                     return true;
                 }
                 if (args.length < 3) {
-                    sender.sendMessage(manager.prefix() + manager.color("&c用法：/ecoenchants scroll <附魔键> <等级> [玩家]"));
+                    sender.sendMessage(manager.prefix() + manager.color("&c用法：/aeath scroll <附魔键> <等级> [玩家]"));
                     return true;
                 }
                 org.bukkit.enchantments.Enchantment ench = Enchants.get(args[1].toLowerCase());
@@ -320,7 +321,7 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                 }
                 if (args.length < 3) {
                     sender.sendMessage(manager.prefix() + manager.color(
-                            "&c用法：/ecoenchants enchant <附魔> <等级> [玩家]  （可突破原版上限，如 sharpness 256）"));
+                            "&c用法：/aeath enchant <附魔> <等级> [玩家]  （可突破原版上限，如 sharpness 256）"));
                     return true;
                 }
                 org.bukkit.enchantments.Enchantment ench = Enchants.get(args[1].toLowerCase());
@@ -365,7 +366,7 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                 }
                 if (args.length < 2) {
                     sender.sendMessage(manager.prefix() + manager.color(
-                            "&c用法：/ecoenchants gem <宝石> [数量] [玩家]   （宝石：ruby/sapphire/emerald/amethyst/topaz/onyx/diamond/dragon）"));
+                            "&c用法：/aeath gem <宝石> [数量] [玩家]   （宝石清单见 /aeath gems）"));
                     return true;
                 }
                 com.ecoclone.GemManager.GemDef d = plugin.gemManager().get(args[1]);
@@ -390,7 +391,7 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                 }
                 if (args.length < 3) {
                     sender.sendMessage(manager.prefix() + manager.color(
-                            "&c用法：/ecoenchants gemlv <宝石> <等级> [玩家]   （等级 1-5）"));
+                            "&c用法：/aeath gemlv <宝石> <等级> [玩家]   （等级 1-100）"));
                     return true;
                 }
                 com.ecoclone.GemManager.GemDef d = plugin.gemManager().get(args[1]);
@@ -399,14 +400,15 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                     return true;
                 }
                 int lv = parseInt(args[2], 1);
-                lv = Math.max(1, Math.min(lv, d.maxLevel));
+                lv = Math.max(1, Math.min(lv, com.ecoclone.GemManager.MAX_LV));
                 Player target = resolvePlayer(sender, args.length > 3 ? args[3] : null);
                 if (target == null) {
                     return true;
                 }
                 target.getInventory().addItem(plugin.gemManager().gemOf(d.key, lv, 1));
                 sender.sendMessage(manager.prefix()
-                        + manager.color("&a已将宝石 " + d.name + " Lv." + lv + " 给予 " + target.getName() + "。"));
+                        + manager.color("&a已将宝石 " + d.name + " Lv." + lv + " §8[" + com.ecoclone.GemManager.tierName(lv)
+                        + "]&a 给予 " + target.getName() + "。"));
                 return true;
             }
             case "socket" -> {
@@ -445,11 +447,12 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                 for (com.ecoclone.GemManager.GemDef g : plugin.gemManager().defs().values()) {
                     String tgt = "weapon".equals(g.target) ? "武器" : "armor".equals(g.target) ? "护甲" : "通用";
                     sender.sendMessage(manager.color(
-                            " &f" + g.key + " &7- &6" + g.name + " §7(" + tgt + ", Lv.1-" + g.maxLevel + ")"));
+                            " &f" + g.key + " &7- &6" + g.name + " §7(" + tgt + ", Lv.1-"
+                                    + com.ecoclone.GemManager.MAX_LV + ")"));
                     sender.sendMessage(manager.color("   &8" + g.desc));
                 }
-                sender.sendMessage(manager.color("&7用 &e/ecoenchants gem <宝石> [数量] [玩家] &7获得，右键或背包点击镶嵌。"));
-                sender.sendMessage(manager.color("&7发指定等级用 &e/ecoenchants gemlv <宝石> <等级1-5> [玩家]&7。"));
+                sender.sendMessage(manager.color("&7用 &e/aeath gem <宝石> [数量] [玩家] &7获得，右键或背包点击镶嵌。"));
+                sender.sendMessage(manager.color("&7发指定等级用 &e/aeath gemlv <宝石> <等级1-100> [玩家]&7。"));
                 return true;
             }
             case "version" -> {
@@ -487,7 +490,7 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                 }
                 if (args.length < 2) {
                     sender.sendMessage(manager.prefix() + manager.color(
-                            "&c用法：/ecoenchants armor <helmet|chest|legs|boots|set> [玩家]"));
+                            "&c用法：/aeath armor <helmet|chest|legs|boots|set> [玩家]"));
                     return true;
                 }
                 Player target = resolvePlayer(sender, args.length > 2 ? args[2] : null);
@@ -536,9 +539,13 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                     for (com.ecoclone.GemManager.SlotEntry ge : gemsList) {
                         var gd = plugin.gemManager().get(ge.key);
                         sender.sendMessage(manager.color(" &f" + (gd == null ? ge.key : gd.name)
-                                + " §7Lv." + ge.level));
+                                + " §7Lv." + ge.level + " §8[" + com.ecoclone.GemManager.tierName(ge.level) + "]"));
                     }
                 }
+                return true;
+            }
+            case "help" -> {
+                help(sender);
                 return true;
             }
             default -> sender.sendMessage(manager.prefix() + manager.msg("commands.invalid-args"));
@@ -572,5 +579,65 @@ public final class EcoEnchantsCommand implements CommandExecutor {
 
     private void noPerm(CommandSender sender) {
         sender.sendMessage(manager.prefix() + manager.msg("commands.no-permission"));
+    }
+
+    /** /aeath help：列出全部指令语法与附魔/宝石键 */
+    private void help(CommandSender sender) {
+        sender.sendMessage(manager.prefix() + manager.color("&6AeathMC-pofengEnchants 指令帮助 / Help"));
+        sender.sendMessage(manager.color("&7━━━━━━ 指令 / Commands ━━━━━━"));
+        sender.sendMessage(manager.color(" &e/aeath help &7- 本帮助"));
+        sender.sendMessage(manager.color(" &e/aeath giverandombook [玩家] &7- 随机附魔书"));
+        sender.sendMessage(manager.color(" &e/aeath randomenchant [玩家] &7- 随机附魔手持物品"));
+        sender.sendMessage(manager.color(" &e/aeath givebook <附魔键> <等级> [玩家] &7- 发放附魔书"));
+        sender.sendMessage(manager.color(" &e/aeath scroll <附魔键> <等级> [玩家] &7- 发放附魔卷轴"));
+        sender.sendMessage(manager.color(" &e/aeath enchant <附魔> <等级> [玩家] &7- 直接上附魔(可突破原版上限)"));
+        sender.sendMessage(manager.color(" &e/aeath gui &7- 打开附魔 GUI"));
+        sender.sendMessage(manager.color(" &e/aeath wipe [玩家] &7- 洗掉手持物品的自定义附魔"));
+        sender.sendMessage(manager.color(" &e/aeath reload &7- 重载配置"));
+        sender.sendMessage(manager.color(" &e/aeath artifact [玩家] &7- 寰宇支配之剑·最终幻想"));
+        sender.sendMessage(manager.color(" &e/aeath admin [玩家] &7- 创世神刃·管理之怒"));
+        sender.sendMessage(manager.color(" &e/aeath rainbow [玩家] &7- 彩虹猫之刃"));
+        sender.sendMessage(manager.color(" &e/aeath aether [玩家] <阶段1-5> &7- 以太系列五阶剑"));
+        sender.sendMessage(manager.color(" &e/aeath dawn [玩家] &7- 晨曦破晓剑"));
+        sender.sendMessage(manager.color(" &e/aeath abyss [玩家] &7- 暗渊噬魂剑"));
+        sender.sendMessage(manager.color(" &e/aeath hoe [玩家] &7- 大楚兴陈胜王之锄"));
+        sender.sendMessage(manager.color(" &e/aeath wrath [玩家] &7- 七宗罪·暴怒「嗜血重生」"));
+        sender.sendMessage(manager.color(" &e/aeath armor <helmet|chest|legs|boots|set> [玩家] &7- 无尽防具"));
+        sender.sendMessage(manager.color(" &e/aeath gem <宝石> [数量] [玩家] &7- 获得宝石"));
+        sender.sendMessage(manager.color(" &e/aeath gemlv <宝石> <等级1-100> [玩家] &7- 指定等级宝石"));
+        sender.sendMessage(manager.color(" &e/aeath socket [数量] [玩家] &7- 为手持装备开槽"));
+        sender.sendMessage(manager.color(" &e/aeath gems &7- 全部宝石一览"));
+        sender.sendMessage(manager.color(" &e/aeath geminfo &7- 查看手持装备宝石槽"));
+        sender.sendMessage(manager.color(" &e/aeath version &7- 版本信息"));
+        sender.sendMessage(manager.color(" &e/aeath update &7- 检测更新"));
+        sender.sendMessage(manager.color("&7━━━━━━ 附魔键 / Enchant Keys ━━━━━━"));
+        sender.sendMessage(manager.color("&7用法：&e/aeath givebook <键> <等级> [玩家]&7 或 &e/aeath scroll <键> <等级> [玩家]"));
+        StringBuilder melee = new StringBuilder(), range = new StringBuilder(),
+                armor = new StringBuilder(), tool = new StringBuilder(), curse = new StringBuilder(), other = new StringBuilder();
+        java.util.List<String> targets;
+        for (com.ecoclone.EnchantDef def : Enchants.definitions()) {
+            String line;
+            if (def.curse) {
+                line = curse.length() == 0 ? def.key : curse.append(" ").toString() + def.key;
+                curse.setLength(0); curse.append(line);
+            } else {
+                targets = def.targets.stream().map(t -> t.toString()).collect(java.util.stream.Collectors.toList());
+                String j = String.join(",", targets);
+                StringBuilder b = j.contains("sword") ? melee : j.contains("bow") || j.contains("crossbow") ? range
+                        : j.contains("helmet") || j.contains("chestplate") || j.contains("leggings") || j.contains("boots") ? armor
+                        : (j.contains("pickaxe") || j.contains("axe") || j.contains("shovel") || j.contains("hoe")) ? tool : other;
+                String cur = b.toString();
+                b.setLength(0); b.append(cur.isEmpty() ? def.key : cur + " " + def.key);
+            }
+        }
+        sender.sendMessage(manager.color(" &7近战 / Melee: &f" + melee));
+        sender.sendMessage(manager.color(" &7弓弩 / Ranged: &f" + range));
+        sender.sendMessage(manager.color(" &7护甲 / Armor: &f" + armor));
+        sender.sendMessage(manager.color(" &7工具 / Tool: &f" + tool));
+        sender.sendMessage(manager.color(" &7诅咒 / Curse: &f" + curse));
+        sender.sendMessage(manager.color(" &7通用 / Other: &f" + other));
+        sender.sendMessage(manager.color("&7━━━━━━ 宝石 / Gems ━━━━━━"));
+        sender.sendMessage(manager.color("&7用法：&e/aeath gem <宝石> [数量] [玩家]&7，完整清单见 &e/aeath gems"));
+        sender.sendMessage(manager.color("&7宝石等级上限 &f100&7，共 &f10&7 档（凡品/精良/稀有/史诗/传说/神话/不朽/神王/混沌/究极·超越）。"));
     }
 }
