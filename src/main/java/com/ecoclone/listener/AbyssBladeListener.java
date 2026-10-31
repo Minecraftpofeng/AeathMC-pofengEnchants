@@ -76,12 +76,12 @@ public final class AbyssBladeListener implements Listener {
         victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 80, 0));
         // 深渊吞噬：满级 100% 吞噬生物（玩家改为额外吞噬 8% 最大生命）
         if (victim instanceof Player) {
-            victim.setHealth(Math.max(0, victim.getHealth() - victim.getMaxHealth() * 0.08));
+            victim.damage(victim.getMaxHealth() * 0.08, p);
         } else {
-            victim.setHealth(0);
+            victim.damage(victim.getHealth() + 1.0, p);
         }
         // 深渊雷暴
-        victim.getWorld().strikeLightning(victim.getLocation());
+        victim.getWorld().strikeLightningEffect(victim.getLocation());
         // 深渊粒子
         Location center = victim.getLocation().add(0, 1, 0);
         for (int i = 0; i < ABYSS.length; i++) {

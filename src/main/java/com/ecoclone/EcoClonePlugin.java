@@ -51,9 +51,14 @@ public final class EcoClonePlugin extends JavaPlugin {
 
     private void registerCommand(String name, CommandExecutor executor) {
         CommandMap cm = getServer().getCommandMap();
-        if (cm.getCommand(name) != null) {
-            // 已被 paper-plugin.yml 或别处注册，直接换执行器
-            getCommand(name).setExecutor(executor);
+        org.bukkit.command.Command existing = cm.getCommand(name);
+        if (existing != null) {
+            if (existing instanceof org.bukkit.command.PluginCommand pc) {
+                pc.setExecutor(executor);
+                if (executor instanceof org.bukkit.command.TabCompleter tc) {
+                    pc.setTabCompleter(tc);
+                }
+            }
             return;
         }
         BukkitCommand cmd = new BukkitCommand(name) {
@@ -252,7 +257,7 @@ public final class EcoClonePlugin extends JavaPlugin {
     /** 启动鸣谢弹幕：控制台 + 在线玩家各弹两行（Adventure 组件，16 进制颜色，中文后附英文） */
     private void sendSplash() {
         Component line1 = Component.text("鸣谢 / Thanks to: ", TextColor.fromHexString("#FFD700"))
-                .append(Component.text("SKY_qwq  clowm贺  shadow_agent  H1111111  7gzztrgv", TextColor.fromHexString("#00E5FF")));
+                .append(Component.text("SKY_qwq  clowm贺  shadow_agent  H1111111  7gzztrgv  ╮(─▽─)╭：）： ⁧♡~喵呜⁧", TextColor.fromHexString("#00E5FF")));
         Component line2 = Component.text("——长风破浪会有时 ", TextColor.fromHexString("#7DF9FF"))
                 .append(Component.text("(Someday I'll ride the wind and break the waves) ", TextColor.fromHexString("#AAAAAA")))
                 .append(Component.text("[AeathMC 总开发 / Lead Developer ", TextColor.fromHexString("#FFD700")))

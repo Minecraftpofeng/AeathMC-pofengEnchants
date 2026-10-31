@@ -27,7 +27,7 @@ public final class EnchantInfoCommand implements CommandExecutor {
             return true;
         }
         if (args.length == 0) {
-            sender.sendMessage(manager.prefix() + "&c用法：/enchantinfo <附魔键名>");
+            sender.sendMessage(manager.prefix() + manager.color("&c用法：/enchantinfo <附魔键名>"));
             return true;
         }
 

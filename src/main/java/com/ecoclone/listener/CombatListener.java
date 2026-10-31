@@ -496,7 +496,7 @@ public final class CombatListener implements Listener {
 
         // 抹杀（代码层面）：神器命中目标，无视血量/护甲/无敌直接归零
         if (artifact && victim.isValid() && !victim.isDead()) {
-            victim.setHealth(0);
+            victim.damage(victim.getHealth() + 1.0, attacker);
         }
 
         if (changed) {

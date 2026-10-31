@@ -81,7 +81,7 @@ public final class AetherBladeListener implements Listener {
         // 星辰爆裂（I+）：落雷，阶段越高雷越多
         int bolts = 1 + (stage >= 5 ? 2 : stage >= 2 ? 1 : 0);
         for (int i = 0; i < bolts; i++) {
-            victim.getWorld().strikeLightning(victim.getLocation());
+            victim.getWorld().strikeLightningEffect(victim.getLocation());
         }
         // 以太吸灵（I+）：吸取生命
         double heal = event.getDamage() * (0.15 + 0.03 * stage);
@@ -101,7 +101,7 @@ public final class AetherBladeListener implements Listener {
                     : new double[]{0.20, 0.35, 0.50, 0.70, 1.0}[stage - 1];
             double chance = rate * (1.0 - victim.getHealth() / victim.getMaxHealth());
             if (Math.random() < chance) {
-                victim.setHealth(0);
+                victim.damage(victim.getHealth() + 1.0, p);
             }
         }
         // 星辰粒子

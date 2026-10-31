@@ -134,7 +134,9 @@ public final class GuiListener implements Listener {
         }
         manager.apply(item, ench, level);
         top.setItem(SLOT_ITEM, item);
-        top.setItem(SLOT_SOURCE, null);
+        int remain = src.getAmount() - 1;
+        if (remain > 0) { src.setAmount(remain); top.setItem(SLOT_SOURCE, src); }
+        else { top.setItem(SLOT_SOURCE, null); }
         player.sendMessage(manager.prefix()
                 + manager.msg("gui-applied").replace("%enchant%", ench.getKey().getKey())
                 .replace("%level%", String.valueOf(level)));

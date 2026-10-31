@@ -263,7 +263,13 @@ public final class HoeArtifactListener implements Listener {
         if (b.getType() != Material.FARMLAND) {
             return;
         }
-        // 仅当附近有绑定玩家持锄头时生效
+        boolean anyHoe = false;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (manager.isHoeArtifact(p.getInventory().getItemInMainHand())) { anyHoe = true; break; }
+        }
+        if (!anyHoe) {
+            return;
+        }
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (!manager.isHoeArtifact(p.getInventory().getItemInMainHand())) {
                 continue;

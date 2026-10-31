@@ -26,6 +26,7 @@ import java.util.Set;
  * Wisdom / Energizing / Curse of Misfortune。
  */
 public final class MiningListener implements Listener {
+    private static final ThreadLocal<Integer> BREAK_DEPTH = ThreadLocal.withInitial(() -> 0);
 
     private final EcoClonePlugin plugin;
     private final EnchantManager manager;
@@ -81,14 +82,13 @@ public final class MiningListener implements Listener {
 
         // Infernal Touch：自动熔炼
         if (Enchants.has(held, "infernal_touch") && event.isDropItems()) {
-            for (ItemStack d : block.getDrops(held)) {
+            java.util.List<ItemStack> all = new java.util.ArrayList<>(block.getDrops(held));
+            event.setDropItems(false);
+            for (ItemStack d : all) {
                 Material smelted = smelt(d.getType());
-                if (smelted != null) {
-                    ItemStack out = d.clone();
-                    out.setType(smelted);
-                    event.setDropItems(false);
-                    block.getWorld().dropItemNaturally(block.getLocation(), out);
-                }
+                ItemStack out = d.clone();
+                if (smelted != null) { out.setType(smelted); }
+                block.getWorld().dropItemNaturally(block.getLocation(), out);
             }
         }
 

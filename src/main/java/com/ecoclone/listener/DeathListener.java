@@ -57,8 +57,8 @@ public final class DeathListener implements Listener {
         // 延迟到下一 tick 归还：复活瞬间物品栏可能尚未就绪，立即放入会被吞
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             for (ItemStack item : items) {
-                ItemStack leftover = player.getInventory().addItem(item).get(0);
-                if (leftover != null) {
+                java.util.Map<Integer, ItemStack> leftoverMap = player.getInventory().addItem(item);
+                for (ItemStack leftover : leftoverMap.values()) {
                     // 背包已满：剩余物品掉落而非消失
                     player.getWorld().dropItemNaturally(player.getLocation(), leftover);
                 }

@@ -113,7 +113,7 @@ public final class RainbowBladeListener implements Listener {
         // 喵叫
         p.getWorld().playSound(victim.getLocation(), Sound.ENTITY_CAT_AMBIENT, 1.0f, 1.3f);
         // 彩虹闪电
-        victim.getWorld().strikeLightning(victim.getLocation());
+        victim.getWorld().strikeLightningEffect(victim.getLocation());
         // 彩虹怒涛：周身迸发七彩虹光
         Location center = victim.getLocation().add(0, 1, 0);
         for (int i = 0; i < RAINBOW.length; i++) {

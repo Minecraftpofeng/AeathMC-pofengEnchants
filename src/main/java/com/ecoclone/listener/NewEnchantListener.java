@@ -52,6 +52,7 @@ public final class NewEnchantListener implements Listener {
     /** marking：被标记的目标 -> 标记者 */
     private final Map<UUID, UUID> marked = new HashMap<>();
     private final NamespacedKey furyKey, enhanceSpd, enhanceMove, enhanceArm, ironKey, graniteKey;
+    private final Map<UUID, String> lastModCache = new HashMap<>();
 
     public NewEnchantListener(EcoClonePlugin plugin, EnchantManager manager) {
         this.plugin = plugin;
@@ -461,7 +462,7 @@ public final class NewEnchantListener implements Listener {
         int voidShot = Enchants.level(bow, "void_shot");
         if (voidShot > 0 && victim.getHealth() < victim.getMaxHealth() * 0.2
                 && chance(0.05 + 0.05 * voidShot)) {
-            victim.setHealth(0);
+            victim.damage(victim.getHealth() + 1.0, p);
             event.setDamage(0);
         }
         int trajectory = Enchants.level(bow, "trajectory");
