@@ -60,7 +60,7 @@ public final class GuiListener implements Listener {
     }
 
     private ItemStack filler() {
-        ItemStack f = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+        ItemStack f = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
         f.editMeta(m -> m.displayName(Component.text(manager.color("&7不要戳我哦喵~o(>﹏<)o"))));
         return f;
     }

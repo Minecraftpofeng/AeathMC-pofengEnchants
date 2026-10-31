@@ -339,7 +339,7 @@ public final class ArmorArtifactListener implements Listener {
             return;
         }
         Player p = e.getPlayer();
-        // 物质球倾泻：主手或副手持物质球，右键一键倾泻
+        // 收纳袋倾泻：主手或副手持收纳袋，右键一键倾泻
         ItemStack orbHand = p.getInventory().getItemInMainHand();
         ItemStack orbOff = p.getInventory().getItemInOffHand();
         ItemStack orb = isMatterOrb(orbHand) ? orbHand : isMatterOrb(orbOff) ? orbOff : null;
@@ -446,11 +446,20 @@ public final class ArmorArtifactListener implements Listener {
         }
         e.setCancelled(true);
         if (p.isSneaking()) {
-            // 模式2：32x32 区域挖掘，掉落整理入潜影箱
+            // 模式2：8x8 区域挖掘，掉落整理入收纳袋
             startAreaMine(p, target);
         } else {
-            // 模式1：秒挖单方块
-            target.breakNaturally(p.getInventory().getItemInMainHand());
+            // 模式1：秒挖单方块，掉落同样收集入收纳袋
+            java.util.List<ItemStack> drops = new ArrayList<>();
+            for (ItemStack it : target.getDrops(p.getInventory().getItemInMainHand())) {
+                if (it != null) {
+                    drops.add(it);
+                }
+            }
+            target.setType(Material.AIR, false);
+            if (!drops.isEmpty()) {
+                giveMatterOrb(p, drops);
+            }
             p.getWorld().spawnParticle(Particle.CRIT, target.getLocation().add(0.5, 0.5, 0.5), 8, 0.3, 0.3, 0.3, 0.01);
         }
     }
@@ -491,7 +500,7 @@ public final class ArmorArtifactListener implements Listener {
         final int[] idx = {0};
         mining.put(p.getUniqueId(), true);
         p.sendMessage(manager.prefix() + manager.color("&a世界崩解·区域挖掘开始：&f" + blocks.size()
-                + "&a 个方块，掉落将收集入物质球。"));
+                + "&a 个方块，掉落将收集入收纳袋。"));
         plugin.getServer().getScheduler().runTaskTimer(plugin, task -> {
             int per = 150;
             for (int i = 0; i < per && idx[0] < blocks.size(); i++) {
@@ -513,7 +522,7 @@ public final class ArmorArtifactListener implements Listener {
         }, 0L, 2L);
     }
 
-    // ---------- 物质球（袋子）：容量 4096，右键倾泻 ----------
+    // ---------- 收纳袋：容量 4096，右键倾泻 ----------
 
     private final NamespacedKey orbKey;
     private static final int ORB_CAPACITY = 4096;
@@ -578,10 +587,10 @@ public final class ArmorArtifactListener implements Listener {
         if (orb == null) {
             orb = new ItemStack(Material.SHULKER_BOX);
             orb.editMeta(meta -> {
-                meta.displayName(Component.text(manager.color("&d物质球 &7· 容量 &f4096")));
+                meta.displayName(Component.text(manager.color("&d收纳袋 &7· 容量 &f4096")));
                 meta.lore(List.of(Component.text(manager.color(
                         "&8世界崩解挖掘的掉落物会自动收集于此")),
-                        Component.text(manager.color("&8持此球右键：一键倾泻全部物品"))));
+                        Component.text(manager.color("&8持此袋右键：一键倾泻全部物品"))));
                 meta.getPersistentDataContainer().set(orbKey, PersistentDataType.STRING, "");
             });
             p.getInventory().addItem(orb);
@@ -602,7 +611,7 @@ public final class ArmorArtifactListener implements Listener {
         for (ItemStack o : overflow) {
             p.getWorld().dropItemNaturally(p.getLocation(), o);
         }
-        p.sendMessage(manager.prefix() + manager.color("&a世界崩解·区域挖掘完成，掉落已收集入物质球（&f"
+        p.sendMessage(manager.prefix() + manager.color("&a掉落已收集入收纳袋（&f"
                 + totalCount(saved) + "&a/&f" + ORB_CAPACITY + "&a）。"));
     }
 
@@ -611,7 +620,7 @@ public final class ArmorArtifactListener implements Listener {
                 .get(orbKey, PersistentDataType.STRING));
         int n = totalCount(cur);
         if (n <= 0) {
-            p.sendMessage(manager.prefix() + manager.color("&7物质球是空的。"));
+            p.sendMessage(manager.prefix() + manager.color("&7收纳袋是空的。"));
             return;
         }
         for (ItemStack it : cur) {

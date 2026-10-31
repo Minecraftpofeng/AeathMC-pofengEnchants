@@ -7,9 +7,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +29,7 @@ import java.util.Map;
  *   /aeath enchant <附魔> <等级> [player]  （可突破原版附魔等级上限）
  *   /aeath help             （全部指令与附魔/宝石语法）
  */
-public final class EcoEnchantsCommand implements CommandExecutor {
+public final class EcoEnchantsCommand implements CommandExecutor, TabCompleter {
 
     private final EcoClonePlugin plugin;
     private final EnchantManager manager;
@@ -359,6 +362,51 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                         "&a已为 " + target.getName() + " 手持物品附加 " + args[1] + " " + level + "。"));
                 return true;
             }
+            case "set" -> {
+                if (!sender.hasPermission("ecoenchants.command.set")) {
+                    noPerm(sender);
+                    return true;
+                }
+                if (args.length < 3) {
+                    sender.sendMessage(manager.prefix() + manager.color(
+                            "&c用法：/aeath set <附魔键> <等级> [玩家]  （直接设置手持物品附魔，覆盖同名等级）"));
+                    return true;
+                }
+                org.bukkit.enchantments.Enchantment ench = Enchants.get(args[1].toLowerCase());
+                if (ench == null) {
+                    ench = org.bukkit.enchantments.Enchantment.getByKey(
+                            org.bukkit.NamespacedKey.minecraft(args[1].toLowerCase()));
+                }
+                if (ench == null) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c找不到附魔 " + args[1] + "。"));
+                    return true;
+                }
+                int level;
+                try {
+                    level = Integer.parseInt(args[2]);
+                } catch (NumberFormatException e2) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c等级必须是数字。"));
+                    return true;
+                }
+                if (level < 1) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c等级必须至少为 1。"));
+                    return true;
+                }
+                Player target = resolvePlayer(sender, args.length > 3 ? args[3] : null);
+                if (target == null) {
+                    return true;
+                }
+                ItemStack held = target.getInventory().getItemInMainHand();
+                if (held == null || held.getType().isAir()) {
+                    sender.sendMessage(manager.prefix() + manager.msg("commands.no-item"));
+                    return true;
+                }
+                manager.apply(held, ench, level);
+                target.getInventory().setItemInMainHand(held);
+                sender.sendMessage(manager.prefix() + manager.color(
+                        "&a已设置 " + target.getName() + " 手持物品附魔 " + args[1] + " " + level + "。"));
+                return true;
+            }
             case "gem" -> {
                 if (!sender.hasPermission("ecoenchants.command.gem")) {
                     noPerm(sender);
@@ -542,6 +590,7 @@ public final class EcoEnchantsCommand implements CommandExecutor {
                                 + " §7Lv." + ge.level + " §8[" + com.ecoclone.GemManager.tierName(ge.level) + "]"));
                     }
                 }
+                sender.sendMessage(manager.color("&7取出宝石：&e副手持装备右键&7（主手留空），背包点击不再取出。"));
                 return true;
             }
             case "help" -> {
@@ -551,6 +600,78 @@ public final class EcoEnchantsCommand implements CommandExecutor {
             default -> sender.sendMessage(manager.prefix() + manager.msg("commands.invalid-args"));
         }
         return true;
+    }
+
+    /** /aeath Tab 补全：子命令、宝石键、附魔键、玩家名 */
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        List<String> subs = List.of("help", "giverandombook", "randomenchant", "givebook", "scroll",
+                "enchant", "set", "gui", "wipe", "reload", "artifact", "admin", "rainbow", "aether", "dawn",
+                "abyss", "hoe", "wrath", "armor", "gem", "gemlv", "socket", "gems", "geminfo",
+                "version", "update");
+        if (args.length == 1) {
+            return filter(subs, args[0]);
+        }
+        String head = args[0].toLowerCase();
+        if (args.length == 2) {
+            if (head.equals("gem") || head.equals("gemlv") || head.equals("gems")) {
+                return filter(plugin.gemManager().defs().keySet(), args[1]);
+            }
+            if (head.equals("givebook") || head.equals("scroll") || head.equals("enchant")
+                    || head.equals("set")) {
+                List<String> keys = new ArrayList<>(Enchants.REGISTERED.keySet());
+                if (head.equals("enchant") || head.equals("set")) {
+                    keys.addAll(List.of("sharpness", "power", "protection", "unbreaking", "efficiency",
+                            "looting", "fire_aspect", "knockback", "punch", "flame", "infinity", "mending",
+                            "sweeping", "respiration", "aqua_affinity", "depth_strider", "frost_walker",
+                            "thorns", "feather_falling", "luck_of_the_sea", "lure", "fortune", "silk_touch",
+                            "blast_protection", "fire_protection", "projectile_protection"));
+                }
+                return filter(keys, args[1]);
+            }
+            if (head.equals("armor")) {
+                return filter(List.of("helmet", "chest", "legs", "boots", "set"), args[1]);
+            }
+            if (head.equals("aether")) {
+                return filter(List.of("1", "2", "3", "4", "5"), args[1]);
+            }
+            if (head.equals("socket") || head.equals("gemlv")) {
+                return List.of(); // 数量/等级位，不补全
+            }
+            return playerNames(args[1]);
+        }
+        if (args.length == 3) {
+            if (head.equals("gem")) {
+                return playerNames(args[2]); // 数量位不补全，玩家位补全
+            }
+            if (head.equals("givebook") || head.equals("scroll") || head.equals("enchant")
+                    || head.equals("gemlv") || head.equals("socket")) {
+                return List.of(); // 等级/数量位
+            }
+            return playerNames(args[2]);
+        }
+        return playerNames(args[args.length - 1]);
+    }
+
+    private static List<String> filter(Iterable<String> values, String prefix) {
+        List<String> out = new ArrayList<>();
+        String p = prefix.toLowerCase();
+        for (String v : values) {
+            if (v != null && v.toLowerCase().startsWith(p)) {
+                out.add(v);
+            }
+        }
+        return out;
+    }
+
+    private static List<String> playerNames(String prefix) {
+        List<String> out = new ArrayList<>();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getName().toLowerCase().startsWith(prefix.toLowerCase())) {
+                out.add(p.getName());
+            }
+        }
+        return out;
     }
 
     private static int parseInt(String s, int def) {
@@ -591,6 +712,7 @@ public final class EcoEnchantsCommand implements CommandExecutor {
         sender.sendMessage(manager.color(" &e/aeath givebook <附魔键> <等级> [玩家] &7- 发放附魔书"));
         sender.sendMessage(manager.color(" &e/aeath scroll <附魔键> <等级> [玩家] &7- 发放附魔卷轴"));
         sender.sendMessage(manager.color(" &e/aeath enchant <附魔> <等级> [玩家] &7- 直接上附魔(可突破原版上限)"));
+        sender.sendMessage(manager.color(" &e/aeath set <附魔键> <等级> [玩家] &7- 直接设置手持物品附魔(覆盖同名等级)"));
         sender.sendMessage(manager.color(" &e/aeath gui &7- 打开附魔 GUI"));
         sender.sendMessage(manager.color(" &e/aeath wipe [玩家] &7- 洗掉手持物品的自定义附魔"));
         sender.sendMessage(manager.color(" &e/aeath reload &7- 重载配置"));
@@ -610,34 +732,9 @@ public final class EcoEnchantsCommand implements CommandExecutor {
         sender.sendMessage(manager.color(" &e/aeath geminfo &7- 查看手持装备宝石槽"));
         sender.sendMessage(manager.color(" &e/aeath version &7- 版本信息"));
         sender.sendMessage(manager.color(" &e/aeath update &7- 检测更新"));
-        sender.sendMessage(manager.color("&7━━━━━━ 附魔键 / Enchant Keys ━━━━━━"));
-        sender.sendMessage(manager.color("&7用法：&e/aeath givebook <键> <等级> [玩家]&7 或 &e/aeath scroll <键> <等级> [玩家]"));
-        StringBuilder melee = new StringBuilder(), range = new StringBuilder(),
-                armor = new StringBuilder(), tool = new StringBuilder(), curse = new StringBuilder(), other = new StringBuilder();
-        java.util.List<String> targets;
-        for (com.ecoclone.EnchantDef def : Enchants.definitions()) {
-            String line;
-            if (def.curse) {
-                line = curse.length() == 0 ? def.key : curse.append(" ").toString() + def.key;
-                curse.setLength(0); curse.append(line);
-            } else {
-                targets = def.targets.stream().map(t -> t.toString()).collect(java.util.stream.Collectors.toList());
-                String j = String.join(",", targets);
-                StringBuilder b = j.contains("sword") ? melee : j.contains("bow") || j.contains("crossbow") ? range
-                        : j.contains("helmet") || j.contains("chestplate") || j.contains("leggings") || j.contains("boots") ? armor
-                        : (j.contains("pickaxe") || j.contains("axe") || j.contains("shovel") || j.contains("hoe")) ? tool : other;
-                String cur = b.toString();
-                b.setLength(0); b.append(cur.isEmpty() ? def.key : cur + " " + def.key);
-            }
-        }
-        sender.sendMessage(manager.color(" &7近战 / Melee: &f" + melee));
-        sender.sendMessage(manager.color(" &7弓弩 / Ranged: &f" + range));
-        sender.sendMessage(manager.color(" &7护甲 / Armor: &f" + armor));
-        sender.sendMessage(manager.color(" &7工具 / Tool: &f" + tool));
-        sender.sendMessage(manager.color(" &7诅咒 / Curse: &f" + curse));
-        sender.sendMessage(manager.color(" &7通用 / Other: &f" + other));
-        sender.sendMessage(manager.color("&7━━━━━━ 宝石 / Gems ━━━━━━"));
-        sender.sendMessage(manager.color("&7用法：&e/aeath gem <宝石> [数量] [玩家]&7，完整清单见 &e/aeath gems"));
-        sender.sendMessage(manager.color("&7宝石等级上限 &f100&7，共 &f10&7 档（凡品/精良/稀有/史诗/传说/神话/不朽/神王/混沌/究极·超越）。"));
+        sender.sendMessage(manager.color("&7提示 / Tips："));
+        sender.sendMessage(manager.color(" &7宝石完整清单：&e/aeath gems"));
+        sender.sendMessage(manager.color(" &7附魔键补全：输入 &e/aeath givebook <空格> &7后按 Tab"));
+        sender.sendMessage(manager.color(" &7取出宝石：&e副手持装备右键&7（主手留空）"));
     }
 }

@@ -86,7 +86,12 @@ public final class EcoClonePlugin extends JavaPlugin {
                                 + " 个附魔注册失败，原因已写入 registration-errors.txt，请截图发给腐竹"), 20L);
             }
 
-            registerCommand("aeath", new EcoEnchantsCommand(this, manager));
+            EcoEnchantsCommand cmd = new EcoEnchantsCommand(this, manager);
+            registerCommand("aeath", cmd);
+            org.bukkit.command.PluginCommand pc = getCommand("aeath");
+            if (pc != null) {
+                pc.setTabCompleter(cmd);
+            }
             registerCommand("enchantinfo", new EnchantInfoCommand(this, manager));
             hookSoftDependencies();
 

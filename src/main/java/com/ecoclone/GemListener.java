@@ -93,10 +93,11 @@ public final class GemListener implements Listener {
                 return;
             }
         }
-        if (gems.hasGems(main) && !gems.isGem(off)) {
-            ItemStack[] res = gems.extractLast(main);
+        // 取出宝石：只能副手持带宝石装备、主手不持宝石时右键取出，避免穿上护甲误触取出
+        if (off != null && !off.getType().isAir() && gems.hasGems(off) && !gems.isGem(main)) {
+            ItemStack[] res = gems.extractLast(off);
             if (res != null) {
-                inv.setItemInMainHand(res[1]);
+                inv.setItemInOffHand(res[1]);
                 java.util.Map<Integer, ItemStack> left = inv.addItem(res[0]);
                 if (!left.isEmpty()) {
                     p.getWorld().dropItemNaturally(p.getLocation(), left.get(0));
@@ -150,15 +151,8 @@ public final class GemListener implements Listener {
                 e.setCancelled(true);
                 p.sendMessage(plugin.manager().prefix() + plugin.manager().color("&a已镶嵌宝石。"));
             }
-        } else if ((cursor == null || cursor.getType().isAir()) && gems.hasGems(current)) {
-            ItemStack[] res = gems.extractLast(current);
-            if (res != null) {
-                e.setCurrentItem(res[1]);
-                e.setCursor(res[0]);
-                e.setCancelled(true);
-                p.sendMessage(plugin.manager().prefix() + plugin.manager().color("&7已取出宝石。"));
-            }
         }
+        // 取出宝石仅支持副手右键（见 /aeath geminfo），背包点击不再提供取出，避免穿上护甲误触
     }
 
     private String gemName(ItemStack gem) {
