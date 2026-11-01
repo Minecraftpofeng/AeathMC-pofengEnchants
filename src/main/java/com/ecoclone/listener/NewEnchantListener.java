@@ -189,6 +189,21 @@ public final class NewEnchantListener implements Listener {
                     under.setType(Material.FROSTED_ICE);
                 }
             }
+            // ===== v1.4.6.3 新增附魔：被动效果 =====
+            // second_wind：低血量时再生
+            int secondWind = armorTotal(p, "second_wind");
+            if (secondWind > 0 && p.getHealth() < p.getMaxHealth() * 0.3) {
+                if (!p.hasPotionEffect(PotionEffectType.REGENERATION)) {
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,
+                            25 * 20, Math.max(0, secondWind - 1)));
+                }
+            } else if (p.hasPotionEffect(PotionEffectType.REGENERATION)) {
+                p.removePotionEffect(PotionEffectType.REGENERATION);
+            }
+            // speed_dash：疾跑加速
+            if (Enchants.level(p.getInventory().getBoots(), "speed_dash") > 0 && p.isSprinting()) {
+                p.setVelocity(p.getVelocity().add(p.getLocation().getDirection().multiply(0.05).setY(0)));
+            }
         }
     }
 
@@ -299,6 +314,29 @@ public final class NewEnchantListener implements Listener {
             double heal = event.getDamage() * 0.05 * siphon;
             p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() + heal));
         }
+        // ===== v1.4.6.3 新增附魔：命中效果 =====
+        int frostBrand = held(p, "frost_brand");
+        if (frostBrand > 0 && chance("frost_brand", 0.35, frostBrand)) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
+                    manager.duration("frost_brand", 60), 1));
+            dmg *= 1.15;
+            event.setDamage(dmg);
+        }
+        int culling = held(p, "culling_blade");
+        if (culling > 0 && victim.getHealth() < victim.getMaxHealth() * 0.3) {
+            dmg *= (1 + 0.3 * culling);
+            event.setDamage(dmg);
+        }
+        int arcane = held(p, "arcane_strike");
+        if (arcane > 0 && chance("arcane_strike", 0.15, arcane)) {
+            victim.damage(3.0 * arcane, p);
+        }
+        int crushing = held(p, "crushing_blow");
+        if (crushing > 0 && chance("crushing_blow", 0.3, crushing)) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 60, 1));
+            dmg *= 1.2;
+            event.setDamage(dmg);
+        }
         // marking：命中标记目标（下一次增伤）
         int mark = held(p, "marking");
         if (mark > 0) {
@@ -392,6 +430,12 @@ public final class NewEnchantListener implements Listener {
                 && event.getCause() == EntityDamageEvent.DamageCause.FREEZE) {
             event.setDamage(event.getDamage() * 0.5);
         }
+        // ===== v1.4.6.3 新增附魔：护甲 =====
+        // frost_guard：大幅减免冻结伤害
+        if (armorTotal(p, "frost_guard") > 0
+                && event.getCause() == EntityDamageEvent.DamageCause.FREEZE) {
+            event.setDamage(event.getDamage() * 0.2);
+        }
     }
 
     // ================= 射箭 =================
@@ -475,6 +519,17 @@ public final class NewEnchantListener implements Listener {
             victim.setFireTicks(80);
             victim.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 40, 0));
         }
+        // ===== v1.4.6.3 新增附魔：箭矢效果 =====
+        int heavy = Enchants.level(bow, "heavy_arrow");
+        if (heavy > 0) {
+            event.setDamage(event.getDamage() * (1 + 0.2 * heavy));
+            victim.setVelocity(victim.getLocation().getDirection().multiply(0.6).setY(0.4));
+        }
+        int iceTip = Enchants.level(bow, "ice_tip");
+        if (iceTip > 0) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
+                    manager.duration("ice_tip", 100), 1));
+        }
         // marking：被标记者被近战/箭攻击增伤（此处箭也触发）
         if (marked.containsKey(victim.getUniqueId())) {
             event.setDamage(event.getDamage() * 1.3);
@@ -530,6 +585,23 @@ public final class NewEnchantListener implements Listener {
                     nb.breakNaturally(held);
                 }
             }
+        }
+        // ===== v1.4.6.3 新增附魔：挖掘效果 =====
+        // ore_magnet：挖掘矿石时吸引附近掉落物
+        int oreMag = Enchants.level(held, "ore_magnet");
+        if (oreMag > 0 && isOre(m)) {
+            for (Entity e : b.getWorld().getNearbyEntities(b.getLocation(), 6, 6, 6)) {
+                if (e instanceof Item it) {
+                    org.bukkit.util.Vector pull = b.getLocation().toVector()
+                            .subtract(e.getLocation().toVector()).normalize().multiply(0.5);
+                    e.setVelocity(e.getVelocity().add(pull).setY(0.4));
+                }
+            }
+        }
+        // mining_expert：挖掘额外经验
+        int mineExpert = Enchants.level(held, "mining_expert");
+        if (mineExpert > 0) {
+            p.giveExp(1 + mineExpert);
         }
     }
 

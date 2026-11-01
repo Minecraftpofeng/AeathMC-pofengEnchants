@@ -1,0 +1,23 @@
+#
+# Frost Brand EcoEnchant
+#
+name: "Frost Brand"
+description: Hits freeze and chill your opponent
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.35
+  duration: 60

@@ -1,0 +1,23 @@
+#
+# Speed Dash EcoEnchant
+#
+name: "Speed Dash"
+description: Sprint faster while worn
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - boots
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 60

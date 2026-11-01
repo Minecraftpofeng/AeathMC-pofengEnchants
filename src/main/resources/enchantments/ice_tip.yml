@@ -1,0 +1,24 @@
+#
+# Ice Tip EcoEnchant
+#
+name: "Ice Tip"
+description: Arrows freeze targets
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - bow
+  - crossbow
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 100

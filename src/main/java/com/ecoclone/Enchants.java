@@ -265,6 +265,18 @@ public final class Enchants {
         list.add(def("granite_skin", "Granite Skin", "Increases armor while worn", 3, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
         list.add(def("swift_step", "Swift Step", "Grants speed while worn", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
         list.add(def("nightguard", "Nightguard", "Grants night vision and glowing sight", 1, 2, false, false, "rare", helmets(), 10, 10, 20, 10, 6));
+        // ===== v1.4.6.3 新增附魔书 11 个 =====
+        list.add(def("frost_brand", "Frost Brand", "Hits freeze and chill your opponent", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("culling_blade", "Culling Blade", "Bonus damage to low-health enemies", 4, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("arcane_strike", "Arcane Strike", "Chance to deal bonus magic damage", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("crushing_blow", "Crushing Blow", "Hits weaken armor and deal bonus damage", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("heavy_arrow", "Heavy Arrow", "Arrows deal bonus damage and knock back", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("ice_tip", "Ice Tip", "Arrows freeze targets", 3, 3, false, false, "uncommon", ranged(), 10, 10, 20, 10, 5));
+        list.add(def("ore_magnet", "Ore Magnet", "Mined ores pull nearby drops toward you", 3, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
+        list.add(def("mining_expert", "Mining Expert", "Extra experience from mining", 3, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
+        list.add(def("second_wind", "Second Wind", "Regenerate at low health while worn", 3, 2, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("frost_guard", "Frost Guard", "Nearly negate freeze damage", 3, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
+        list.add(def("speed_dash", "Speed Dash", "Sprint faster while worn", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
         return list;
     }
 
