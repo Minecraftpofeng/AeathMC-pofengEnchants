@@ -1,0 +1,23 @@
+#
+# Cleansing EcoEnchant
+#
+name: "Cleansing"
+description: Periodically purge negative effects while worn
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

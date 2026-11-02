@@ -1,0 +1,23 @@
+#
+# Interrupt EcoEnchant
+#
+name: "Interrupt"
+description: Hits strip positive effects from your opponent
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.4
+  duration: 0

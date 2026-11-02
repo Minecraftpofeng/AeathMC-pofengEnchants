@@ -1,0 +1,23 @@
+#
+# Prospecting EcoEnchant
+#
+name: "Prospecting"
+description: Mined ores may drop extra gold nuggets
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - pickaxes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.2
+  duration: 0

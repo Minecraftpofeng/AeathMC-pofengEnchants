@@ -35,9 +35,12 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -51,7 +54,7 @@ public final class NewEnchantListener implements Listener {
     private final Map<UUID, Map<UUID, Integer>> combo = new HashMap<>();
     /** marking：被标记的目标 -> 标记者 */
     private final Map<UUID, UUID> marked = new HashMap<>();
-    private final NamespacedKey furyKey, enhanceSpd, enhanceMove, enhanceArm, ironKey, graniteKey;
+    private final NamespacedKey furyKey, enhanceSpd, enhanceMove, enhanceArm, ironKey, graniteKey, celerityKey;
     private final Map<UUID, String> lastModCache = new HashMap<>();
 
     public NewEnchantListener(EcoClonePlugin plugin, EnchantManager manager) {
@@ -63,6 +66,7 @@ public final class NewEnchantListener implements Listener {
         this.enhanceArm = new NamespacedKey(plugin, "n_earm");
         this.ironKey = new NamespacedKey(plugin, "n_iron");
         this.graniteKey = new NamespacedKey(plugin, "n_granite");
+        this.celerityKey = new NamespacedKey(plugin, "n_celerity");
         plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 0L, 20L);
     }
 
@@ -98,6 +102,24 @@ public final class NewEnchantListener implements Listener {
     /** config 生效示范：读取附魔 yml 的 config.chance 作为基础概率（已 clamp 到 [0,1]），再乘等级 */
     private boolean chance(String key, double base, int level) {
         return chance(manager.chance(key, base) * level);
+    }
+
+    /** 判断目标是否带有任一正向药水效果 */
+    private static final Set<PotionEffectType> BENEFICIAL = new HashSet<>(Arrays.asList(
+            PotionEffectType.SPEED, PotionEffectType.HASTE, PotionEffectType.STRENGTH,
+            PotionEffectType.JUMP_BOOST, PotionEffectType.REGENERATION, PotionEffectType.RESISTANCE,
+            PotionEffectType.FIRE_RESISTANCE, PotionEffectType.WATER_BREATHING,
+            PotionEffectType.INVISIBILITY, PotionEffectType.NIGHT_VISION,
+            PotionEffectType.HEALTH_BOOST, PotionEffectType.ABSORPTION, PotionEffectType.SATURATION,
+            PotionEffectType.LUCK, PotionEffectType.SLOW_FALLING));
+
+    private boolean hasBeneficialEffect(LivingEntity e) {
+        for (PotionEffect eff : e.getActivePotionEffects()) {
+            if (BENEFICIAL.contains(eff.getType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ================= 每秒被动：属性 + 各持续效果 =================
@@ -204,6 +226,23 @@ public final class NewEnchantListener implements Listener {
             if (Enchants.level(p.getInventory().getBoots(), "speed_dash") > 0 && p.isSprinting()) {
                 p.setVelocity(p.getVelocity().add(p.getLocation().getDirection().multiply(0.05).setY(0)));
             }
+            // ===== v1.4.6.4 新增附魔：被动效果 =====
+            // cleansing：每秒清除负面药水效果
+            if (armorTotal(p, "cleansing") > 0) {
+                for (PotionEffectType pt : new PotionEffectType[]{PotionEffectType.POISON,
+                        PotionEffectType.WITHER, PotionEffectType.WEAKNESS, PotionEffectType.SLOWNESS,
+                        PotionEffectType.BLINDNESS, PotionEffectType.NAUSEA, PotionEffectType.HUNGER,
+                        PotionEffectType.MINING_FATIGUE}) {
+                    if (p.hasPotionEffect(pt)) {
+                        p.removePotionEffect(pt);
+                    }
+                }
+            }
+            // celerity：疾跑时移动速度提升
+            int celerity = Enchants.level(p.getInventory().getBoots(), "celerity");
+            setMod(p, Attribute.GENERIC_MOVEMENT_SPEED, celerityKey,
+                    (celerity > 0 && p.isSprinting()) ? 0.12 * celerity : 0,
+                    AttributeModifier.Operation.MULTIPLY_SCALAR_1);
         }
     }
 
@@ -337,6 +376,30 @@ public final class NewEnchantListener implements Listener {
             dmg *= 1.2;
             event.setDamage(dmg);
         }
+        // ===== v1.4.6.4 新增附魔：命中效果 =====
+        // glacial_grip：强减速
+        int glacial = held(p, "glacial_grip");
+        if (glacial > 0 && chance("glacial_grip", 0.35, glacial)) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
+                    manager.duration("glacial_grip", 100), Math.max(0, glacial)));
+            dmg *= 1.15;
+            event.setDamage(dmg);
+        }
+        // punisher：对带正向药水效果的目标增伤
+        int punish = held(p, "punisher");
+        if (punish > 0 && hasBeneficialEffect(victim)) {
+            dmg *= (1 + 0.25 * punish);
+            event.setDamage(dmg);
+        }
+        // interrupt：命中清除目标正向药水效果
+        int interrupt = held(p, "interrupt");
+        if (interrupt > 0 && chance("interrupt", 0.4, interrupt)) {
+            for (PotionEffect eff : new ArrayList<>(victim.getActivePotionEffects())) {
+                if (BENEFICIAL.contains(eff.getType())) {
+                    victim.removePotionEffect(eff.getType());
+                }
+            }
+        }
         // marking：命中标记目标（下一次增伤）
         int mark = held(p, "marking");
         if (mark > 0) {
@@ -436,6 +499,21 @@ public final class NewEnchantListener implements Listener {
                 && event.getCause() == EntityDamageEvent.DamageCause.FREEZE) {
             event.setDamage(event.getDamage() * 0.2);
         }
+        // ===== v1.4.6.4 新增附魔：护甲 =====
+        // stalwart：高血量时减免伤害
+        int stalwart = armorTotal(p, "stalwart");
+        if (stalwart > 0 && p.getHealth() > p.getMaxHealth() * 0.6) {
+            event.setDamage(event.getDamage() * (1 - 0.08 * stalwart));
+        }
+        // retribution：受击概率反击
+        int retribution = armorTotal(p, "retribution");
+        if (retribution > 0 && chance("retribution", 0.3, retribution)) {
+            org.bukkit.damage.DamageSource ds = event.getDamageSource();
+            Entity dm = ds == null ? null : ds.getCausingEntity();
+            if (dm instanceof LivingEntity le && le != p) {
+                le.damage(event.getDamage() * 0.4, p);
+            }
+        }
     }
 
     // ================= 射箭 =================
@@ -530,6 +608,18 @@ public final class NewEnchantListener implements Listener {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
                     manager.duration("ice_tip", 100), 1));
         }
+        // ===== v1.4.6.4 新增附魔：箭矢效果 =====
+        // debilitating_shot：箭命中虚弱 + 缓慢
+        int debilitate = Enchants.level(bow, "debilitating_shot");
+        if (debilitate > 0) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 80, 0));
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 80, 0));
+        }
+        // corrosive_arrow：箭命中削弱目标护甲
+        int corrosive = Enchants.level(bow, "corrosive_arrow");
+        if (corrosive > 0) {
+            victim.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 100, 1));
+        }
         // marking：被标记者被近战/箭攻击增伤（此处箭也触发）
         if (marked.containsKey(victim.getUniqueId())) {
             event.setDamage(event.getDamage() * 1.3);
@@ -602,6 +692,21 @@ public final class NewEnchantListener implements Listener {
         int mineExpert = Enchants.level(held, "mining_expert");
         if (mineExpert > 0) {
             p.giveExp(1 + mineExpert);
+        }
+        // ===== v1.4.6.4 新增附魔：挖掘效果 =====
+        // timberlord：斧砍原木概率双倍掉落
+        int timber = Enchants.level(held, "timberlord");
+        if (timber > 0 && held.getType().name().contains("_AXE")
+                && m.name().endsWith("_LOG") && chance("timberlord", 0.3, timber)) {
+            for (ItemStack it : b.getDrops(held)) {
+                b.getWorld().dropItemNaturally(b.getLocation(), it.clone());
+            }
+        }
+        // prospecting：挖掘矿石概率额外掉落金粒
+        int prospecting = Enchants.level(held, "prospecting");
+        if (prospecting > 0 && isOre(m) && chance("prospecting", 0.2, prospecting)) {
+            b.getWorld().dropItemNaturally(b.getLocation(),
+                    new ItemStack(Material.GOLD_NUGGET, 1 + prospecting));
         }
     }
 

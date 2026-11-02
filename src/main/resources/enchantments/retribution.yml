@@ -1,0 +1,23 @@
+#
+# Retribution EcoEnchant
+#
+name: "Retribution"
+description: Chance to counterattack when hit
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3
+  duration: 0

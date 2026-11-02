@@ -277,6 +277,18 @@ public final class Enchants {
         list.add(def("second_wind", "Second Wind", "Regenerate at low health while worn", 3, 2, false, false, "rare", armor(), 10, 10, 20, 10, 6));
         list.add(def("frost_guard", "Frost Guard", "Nearly negate freeze damage", 3, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
         list.add(def("speed_dash", "Speed Dash", "Sprint faster while worn", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
+        // ===== v1.4.6.4 新增附魔书 11 个 =====
+        list.add(def("glacial_grip", "Glacial Grip", "Hits deeply freeze your opponent", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("punisher", "Punisher", "Bonus damage against buffed enemies", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("interrupt", "Interrupt", "Hits strip positive effects from your opponent", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("debilitating_shot", "Debilitating Shot", "Arrows weaken and slow targets", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("corrosive_arrow", "Corrosive Arrow", "Arrows weaken enemy armor", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("timberlord", "Timberlord", "Chance of double logs when chopping trees", 3, 3, false, false, "epic", axes(), 10, 10, 25, 10, 8));
+        list.add(def("stalwart", "Stalwart", "Reduce damage while at high health", 3, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("cleansing", "Cleansing", "Periodically purge negative effects while worn", 3, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("retribution", "Retribution", "Chance to counterattack when hit", 3, 3, false, false, "epic", armor(), 10, 10, 25, 10, 8));
+        list.add(def("celerity", "Celerity", "Sprint faster while worn", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        list.add(def("prospecting", "Prospecting", "Mined ores may drop extra gold nuggets", 3, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
         return list;
     }
 
