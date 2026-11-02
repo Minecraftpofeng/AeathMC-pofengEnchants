@@ -229,6 +229,25 @@ public final class GemManager {
         defs.put("ghost", new GemDef("ghost", "幽魂之石", Material.POINTED_DRIPSTONE, "&#B0B7C0", "armor", 5, "穿戴时隐身 Lv", "INVIS"));
         defs.put("tide", new GemDef("tide", "潮汐之石", Material.KELP, "&#4C8DFF", "armor", 5, "穿戴时水下呼吸 Lv", "WATER_BREATH"));
         defs.put("oxheart", new GemDef("oxheart", "蛮牛之心", Material.COOKED_BEEF, "&#FF8C8C", "armor", 5, "穿戴时力量 Lv", "STRENGTH"));
+        // ================= v1.4.6.5 新增宝石 16 种（复用已有 fx 效果模板） =================
+        // 武器系 9
+        defs.put("peridot", new GemDef("peridot", "橄榄石", Material.LIME_DYE, "&#B4FF5E", "weapon", 5, "命中伤害 +2%×Lv", "DMG_PCT"));
+        defs.put("garnet", new GemDef("garnet", "石榴石", Material.RED_DYE, "&#E03C3C", "weapon", 5, "命中追加 Lv 点伤害", "DMG_FLAT"));
+        defs.put("citrine", new GemDef("citrine", "柠檬晶", Material.YELLOW_DYE, "&#FFD94D", "weapon", 5, "命中 5%×Lv 概率暴击×2", "CRIT"));
+        defs.put("opal", new GemDef("opal", "蛋白石", Material.PEARLESCENT_FROGLIGHT, "&#FFE0F0", "weapon", 5, "命中吸血 5%×Lv 伤害", "LIFESTEAL"));
+        defs.put("turquoise", new GemDef("turquoise", "绿松石", Material.CYAN_DYE, "&#3DE0C9", "weapon", 5, "命中附加中毒 Lv（3 秒）", "POISON"));
+        defs.put("zircon", new GemDef("zircon", "锆石", Material.LIGHT_GRAY_DYE, "&#E8E8E8", "weapon", 5, "命中 5%×Lv 概率造成 0.5× 真实伤害", "TRUE_DMG"));
+        defs.put("rose_quartz", new GemDef("rose_quartz", "玫瑰石英", Material.PINK_PETALS, "&#FF9BB3", "weapon", 5, "命中后自身速度 Lv（1 秒）", "SPEED_ON_HIT"));
+        defs.put("cinder", new GemDef("cinder", "余烬", Material.NETHER_BRICK, "&#7A3A3A", "weapon", 5, "命中点燃 Lv 秒", "FIRE"));
+        defs.put("verdant", new GemDef("verdant", "翠玉", Material.SEA_PICKLE, "&#3DDC8E", "weapon", 5, "命中附加缓慢 Lv（2 秒）", "SLOWNESS"));
+        // 护甲系 7
+        defs.put("larimar", new GemDef("larimar", "拉利玛", Material.PRISMARINE, "&#6BD5E1", "armor", 5, "穿戴时水下呼吸 Lv", "WATER_BREATH"));
+        defs.put("fluorite", new GemDef("fluorite", "萤石", Material.AMETHYST_CLUSTER, "&#8AFFD9", "armor", 5, "穿戴时生命恢复 Lv", "REGEN"));
+        defs.put("slate", new GemDef("slate", "板岩", Material.DEEPSLATE_TILES, "&#4A5A5A", "armor", 5, "穿戴时抗性提升 Lv", "RESISTANCE"));
+        defs.put("jade", new GemDef("jade", "玉髓", Material.SHROOMLIGHT, "&#7FFF6E", "armor", 5, "穿戴时急迫 Lv", "HASTE"));
+        defs.put("aegis", new GemDef("aegis", "埃癸斯之壁", Material.SMOOTH_STONE, "&#9E9E9E", "armor", 5, "穿戴时伤害吸收 Lv", "ABSORB"));
+        defs.put("breeze", new GemDef("breeze", "微风之石", Material.POWDER_SNOW_BUCKET, "&#D0F5FF", "armor", 5, "穿戴时速度 Lv", "SPEED"));
+        defs.put("aurora", new GemDef("aurora", "极光石", Material.HEART_OF_THE_SEA, "&#7FE0FF", "armor", 5, "穿戴时夜视 Lv", "NIGHT_VISION"));
     }
 
     // ---------- 访问器 ----------
