@@ -94,6 +94,7 @@ public final class ArmorArtifactListener implements Listener {
         this.plugin = plugin;
         this.manager = manager;
         this.orbKey = new NamespacedKey(plugin, "matter_items");
+        this.orbCritKey = new NamespacedKey(plugin, "matter_crit");
         plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 0L, 40L);
     }
 
@@ -525,6 +526,7 @@ public final class ArmorArtifactListener implements Listener {
     // ---------- 收纳袋：容量 4096，右键倾泻 ----------
 
     private final NamespacedKey orbKey;
+    private final NamespacedKey orbCritKey;
     private static final int ORB_CAPACITY = 4096;
 
     private boolean isMatterOrb(ItemStack it) {
@@ -587,32 +589,52 @@ public final class ArmorArtifactListener implements Listener {
         if (orb == null) {
             orb = new ItemStack(Material.SHULKER_BOX);
             orb.editMeta(meta -> {
-                meta.displayName(Component.text(manager.color("&d收纳袋 &7· 容量 &f4096")));
+                meta.displayName(Component.text(manager.color("&d物质团 &7· 容量 &f4096")));
                 meta.lore(List.of(Component.text(manager.color(
                         "&8世界崩解挖掘的掉落物会自动收集于此")),
-                        Component.text(manager.color("&8持此袋右键：一键倾泻全部物品"))));
+                        Component.text(manager.color("&8持此团右键：释放全部物品到背包"))));
                 meta.getPersistentDataContainer().set(orbKey, PersistentDataType.STRING, "");
             });
             p.getInventory().addItem(orb);
         }
         List<ItemStack> cur = decodeItems(orb.getItemMeta().getPersistentDataContainer()
                 .get(orbKey, PersistentDataType.STRING));
+        boolean critical = orb.getItemMeta().getPersistentDataContainer()
+                .has(orbCritKey, PersistentDataType.STRING);
         List<ItemStack> overflow = new ArrayList<>();
         for (ItemStack d : drops) {
-            if (totalCount(cur) + d.getAmount() <= ORB_CAPACITY) {
+            if (critical || totalCount(cur) + d.getAmount() <= ORB_CAPACITY) {
                 cur.add(d);
             } else {
                 overflow.add(d);
             }
         }
+        // 未达极质但将超容量：达到 4096 上限后转为极质物质团（无限容量，对齐无尽贪婪）
+        if (!critical && !overflow.isEmpty()) {
+            for (ItemStack o : overflow) {
+                cur.add(o);
+            }
+            overflow.clear();
+            critical = true;
+        }
         final List<ItemStack> saved = cur;
-        orb.editMeta(meta -> meta.getPersistentDataContainer()
-                .set(orbKey, PersistentDataType.STRING, encodeItems(saved)));
+        final boolean crit = critical;
+        orb.editMeta(meta -> {
+            meta.getPersistentDataContainer().set(orbKey, PersistentDataType.STRING, encodeItems(saved));
+            if (crit) {
+                meta.getPersistentDataContainer().set(orbCritKey, PersistentDataType.STRING, "1");
+                meta.displayName(Component.text(manager.color("&5极质物质团 &7· 容量 &f∞")));
+                meta.lore(List.of(Component.text(manager.color(
+                        "&8世界崩解挖掘的掉落物会自动收集于此")),
+                        Component.text(manager.color("&8已臻极质：可无限容纳物品")),
+                        Component.text(manager.color("&8持此团右键：释放全部物品到背包"))));
+            }
+        });
         for (ItemStack o : overflow) {
             p.getWorld().dropItemNaturally(p.getLocation(), o);
         }
-        p.sendMessage(manager.prefix() + manager.color("&a掉落已收集入收纳袋（&f"
-                + totalCount(saved) + "&a/&f" + ORB_CAPACITY + "&a）。"));
+        p.sendMessage(manager.prefix() + manager.color("&a掉落已收集入物质团（&f"
+                + totalCount(saved) + "&a" + (crit ? "&a/&f∞" : "&a/&f" + ORB_CAPACITY) + "&a）。"));
     }
 
     private void dumpMatterOrb(Player p, ItemStack orb, Location at) {
@@ -620,14 +642,18 @@ public final class ArmorArtifactListener implements Listener {
                 .get(orbKey, PersistentDataType.STRING));
         int n = totalCount(cur);
         if (n <= 0) {
-            p.sendMessage(manager.prefix() + manager.color("&7收纳袋是空的。"));
+            p.sendMessage(manager.prefix() + manager.color("&7物质团是空的。"));
             return;
         }
+        // 释放到玩家背包，空间不足才掉在地上（对齐无尽贪婪）
         for (ItemStack it : cur) {
-            p.getWorld().dropItemNaturally(at.add(0, 0.5, 0), it);
+            java.util.Map<Integer, ItemStack> left = p.getInventory().addItem(it);
+            for (ItemStack o : left.values()) {
+                p.getWorld().dropItemNaturally(at.add(0, 0.5, 0), o);
+            }
         }
         orb.editMeta(meta -> meta.getPersistentDataContainer().remove(orbKey));
-        p.sendMessage(manager.prefix() + manager.color("&a已倾泻 &f" + n + "&a 个物品。"));
+        p.sendMessage(manager.prefix() + manager.color("&a已释放 &f" + n + "&a 个物品到背包。"));
     }
 
     // ---------- 星球吞噬（鞋子）：铲子挖掘 3x3 ----------
