@@ -248,6 +248,21 @@ public final class GemManager {
         defs.put("aegis", new GemDef("aegis", "埃癸斯之壁", Material.SMOOTH_STONE, "&#9E9E9E", "armor", 5, "穿戴时伤害吸收 Lv", "ABSORB"));
         defs.put("breeze", new GemDef("breeze", "微风之石", Material.POWDER_SNOW_BUCKET, "&#D0F5FF", "armor", 5, "穿戴时速度 Lv", "SPEED"));
         defs.put("aurora", new GemDef("aurora", "极光石", Material.HEART_OF_THE_SEA, "&#7FE0FF", "armor", 5, "穿戴时夜视 Lv", "NIGHT_VISION"));
+        // ================= v1.4.6.7 新增宝石 12 种（复用已有 fx 效果模板） =================
+        // 武器系 7
+        defs.put("sunfire", new GemDef("sunfire", "曜阳之心", Material.SUNFLOWER, "&#FFE14D", "weapon", 5, "命中点燃 Lv 秒", "FIRE"));
+        defs.put("frostbite", new GemDef("frostbite", "冻伤之刃", Material.SNOW_BLOCK, "&#C0F0FF", "weapon", 5, "命中附加缓慢 Lv（2 秒）", "SLOWNESS"));
+        defs.put("plague", new GemDef("plague", "瘟疫之石", Material.ROTTEN_FLESH, "&#7CFC00", "weapon", 5, "命中附加中毒 Lv（3 秒）", "POISON"));
+        defs.put("gloom", new GemDef("gloom", "幽暗之石", Material.SOUL_LANTERN, "&#2F8C8C", "weapon", 5, "命中附加凋零 Lv（3 秒）", "WITHER"));
+        defs.put("surge", new GemDef("surge", "涌雷之石", Material.EXPOSED_COPPER, "&#FFB347", "weapon", 5, "命中 10%×Lv 概率引雷", "LIGHTNING"));
+        defs.put("bloodstone", new GemDef("bloodstone", "血石", Material.RED_TULIP, "&#FF4D4D", "weapon", 5, "命中吸血 5%×Lv 伤害", "LIFESTEAL"));
+        defs.put("warcry", new GemDef("warcry", "战吼之石", Material.GOAT_HORN, "&#FF8C1A", "weapon", 5, "命中后自身力量 Lv（1 秒）", "STRENGTH_ON_HIT"));
+        // 护甲系 5
+        defs.put("spring", new GemDef("spring", "春息之石", Material.MOSSY_COBBLESTONE, "&#7FFF6E", "armor", 5, "穿戴时生命恢复 Lv", "REGEN"));
+        defs.put("vault", new GemDef("vault", "金库之石", Material.GOLD_BLOCK, "&#FFD700", "armor", 5, "穿戴时抗性提升 Lv", "RESISTANCE"));
+        defs.put("stride", new GemDef("stride", "大步之石", Material.COCOA_BEANS, "&#B06E3C", "armor", 5, "穿戴时速度 Lv", "SPEED"));
+        defs.put("brand", new GemDef("brand", "炽印之石", Material.FIREWORK_ROCKET, "&#FF6A33", "armor", 5, "穿戴时火抗 Lv", "FIRE_RESIST"));
+        defs.put("ward", new GemDef("ward", "护符之石", Material.TOTEM_OF_UNDYING, "&#FFC94D", "armor", 5, "穿戴时伤害吸收 Lv", "ABSORB"));
     }
 
     // ---------- 访问器 ----------

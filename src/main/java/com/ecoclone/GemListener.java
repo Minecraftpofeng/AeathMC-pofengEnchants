@@ -406,7 +406,7 @@ public final class GemListener implements Listener {
             }
         }
         fx.forEach((type, lv) ->
-                p.addPotionEffect(new PotionEffect(type, 80, lv - 1, false, false, false)));
+                p.addPotionEffect(new PotionEffect(type, 200, lv - 1, false, false, false)));
         if (absorb > 0) {
             p.setAbsorptionAmount(Math.max(p.getAbsorptionAmount(), 2.0 * absorb));
         }
