@@ -1,5 +1,5 @@
 name: AeathMC-pofengEnchants
-version: 'v1.4.6.6'
+version: 'v1.4.6.7'
 main: com.ecoclone.EcoClonePlugin
 bootstrapper: com.ecoclone.EcoCloneBootstrap
 api-version: '1.21'

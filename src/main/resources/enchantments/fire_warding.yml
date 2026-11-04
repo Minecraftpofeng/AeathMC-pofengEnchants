@@ -1,0 +1,23 @@
+#
+# Fire Warding EcoEnchant
+#
+name: "Fire Warding"
+description: Chance to remove fire when burning
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.5
+  duration: 0

@@ -289,6 +289,17 @@ public final class Enchants {
         list.add(def("retribution", "Retribution", "Chance to counterattack when hit", 3, 3, false, false, "epic", armor(), 10, 10, 25, 10, 8));
         list.add(def("celerity", "Celerity", "Sprint faster while worn", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
         list.add(def("prospecting", "Prospecting", "Mined ores may drop extra gold nuggets", 3, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
+        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔 10 个 =====
+        list.add(def("goliath", "Goliath", "Extra damage against enemies with more health than you", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("water_aspect", "Water Aspect", "Bonus damage against fiery mobs and endermen", 3, 3, false, false, "uncommon", swAx(), 10, 10, 20, 10, 5));
+        list.add(def("confusion", "Confusion", "Chance to shuffle your opponent's hotbar", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("valiant", "Valiant", "Bonus damage when close to your target", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("sniper", "Sniper", "More damage the further the arrow travels", 5, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("fire_warding", "Fire Warding", "Chance to remove fire when burning", 3, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
+        list.add(def("blazing", "Blazing", "Chance to set your attacker on fire", 3, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("stamina", "Stamina", "Restore hunger while sprinting", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
+        list.add(def("oxygenate", "Oxygenate", "Gain oxygen when mining underwater", 3, 3, false, false, "uncommon", pickaxes(), 10, 10, 20, 10, 5));
+        list.add(def("juggler", "Juggler", "Arrows ignore gravity", 1, 1, false, false, "rare", bows(), 10, 10, 20, 10, 6));
         return list;
     }
 

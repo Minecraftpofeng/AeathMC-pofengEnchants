@@ -1,0 +1,23 @@
+#
+# Confusion EcoEnchant
+#
+name: "Confusion"
+description: Chance to shuffle your opponent's hotbar
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3
+  duration: 0

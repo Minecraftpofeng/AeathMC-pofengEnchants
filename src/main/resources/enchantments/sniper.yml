@@ -1,0 +1,24 @@
+#
+# Sniper EcoEnchant
+#
+name: "Sniper"
+description: More damage the further the arrow travels
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - bows
+  - crossbows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 5
+
+config:
+  chance: 1.0
+  duration: 0

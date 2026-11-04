@@ -243,6 +243,17 @@ public final class NewEnchantListener implements Listener {
             setMod(p, Attribute.GENERIC_MOVEMENT_SPEED, celerityKey,
                     (celerity > 0 && p.isSprinting()) ? 0.12 * celerity : 0,
                     AttributeModifier.Operation.MULTIPLY_SCALAR_1);
+            // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：被动效果 =====
+            // fire_warding：着火时概率灭火
+            int fireWard = armorTotal(p, "fire_warding");
+            if (fireWard > 0 && p.getFireTicks() > 0 && chance("fire_warding", 0.5, fireWard)) {
+                p.setFireTicks(0);
+            }
+            // stamina：疾跑时恢复饱食
+            int stamina = Enchants.level(p.getInventory().getBoots(), "stamina");
+            if (stamina > 0 && p.isSprinting()) {
+                p.setFoodLevel(Math.min(20, p.getFoodLevel() + 1));
+            }
         }
     }
 
@@ -264,6 +275,15 @@ public final class NewEnchantListener implements Listener {
                 || m.name().contains("EMERALD_ORE") || m.name().contains("REDSTONE_ORE")
                 || m.name().contains("LAPIS_ORE") || m.name().contains("COPPER_ORE")
                 || m.name().contains("QUARTZ_ORE") || m.name().contains("ANCIENT_DEBRIS");
+    }
+
+    /** water_aspect：火系生物 / 末影人 */
+    private boolean isFiery(LivingEntity e) {
+        org.bukkit.entity.EntityType t = e.getType();
+        return t == org.bukkit.entity.EntityType.BLAZE
+                || t == org.bukkit.entity.EntityType.MAGMA_CUBE
+                || t == org.bukkit.entity.EntityType.GHAST
+                || t == org.bukkit.entity.EntityType.ENDERMAN;
     }
 
     // ================= 近战命中 =================
@@ -405,6 +425,34 @@ public final class NewEnchantListener implements Listener {
         if (mark > 0) {
             marked.put(victim.getUniqueId(), p.getUniqueId());
         }
+        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：命中效果 =====
+        // goliath：对血量高于自己的敌人增伤
+        int goliath = held(p, "goliath");
+        if (goliath > 0 && victim.getHealth() > p.getHealth()) {
+            event.setDamage(event.getDamage() * (1 + 0.1 * goliath));
+        }
+        // water_aspect：对燃烧生物与火系/末影人增伤
+        int waterAspect = held(p, "water_aspect");
+        if (waterAspect > 0 && (victim.getFireTicks() > 0 || isFiery(victim))) {
+            event.setDamage(event.getDamage() * (1 + 0.15 * waterAspect));
+        }
+        // confusion：概率打乱对手快捷栏
+        int confusion = held(p, "confusion");
+        if (confusion > 0 && victim instanceof Player vp
+                && chance("confusion", 0.3, confusion)) {
+            for (int i = 0; i < 4; i++) {
+                int a = (int) (Math.random() * 9), b = (int) (Math.random() * 9);
+                org.bukkit.inventory.PlayerInventory inv = vp.getInventory();
+                ItemStack tmp = inv.getItem(a);
+                inv.setItem(a, inv.getItem(b));
+                inv.setItem(b, tmp);
+            }
+        }
+        // valiant：贴脸近身时增伤
+        int valiant = held(p, "valiant");
+        if (valiant > 0 && p.getLocation().distance(victim.getLocation()) < 3) {
+            event.setDamage(event.getDamage() * (1 + 0.1 * valiant));
+        }
     }
 
     // ================= 受击/护甲/防具 =================
@@ -514,6 +562,13 @@ public final class NewEnchantListener implements Listener {
                 le.damage(event.getDamage() * 0.4, p);
             }
         }
+        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：受击效果 =====
+        // blazing：受击概率让攻击者着火
+        int blazing = armorTotal(p, "blazing");
+        if (blazing > 0 && damager instanceof LivingEntity le && le != p
+                && chance("blazing", 0.3, blazing)) {
+            le.setFireTicks(60);
+        }
     }
 
     // ================= 射箭 =================
@@ -552,6 +607,11 @@ public final class NewEnchantListener implements Listener {
                 ar.setVelocity(new org.bukkit.util.Vector(0, -1.5, 0));
                 ar.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
             }
+        }
+        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：射出效果 =====
+        // juggler：箭矢无视重力
+        if (Enchants.level(bow, "juggler") > 0) {
+            event.getProjectile().setGravity(false);
         }
     }
 
@@ -624,6 +684,15 @@ public final class NewEnchantListener implements Listener {
         if (marked.containsKey(victim.getUniqueId())) {
             event.setDamage(event.getDamage() * 1.3);
             marked.remove(victim.getUniqueId());
+        }
+        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：箭矢命中效果 =====
+        // sniper：射程越远伤害越高
+        int sniper = Enchants.level(bow, "sniper");
+        if (sniper > 0) {
+            double dist = p.getLocation().distance(victim.getLocation());
+            if (dist > 8) {
+                event.setDamage(event.getDamage() * (1 + 0.05 * sniper * Math.min(3, dist / 8)));
+            }
         }
     }
 
@@ -707,6 +776,12 @@ public final class NewEnchantListener implements Listener {
         if (prospecting > 0 && isOre(m) && chance("prospecting", 0.2, prospecting)) {
             b.getWorld().dropItemNaturally(b.getLocation(),
                     new ItemStack(Material.GOLD_NUGGET, 1 + prospecting));
+        }
+        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：挖掘效果 =====
+        // oxygenate：水下挖矿恢复氧气
+        int oxygenate = Enchants.level(held, "oxygenate");
+        if (oxygenate > 0 && p.isInWater()) {
+            p.setRemainingAir(p.getMaximumAir());
         }
     }
 

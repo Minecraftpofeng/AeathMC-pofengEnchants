@@ -1,0 +1,23 @@
+#
+# Goliath EcoEnchant
+#
+name: "Goliath"
+description: Extra damage against enemies with more health than you
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

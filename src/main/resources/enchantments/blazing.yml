@@ -1,0 +1,23 @@
+#
+# Blazing EcoEnchant
+#
+name: "Blazing"
+description: Chance to set your attacker on fire
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - armor
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3
+  duration: 0
