@@ -1,0 +1,24 @@
+#
+# Turbulence EcoEnchant
+#
+name: "Turbulence"
+description: Arrows kick nearby enemies back
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - bows
+  - crossbows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.15
+  duration: 0

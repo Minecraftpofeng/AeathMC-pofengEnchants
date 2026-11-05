@@ -15,6 +15,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -254,6 +255,22 @@ public final class NewEnchantListener implements Listener {
             if (stamina > 0 && p.isSprinting()) {
                 p.setFoodLevel(Math.min(20, p.getFoodLevel() + 1));
             }
+            // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+            // suction：把附近掉落物吸过来
+            int suction = Enchants.level(p.getInventory().getBoots(), "suction");
+            if (suction > 0) {
+                double r = 3.0 + suction;
+                for (Entity e : p.getWorld().getNearbyEntities(p.getLocation(), r, r, r)) {
+                    if (e instanceof Item it) {
+                        org.bukkit.util.Vector pull = p.getLocation().toVector()
+                                .subtract(it.getLocation().toVector());
+                        if (pull.lengthSquared() > 1.0) {
+                            it.setVelocity(it.getVelocity()
+                                    .add(pull.normalize().multiply(0.35).setY(0.15)));
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -452,6 +469,49 @@ public final class NewEnchantListener implements Listener {
         int valiant = held(p, "valiant");
         if (valiant > 0 && p.getLocation().distance(victim.getLocation()) < 3) {
             event.setDamage(event.getDamage() * (1 + 0.1 * valiant));
+        }
+        // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+        // cubism：对史莱姆/岩浆怪增伤
+        int cubism = held(p, "cubism");
+        if (cubism > 0) {
+            EntityType vt = victim.getType();
+            if (vt == EntityType.SLIME || vt == EntityType.MAGMA_CUBE) {
+                event.setDamage(event.getDamage() * (1 + 0.15 * cubism));
+            }
+        }
+        // insecticide：对虫类增伤
+        int insecticide = held(p, "insecticide");
+        if (insecticide > 0) {
+            EntityType vt = victim.getType();
+            if (vt == EntityType.SPIDER || vt == EntityType.CAVE_SPIDER
+                    || vt == EntityType.SILVERFISH || vt == EntityType.ENDERMITE) {
+                event.setDamage(event.getDamage() * (1 + 0.15 * insecticide));
+            }
+        }
+        // plague：命中概率让周围敌人中毒
+        int plague = held(p, "plague");
+        if (plague > 0 && chance("plague", 0.25, plague)) {
+            for (Entity e : victim.getWorld().getNearbyEntities(victim.getLocation(), 4, 4, 4)) {
+                if (e instanceof LivingEntity le && !le.equals(p) && !le.equals(victim)) {
+                    le.addPotionEffect(new PotionEffect(PotionEffectType.POISON,
+                            manager.duration("plague", 100), plague - 1));
+                }
+            }
+        }
+        // overload：概率重击，代价是自身掉血
+        int overload = held(p, "overload");
+        if (overload > 0 && chance("overload", 0.2, overload)) {
+            event.setDamage(event.getDamage() * 1.5);
+            p.damage(1.0 * overload);
+        }
+        // voltaic：命中概率电击周围敌人
+        int voltaic = held(p, "voltaic");
+        if (voltaic > 0 && chance("voltaic", 0.15, voltaic)) {
+            for (Entity e : victim.getWorld().getNearbyEntities(victim.getLocation(), 2, 2, 2)) {
+                if (e instanceof LivingEntity le && !le.equals(p) && !le.equals(victim)) {
+                    le.damage(2.0 * voltaic, p);
+                }
+            }
         }
     }
 
@@ -694,6 +754,43 @@ public final class NewEnchantListener implements Listener {
                 event.setDamage(event.getDamage() * (1 + 0.05 * sniper * Math.min(3, dist / 8)));
             }
         }
+        // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+        // precision：概率暴击
+        int precision = Enchants.level(bow, "precision");
+        if (precision > 0 && chance("precision", 0.15, precision)) {
+            event.setDamage(event.getDamage() * 1.5);
+        }
+        // ricochet：命中后弹射伤害附近另一敌人
+        int ricochet = Enchants.level(bow, "ricochet");
+        if (ricochet > 0 && chance("ricochet", 0.2, ricochet)) {
+            LivingEntity second = null;
+            double best = Double.MAX_VALUE;
+            for (Entity e : victim.getWorld().getNearbyEntities(victim.getLocation(), 5, 5, 5)) {
+                if (e instanceof LivingEntity le && !le.equals(victim) && !le.equals(p)
+                        && !(le instanceof Player)) {
+                    double d = le.getLocation().distance(victim.getLocation());
+                    if (d < best) {
+                        best = d;
+                        second = le;
+                    }
+                }
+            }
+            if (second != null) {
+                second.damage(event.getDamage() * 0.5, p);
+            }
+        }
+        // turbulence：命中产生的气流击退周围敌人
+        int turbulence = Enchants.level(bow, "turbulence");
+        if (turbulence > 0 && chance("turbulence", 0.15, turbulence)) {
+            for (Entity e : victim.getWorld().getNearbyEntities(victim.getLocation(), 3, 3, 3)) {
+                if (e instanceof LivingEntity le && !le.equals(p) && !le.equals(victim)) {
+                    org.bukkit.util.Vector push = le.getLocation().toVector()
+                            .subtract(victim.getLocation().toVector()).normalize().multiply(0.6)
+                            .setY(0.3);
+                    le.setVelocity(le.getVelocity().add(push));
+                }
+            }
+        }
     }
 
     // ================= 挖掘 =================
@@ -782,6 +879,33 @@ public final class NewEnchantListener implements Listener {
         int oxygenate = Enchants.level(held, "oxygenate");
         if (oxygenate > 0 && p.isInWater()) {
             p.setRemainingAir(p.getMaximumAir());
+        }
+        // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+        // replenish：收获成熟作物后自动补种（延后 1 tick，等原方块真正被移除）
+        int replenish = Enchants.level(held, "replenish");
+        if (replenish > 0 && b.getBlockData() instanceof org.bukkit.block.data.Ageable age
+                && age.getAge() == age.getMaximumAge()) {
+            Material cropType = m;
+            ItemStack seed = null;
+            if (cropType == Material.WHEAT) {
+                seed = new ItemStack(Material.WHEAT_SEEDS);
+            } else if (cropType == Material.CARROTS) {
+                seed = new ItemStack(Material.CARROT);
+            } else if (cropType == Material.POTATOES) {
+                seed = new ItemStack(Material.POTATO);
+            } else if (cropType == Material.BEETROOTS) {
+                seed = new ItemStack(Material.BEETROOT_SEEDS);
+            }
+            if (seed != null && p.getInventory().containsAtLeast(seed, 1)) {
+                p.getInventory().removeItem(seed);
+                org.bukkit.Location cropLoc = b.getLocation();
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    Block rb = cropLoc.getBlock();
+                    if (rb.getType() == Material.AIR) {
+                        rb.setType(cropType);
+                    }
+                });
+            }
         }
     }
 

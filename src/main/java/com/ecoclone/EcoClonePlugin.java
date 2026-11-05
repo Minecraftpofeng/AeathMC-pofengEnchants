@@ -18,6 +18,7 @@ import com.ecoclone.listener.HoeArtifactListener;
 import com.ecoclone.listener.WrathBladeListener;
 import com.ecoclone.listener.ArmorArtifactListener;
 import com.ecoclone.listener.NewEnchantListener;
+import com.ecoclone.listener.UpdateNotifyListener;
 import com.ecoclone.listener.UtilityListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -105,6 +106,7 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new MiningListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new ArmorListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new UtilityListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new UpdateNotifyListener(this), this);
             getServer().getPluginManager().registerEvents(new DeathListener(this, manager), this);
             guiListener = new GuiListener(this, manager);
             getServer().getPluginManager().registerEvents(guiListener, this);
@@ -180,28 +182,85 @@ public final class EcoClonePlugin extends JavaPlugin {
         getServer().getConsoleSender().sendMessage("§7[AeathMC-pofengEnchan] §f" + msg);
     }
 
-    /** 检测 GitHub 最新 release，有新版时提醒控制台与在线玩家 */
+    /** GitHub 发布页与 SpigotMC 主页（更新提示用） */
+    public static final String GITHUB_URL = "https://github.com/Minecraftpofeng/AeathMC-pofengEnchants/releases";
+    public static final String SPIGOT_URL = "https://www.spigotmc.org/resources/aeathmc-pofengenchants-rpg.139838/";
+
+    /** 最近一次成功拉取的 release：[tag, html_url]，缓存 5 分钟避免管理员频繁进服刷接口 */
+    private volatile String[] cachedRelease = null;
+    private volatile long cachedAt = 0L;
+
+    /** 启动时自动检测（notifyPlayers=true 时有新版会广播给在线玩家） */
     public void checkUpdate(boolean notifyPlayers) {
+        checkUpdate(notifyPlayers, null);
+    }
+
+    /** /aeath update 与管理员进服：结果直接回给指定接收者 */
+    public void checkUpdate(CommandSender notifyTo) {
+        checkUpdate(false, notifyTo);
+    }
+
+    private void checkUpdate(boolean notifyPlayers, CommandSender notifyTo) {
         getServer().getScheduler().runTaskAsynchronously(this, () -> {
-            String latest = fetchLatestTag();
+            String[] rel = latestRelease();
             String cur = getDescription().getVersion();
-            if (latest == null) {
-                console("更新检测失败：无法访问 GitHub API（检查网络/加速器）。");
+            if (rel == null) {
+                String fail = "更新检测失败：无法访问 GitHub API（检查网络/加速器）。";
+                console(fail);
+                if (notifyTo != null) {
+                    reply(notifyTo, "§c[AeathMC-pofengEnchan] " + fail);
+                }
                 return;
             }
+            String latest = rel[0];
+            String ghUrl = rel[1] == null ? GITHUB_URL : rel[1];
             boolean hasNew = !latest.equalsIgnoreCase(cur);
             console("更新检查 Update check: 当前 Current " + cur
                     + " | 最新 Latest " + latest
                     + (hasNew ? " - 有更新 New version available!" : " - 已是最新 Up to date"));
+            console("下载地址 Download: GitHub " + ghUrl + " | SpigotMC " + SPIGOT_URL);
             if (hasNew && notifyPlayers) {
                 getServer().getScheduler().runTask(this, () ->
                         Bukkit.broadcastMessage("§6[AeathMC-pofengEnchan] §e检测到新版本 §f" + latest
-                                + " §e（当前 " + cur + "），请到 GitHub 下载更新插件！"));
+                                + " §e（当前 " + cur + "），请到 GitHub 或 SpigotMC 下载更新插件！"));
+            }
+            if (notifyTo != null) {
+                String state = hasNew ? "§a有更新 New version available!" : "§7已是最新 Up to date";
+                reply(notifyTo, "§6[AeathMC-pofengEnchan] §e更新检查 / Update check");
+                reply(notifyTo, " §7当前 Current: §f" + cur);
+                reply(notifyTo, " §7最新 Latest: §f" + latest + " " + state);
+                reply(notifyTo, " §7GitHub: §b" + ghUrl);
+                reply(notifyTo, " §7SpigotMC: §b" + SPIGOT_URL);
             }
         });
     }
 
-    private String fetchLatestTag() {
+    /** 回主线程给指定接收者发消息（Player 上线状态与线程安全） */
+    private void reply(CommandSender who, String msg) {
+        getServer().getScheduler().runTask(this, () -> {
+            try {
+                who.sendMessage(msg);
+            } catch (Throwable ignored) {
+            }
+        });
+    }
+
+    /** 取最新 release；5 分钟内复用缓存 */
+    private String[] latestRelease() {
+        long now = System.currentTimeMillis();
+        if (cachedRelease != null && now - cachedAt < 300_000L) {
+            return cachedRelease;
+        }
+        String[] rel = fetchLatestRelease();
+        if (rel != null) {
+            cachedRelease = rel;
+            cachedAt = now;
+        }
+        return rel;
+    }
+
+    /** 拉取最新 release 的 tag_name 与 html_url */
+    private String[] fetchLatestRelease() {
         try {
             java.net.URL u = new java.net.URL(
                     "https://api.github.com/repos/Minecraftpofeng/AeathMC-pofengEnchants/releases/latest");
@@ -222,9 +281,14 @@ public final class EcoClonePlugin extends JavaPlugin {
             while ((line = r.readLine()) != null) sb.append(line);
             r.close();
             c.disconnect();
-            java.util.regex.Matcher m = java.util.regex.Pattern
+            java.util.regex.Matcher tm = java.util.regex.Pattern
                     .compile("\"tag_name\"\\s*:\\s*\"([^\"]+)\"").matcher(sb.toString());
-            return m.find() ? m.group(1) : null;
+            if (!tm.find()) {
+                return null;
+            }
+            java.util.regex.Matcher um = java.util.regex.Pattern
+                    .compile("\"html_url\"\\s*:\\s*\"([^\"]+)\"").matcher(sb.toString());
+            return new String[]{tm.group(1), um.find() ? um.group(1) : null};
         } catch (Exception ex) {
             return null;
         }

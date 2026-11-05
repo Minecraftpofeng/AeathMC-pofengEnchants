@@ -1,0 +1,23 @@
+#
+# Insecticide EcoEnchant
+#
+name: "Insecticide"
+description: Extra damage against spiders, silverfish and endermites
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 0

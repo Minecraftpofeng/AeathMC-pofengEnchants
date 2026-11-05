@@ -1,0 +1,23 @@
+#
+# Voltaic EcoEnchant
+#
+name: "Voltaic"
+description: Chance to shock nearby enemies on hit
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.15
+  duration: 0

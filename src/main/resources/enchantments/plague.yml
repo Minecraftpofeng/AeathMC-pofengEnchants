@@ -1,0 +1,23 @@
+#
+# Plague EcoEnchant
+#
+name: "Plague"
+description: Chance to poison nearby enemies on hit
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.25
+  duration: 100

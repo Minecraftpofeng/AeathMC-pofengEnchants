@@ -1,0 +1,26 @@
+#
+# Replenish EcoEnchant
+#
+name: "Replenish"
+description: Replants harvested crops automatically
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  - axes
+  - pickaxes
+  - shovels
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 1
+
+config:
+  chance: 1.0
+  duration: 0

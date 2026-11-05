@@ -300,6 +300,17 @@ public final class Enchants {
         list.add(def("stamina", "Stamina", "Restore hunger while sprinting", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
         list.add(def("oxygenate", "Oxygenate", "Gain oxygen when mining underwater", 3, 3, false, false, "uncommon", pickaxes(), 10, 10, 20, 10, 5));
         list.add(def("juggler", "Juggler", "Arrows ignore gravity", 1, 1, false, false, "rare", bows(), 10, 10, 20, 10, 6));
+        // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+        list.add(def("cubism", "Cubism", "Extra damage against slimes and magma cubes", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("insecticide", "Insecticide", "Extra damage against spiders, silverfish and endermites", 3, 4, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
+        list.add(def("plague", "Plague", "Chance to poison nearby enemies on hit", 3, 2, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("overload", "Overload", "Chance to deal heavy damage but hurt yourself", 3, 2, false, false, "epic", swords(), 10, 10, 25, 10, 8));
+        list.add(def("precision", "Precision", "Chance for arrows to deal critical damage", 3, 3, false, false, "rare", ranged(), 10, 10, 20, 10, 6));
+        list.add(def("ricochet", "Ricochet", "Arrows bounce and damage a nearby enemy", 3, 2, false, false, "epic", ranged(), 10, 10, 25, 10, 8));
+        list.add(def("turbulence", "Turbulence", "Arrows kick nearby enemies back", 3, 3, false, false, "uncommon", ranged(), 10, 10, 20, 10, 5));
+        list.add(def("replenish", "Replenish", "Replants harvested crops automatically", 1, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
+        list.add(def("suction", "Suction", "Pulls nearby dropped items toward you", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
+        list.add(def("voltaic", "Voltaic", "Chance to shock nearby enemies on hit", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
         return list;
     }
 

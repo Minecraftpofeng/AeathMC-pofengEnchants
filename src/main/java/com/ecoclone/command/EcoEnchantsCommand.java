@@ -526,9 +526,13 @@ public final class EcoEnchantsCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
             case "update" -> {
+                if (!sender.hasPermission("ecoenchants.command.update")) {
+                    noPerm(sender);
+                    return true;
+                }
                 sender.sendMessage(manager.prefix()
-                        + manager.color("&a已发起更新检查，结果请看控制台（[AeathMC-pofengEnchan] 前缀）。"));
-                plugin.checkUpdate(true);
+                        + manager.color("&a正在检测更新 / Checking for updates..."));
+                plugin.checkUpdate(sender);
                 return true;
             }
             case "armor" -> {

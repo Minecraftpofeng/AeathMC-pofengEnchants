@@ -1,0 +1,24 @@
+#
+# Precision EcoEnchant
+#
+name: "Precision"
+description: Chance for arrows to deal critical damage
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - bows
+  - crossbows
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.15
+  duration: 0

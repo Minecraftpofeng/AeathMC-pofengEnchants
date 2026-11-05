@@ -1,0 +1,23 @@
+#
+# Overload EcoEnchant
+#
+name: "Overload"
+description: Chance to deal heavy damage but hurt yourself
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.2
+  duration: 0
