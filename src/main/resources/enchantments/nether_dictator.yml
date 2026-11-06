@@ -1,0 +1,24 @@
+#
+# Nether Dictator EcoEnchant
+#
+name: "Nether Dictator"
+description: Extra damage while in the Nether
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - swords
+  - axes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 6
+
+config:
+  chance: 1.0
+  duration: 0

@@ -311,6 +311,19 @@ public final class Enchants {
         list.add(def("replenish", "Replenish", "Replants harvested crops automatically", 1, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
         list.add(def("suction", "Suction", "Pulls nearby dropped items toward you", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
         list.add(def("voltaic", "Voltaic", "Chance to shock nearby enemies on hit", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        // ===== v1.4.6.9 对标 EcoEnchants 新增 =====
+        list.add(def("abrasion", "Abrasion", "Chance to damage your opponent's armor", 3, 3, false, false, "uncommon", swAx(), 10, 10, 20, 10, 5));
+        list.add(def("antidote", "Antidote", "Chance to be immune to potion damage", 6, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
+        list.add(def("butcher", "Butcher", "Extra damage against passive animals", 5, 3, false, false, "uncommon", swAx(), 10, 10, 20, 10, 5));
+        list.add(def("defusion", "Defusion", "Extra damage against creepers", 5, 3, false, false, "uncommon", swAx(), 10, 10, 20, 10, 5));
+        list.add(def("ender_slayer", "Ender Slayer", "Extra damage against end creatures", 5, 3, false, false, "rare", swAx(), 10, 10, 20, 10, 6));
+        list.add(def("nether_dictator", "Nether Dictator", "Extra damage while in the Nether", 6, 2, false, false, "epic", swAx(), 10, 10, 25, 10, 8));
+        list.add(def("moonlight", "Moonlight", "Extra damage at night", 6, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
+        list.add(def("paladin", "Paladin", "Extra damage while riding", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
+        list.add(def("diet", "Diet", "Chance to prevent hunger loss", 6, 3, false, false, "rare", helmets(), 10, 10, 20, 10, 6));
+        list.add(def("launch", "Launch", "Chance to launch your enemy into the air", 3, 2, false, false, "epic", swAx(), 10, 10, 25, 10, 8));
+        list.add(def("splash", "Splash", "Tridents deal area damage on landing", 4, 3, false, false, "rare", tridents(), 10, 10, 20, 10, 6));
+        list.add(def("haste", "Haste", "Gain haste after mining blocks", 3, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
         return list;
     }
 
@@ -381,6 +394,10 @@ public final class Enchants {
     private static List<TypedKey<ItemType>> helmets() {
         return List.of(ItemTypeKeys.LEATHER_HELMET, ItemTypeKeys.CHAINMAIL_HELMET, ItemTypeKeys.IRON_HELMET,
                 ItemTypeKeys.GOLDEN_HELMET, ItemTypeKeys.DIAMOND_HELMET, ItemTypeKeys.NETHERITE_HELMET);
+    }
+
+    private static List<TypedKey<ItemType>> tridents() {
+        return List.of(ItemTypeKeys.TRIDENT);
     }
 
     private static List<TypedKey<ItemType>> everything() {

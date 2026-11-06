@@ -1,0 +1,23 @@
+#
+# Diet EcoEnchant
+#
+name: "Diet"
+description: Chance to prevent hunger loss
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - helmets
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 6
+
+config:
+  chance: 0.12
+  duration: 0

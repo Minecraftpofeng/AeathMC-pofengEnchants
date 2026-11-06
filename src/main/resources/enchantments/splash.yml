@@ -1,0 +1,24 @@
+#
+# Splash EcoEnchant
+#
+name: "Splash"
+description: Tridents deal area damage on landing
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - tridents
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 4
+
+config:
+  chance: 1.0
+  duration: 0
+  radius: 3

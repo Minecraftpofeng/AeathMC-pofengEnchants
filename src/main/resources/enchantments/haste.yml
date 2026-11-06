@@ -1,0 +1,23 @@
+#
+# Haste EcoEnchant
+#
+name: "Haste"
+description: Gain haste after mining blocks
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - tools
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 1.0
+  duration: 100

@@ -20,6 +20,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -28,7 +29,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -513,6 +516,65 @@ public final class NewEnchantListener implements Listener {
                 }
             }
         }
+        // ===== v1.4.6.9 对标 EcoEnchants 新增 =====
+        // abrasion：命中概率磨损对手盔甲耐久
+        int abrasion = held(p, "abrasion");
+        if (abrasion > 0 && chance("abrasion", 0.25, abrasion)
+                && victim.getEquipment() != null) {
+            ItemStack[] armors = victim.getEquipment().getArmorContents();
+            for (ItemStack a : armors) {
+                if (a == null || a.getType().isAir()) {
+                    continue;
+                }
+                org.bukkit.inventory.meta.ItemMeta meta = a.getItemMeta();
+                if (meta instanceof org.bukkit.inventory.meta.Damageable dm) {
+                    int max = a.getType().getMaxDurability();
+                    dm.setDamage(Math.min(dm.getDamage() + abrasion, Math.max(0, max - 1)));
+                    a.setItemMeta(meta);
+                }
+            }
+            victim.getEquipment().setArmorContents(armors);
+        }
+        // butcher：对和平生物增伤
+        int butcher = held(p, "butcher");
+        if (butcher > 0 && victim instanceof org.bukkit.entity.Animals) {
+            event.setDamage(event.getDamage() * (1 + 0.15 * butcher));
+        }
+        // defusion：对爬行者增伤
+        int defusion = held(p, "defusion");
+        if (defusion > 0 && victim.getType() == EntityType.CREEPER) {
+            event.setDamage(event.getDamage() * (1 + 0.15 * defusion));
+        }
+        // ender_slayer：在末地对末地生物增伤
+        int enderSlayer = held(p, "ender_slayer");
+        if (enderSlayer > 0
+                && victim.getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END) {
+            event.setDamage(event.getDamage() * (1 + 0.2 * enderSlayer));
+        }
+        // nether_dictator：在下界增伤
+        int netherDictator = held(p, "nether_dictator");
+        if (netherDictator > 0
+                && p.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER) {
+            event.setDamage(event.getDamage() * (1 + 0.2 * netherDictator));
+        }
+        // moonlight：夜间增伤
+        int moonlight = held(p, "moonlight");
+        if (moonlight > 0) {
+            long time = p.getWorld().getTime();
+            if (time >= 13000 && time <= 23000) {
+                event.setDamage(event.getDamage() * (1 + 0.15 * moonlight));
+            }
+        }
+        // paladin：骑乘时增伤
+        int paladin = held(p, "paladin");
+        if (paladin > 0 && p.isInsideVehicle()) {
+            event.setDamage(event.getDamage() * (1 + 0.2 * paladin));
+        }
+        // launch：概率把敌人击向空中
+        int launch = held(p, "launch");
+        if (launch > 0 && chance("launch", 0.2, launch)) {
+            victim.setVelocity(victim.getVelocity().setY(0.5 + 0.2 * launch));
+        }
     }
 
     // ================= 受击/护甲/防具 =================
@@ -628,6 +690,15 @@ public final class NewEnchantListener implements Listener {
         if (blazing > 0 && damager instanceof LivingEntity le && le != p
                 && chance("blazing", 0.3, blazing)) {
             le.setFireTicks(60);
+        }
+        // ===== v1.4.6.9 对标 EcoEnchants 新增 =====
+        // antidote：概率免疫药水（魔法/中毒）伤害
+        int antidote = armorTotal(p, "antidote");
+        if (antidote > 0
+                && (event.getCause() == EntityDamageEvent.DamageCause.MAGIC
+                || event.getCause() == EntityDamageEvent.DamageCause.POISON)
+                && chance("antidote", 0.15, antidote)) {
+            event.setDamage(0);
         }
     }
 
@@ -905,6 +976,51 @@ public final class NewEnchantListener implements Listener {
                         rb.setType(cropType);
                     }
                 });
+            }
+        }
+        // ===== v1.4.6.9 对标 EcoEnchants 新增 =====
+        // haste：挖掘方块后获得急迫
+        int hasteLv = Enchants.level(held, "haste");
+        if (hasteLv > 0) {
+            p.addPotionEffect(new PotionEffect(PotionEffectType.HASTE,
+                    manager.duration("haste", 100) * hasteLv, Math.max(0, hasteLv - 1), true, false));
+        }
+    }
+
+    // ================= 饥饿 / 三叉戟落点 =================
+    @EventHandler(ignoreCancelled = true)
+    public void onHunger(FoodLevelChangeEvent event) {
+        if (!(event.getEntity() instanceof Player p)) {
+            return;
+        }
+        if (event.getFoodLevel() >= p.getFoodLevel()) {
+            return;
+        }
+        // diet：概率不消耗饱食度
+        int diet = armorTotal(p, "diet");
+        if (diet > 0 && chance("diet", 0.12, diet)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onTridentLand(ProjectileHitEvent event) {
+        if (!(event.getEntity() instanceof Trident trident)) {
+            return;
+        }
+        if (!(trident.getShooter() instanceof Player p)) {
+            return;
+        }
+        if (event.getHitEntity() != null) {
+            return;
+        }
+        // splash：三叉戟落点造成范围伤害
+        int splash = Enchants.level(trident.getItemStack(), "splash");
+        if (splash > 0) {
+            for (Entity e : trident.getWorld().getNearbyEntities(trident.getLocation(), 3, 3, 3)) {
+                if (e instanceof LivingEntity le && !le.equals(p) && !le.equals(trident)) {
+                    le.damage(3.0 * splash, p);
+                }
             }
         }
     }

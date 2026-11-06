@@ -1,0 +1,24 @@
+#
+# Abrasion EcoEnchant
+#
+name: "Abrasion"
+description: Chance to damage your opponent's armor
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - swords
+  - axes
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.25
+  duration: 0
