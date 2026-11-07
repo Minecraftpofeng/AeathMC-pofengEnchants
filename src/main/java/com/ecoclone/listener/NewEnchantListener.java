@@ -3,6 +3,7 @@ package com.ecoclone.listener;
 import com.ecoclone.EcoClonePlugin;
 import com.ecoclone.EnchantManager;
 import com.ecoclone.Enchants;
+import com.ecoclone.TriggerType;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -74,8 +75,22 @@ public final class NewEnchantListener implements Listener {
         plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 0L, 20L);
     }
 
+    /**
+     * v1.4.7 高级功能：附魔生效前的统一闸门。
+     * 1) triggers：该附魔只允许在配置的触发器场景生效（未配置 = 全部允许）；
+     * 2) conditions / filters：自定义条件（权限、世界、生物群系、坐标、时间、天气、血量等）。
+     */
+    private boolean active(String key, Player p) {
+        if (p == null) {
+            return false;
+        }
+        return plugin.conditions().triggerAllowed(key, TriggerType.get())
+                && plugin.conditions().matches(key, p);
+    }
+
     private int held(Player p, String key) {
-        return Enchants.level(p.getInventory().getItemInMainHand(), key);
+        int lv = Enchants.level(p.getInventory().getItemInMainHand(), key);
+        return lv > 0 && active(key, p) ? lv : 0;
     }
 
     private int armorTotal(Player p, String key) {
@@ -85,7 +100,13 @@ public final class NewEnchantListener implements Listener {
                 t += Enchants.level(it, key);
             }
         }
-        return t;
+        return t > 0 && active(key, p) ? t : 0;
+    }
+
+    /** 指定物品的附魔等级，同样经过条件 / 触发器过滤（被动 tick 使用） */
+    private int lv(Player p, ItemStack item, String key) {
+        int value = Enchants.level(item, key);
+        return value > 0 && active(key, p) ? value : 0;
     }
 
     private static boolean chance(double c) {
@@ -128,14 +149,15 @@ public final class NewEnchantListener implements Listener {
 
     // ================= 每秒被动：属性 + 各持续效果 =================
     private void tick() {
+        TriggerType.set(TriggerType.PASSIVE);
         for (Player p : Bukkit.getOnlinePlayers()) {
             ItemStack held = p.getInventory().getItemInMainHand();
             // blade_fury 攻速
-            int fury = Enchants.level(held, "blade_fury");
+            int fury = lv(p, held, "blade_fury");
             setMod(p, Attribute.GENERIC_ATTACK_SPEED, furyKey,
                     fury > 0 ? 0.2 * fury : 0, AttributeModifier.Operation.MULTIPLY_SCALAR_1);
             // enhance 全属性
-            int enh = Enchants.level(held, "enhance");
+            int enh = lv(p, held, "enhance");
             setMod(p, Attribute.GENERIC_ATTACK_SPEED, enhanceSpd, enh > 0 ? 0.06 * enh : 0,
                     AttributeModifier.Operation.MULTIPLY_SCALAR_1);
             setMod(p, Attribute.GENERIC_MOVEMENT_SPEED, enhanceMove, enh > 0 ? 0.03 * enh : 0,
@@ -147,7 +169,7 @@ public final class NewEnchantListener implements Listener {
             setMod(p, Attribute.GENERIC_ARMOR, ironKey, iron > 0 ? 0.12 * iron : 0,
                     AttributeModifier.Operation.MULTIPLY_SCALAR_1);
             // ore_vision：周围矿石发光
-            int ov = Enchants.level(held, "ore_vision");
+            int ov = lv(p, held, "ore_vision");
             if (ov > 0) {
                 for (int dx = -6; dx <= 6; dx++) {
                     for (int dy = -4; dy <= 4; dy++) {
@@ -162,7 +184,7 @@ public final class NewEnchantListener implements Listener {
                 }
             }
             // hunter_vision：附近敌对生物发光
-            if (Enchants.level(p.getInventory().getHelmet(), "hunter_vision") > 0) {
+            if (lv(p, p.getInventory().getHelmet(), "hunter_vision") > 0) {
                 for (Entity e : p.getNearbyEntities(20, 20, 20)) {
                     if (e instanceof org.bukkit.entity.Monster) {
                         e.setGlowing(true);
@@ -176,7 +198,7 @@ public final class NewEnchantListener implements Listener {
                 }
             }
             // clear_mind：免疫失明
-            if (Enchants.level(p.getInventory().getHelmet(), "clear_mind") > 0) {
+            if (lv(p, p.getInventory().getHelmet(), "clear_mind") > 0) {
                 p.removePotionEffect(PotionEffectType.BLINDNESS);
             }
             // warmth：免疫缓慢/冻结
@@ -185,31 +207,31 @@ public final class NewEnchantListener implements Listener {
             }
             // ===== v1.4.6 新增附魔：被动效果 =====
             passiveBuff(p, "turtle_shell", armorTotal(p, "turtle_shell"), PotionEffectType.RESISTANCE, 25 * 20);
-            passiveBuff(p, "swift_step", Enchants.level(p.getInventory().getBoots(), "swift_step"), PotionEffectType.SPEED, 25 * 20);
-            passiveBuff(p, "nightguard", Enchants.level(p.getInventory().getHelmet(), "nightguard"), PotionEffectType.NIGHT_VISION, 25 * 20);
-            passiveBuff(p, "deep_mine", Enchants.level(p.getInventory().getItemInMainHand(), "deep_mine"), PotionEffectType.HASTE, 25 * 20);
+            passiveBuff(p, "swift_step", lv(p, p.getInventory().getBoots(), "swift_step"), PotionEffectType.SPEED, 25 * 20);
+            passiveBuff(p, "nightguard", lv(p, p.getInventory().getHelmet(), "nightguard"), PotionEffectType.NIGHT_VISION, 25 * 20);
+            passiveBuff(p, "deep_mine", lv(p, p.getInventory().getItemInMainHand(), "deep_mine"), PotionEffectType.HASTE, 25 * 20);
             int granite = armorTotal(p, "granite_skin");
             setMod(p, Attribute.GENERIC_ARMOR, graniteKey,
                     granite > 0 ? 1.5 * granite : 0, AttributeModifier.Operation.ADD_NUMBER);
             // echo：移动残影
-            if (Enchants.level(p.getInventory().getBoots(), "echo") > 0 && p.isSprinting()) {
+            if (lv(p, p.getInventory().getBoots(), "echo") > 0 && p.isSprinting()) {
                 p.getWorld().spawnParticle(Particle.DUST,
                         p.getLocation().add(0, 0.5, 0), 1, 0.1, 0.1, 0.1, 0,
                         new DustOptions(Color.fromRGB(180, 180, 220), 0.8f));
             }
             // mountain_climber：贴墙/攀爬加速
-            if (Enchants.level(p.getInventory().getBoots(), "mountain_climber") > 0
+            if (lv(p, p.getInventory().getBoots(), "mountain_climber") > 0
                     && p.isClimbing()) {
                 p.setVelocity(p.getVelocity().add(p.getLocation().getDirection().multiply(0.2)
                         .setY(0.15)));
             }
             // glider：下落缓慢
-            if (Enchants.level(p.getInventory().getBoots(), "glider") > 0
+            if (lv(p, p.getInventory().getBoots(), "glider") > 0
                     && p.getVelocity().getY() < -0.1 && !p.isOnGround()) {
                 p.setVelocity(p.getVelocity().multiply(0.5));
             }
             // frost_walker：脚下水冻结
-            if (Enchants.level(p.getInventory().getBoots(), "frost_walker") > 0) {
+            if (lv(p, p.getInventory().getBoots(), "frost_walker") > 0) {
                 Block under = p.getLocation().subtract(0, 0.5, 0).getBlock();
                 if (under.getType() == Material.WATER) {
                     under.setType(Material.FROSTED_ICE);
@@ -227,7 +249,7 @@ public final class NewEnchantListener implements Listener {
                 p.removePotionEffect(PotionEffectType.REGENERATION);
             }
             // speed_dash：疾跑加速
-            if (Enchants.level(p.getInventory().getBoots(), "speed_dash") > 0 && p.isSprinting()) {
+            if (lv(p, p.getInventory().getBoots(), "speed_dash") > 0 && p.isSprinting()) {
                 p.setVelocity(p.getVelocity().add(p.getLocation().getDirection().multiply(0.05).setY(0)));
             }
             // ===== v1.4.6.4 新增附魔：被动效果 =====
@@ -243,7 +265,7 @@ public final class NewEnchantListener implements Listener {
                 }
             }
             // celerity：疾跑时移动速度提升
-            int celerity = Enchants.level(p.getInventory().getBoots(), "celerity");
+            int celerity = lv(p, p.getInventory().getBoots(), "celerity");
             setMod(p, Attribute.GENERIC_MOVEMENT_SPEED, celerityKey,
                     (celerity > 0 && p.isSprinting()) ? 0.12 * celerity : 0,
                     AttributeModifier.Operation.MULTIPLY_SCALAR_1);
@@ -254,13 +276,13 @@ public final class NewEnchantListener implements Listener {
                 p.setFireTicks(0);
             }
             // stamina：疾跑时恢复饱食
-            int stamina = Enchants.level(p.getInventory().getBoots(), "stamina");
+            int stamina = lv(p, p.getInventory().getBoots(), "stamina");
             if (stamina > 0 && p.isSprinting()) {
                 p.setFoodLevel(Math.min(20, p.getFoodLevel() + 1));
             }
             // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
             // suction：把附近掉落物吸过来
-            int suction = Enchants.level(p.getInventory().getBoots(), "suction");
+            int suction = lv(p, p.getInventory().getBoots(), "suction");
             if (suction > 0) {
                 double r = 3.0 + suction;
                 for (Entity e : p.getWorld().getNearbyEntities(p.getLocation(), r, r, r)) {
@@ -309,6 +331,7 @@ public final class NewEnchantListener implements Listener {
     // ================= 近战命中 =================
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onHit(EntityDamageByEntityEvent event) {
+        TriggerType.set(TriggerType.ATTACK);
         if (!(event.getDamager() instanceof Player p)) {
             return;
         }
@@ -580,6 +603,7 @@ public final class NewEnchantListener implements Listener {
     // ================= 受击/护甲/防具 =================
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onHurt(EntityDamageEvent event) {
+        TriggerType.set(TriggerType.DEFEND);
         if (!(event.getEntity() instanceof Player p)) {
             return;
         }
@@ -705,6 +729,7 @@ public final class NewEnchantListener implements Listener {
     // ================= 射箭 =================
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onShoot(EntityShootBowEvent event) {
+        TriggerType.set(TriggerType.SHOOT);
         if (!(event.getEntity() instanceof Player p)) {
             return;
         }
@@ -749,6 +774,7 @@ public final class NewEnchantListener implements Listener {
     // ================= 箭矢命中 =================
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onArrowHit(EntityDamageByEntityEvent event) {
+        TriggerType.set(TriggerType.SHOOT);
         if (!(event.getDamager() instanceof Projectile projectile)) {
             return;
         }
@@ -867,6 +893,7 @@ public final class NewEnchantListener implements Listener {
     // ================= 挖掘 =================
     @EventHandler(ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
+        TriggerType.set(TriggerType.MINE);
         Player p = event.getPlayer();
         ItemStack held = p.getInventory().getItemInMainHand();
         Block b = event.getBlock();
@@ -990,6 +1017,7 @@ public final class NewEnchantListener implements Listener {
     // ================= 饥饿 / 三叉戟落点 =================
     @EventHandler(ignoreCancelled = true)
     public void onHunger(FoodLevelChangeEvent event) {
+        TriggerType.set(TriggerType.PASSIVE);
         if (!(event.getEntity() instanceof Player p)) {
             return;
         }
@@ -1005,6 +1033,7 @@ public final class NewEnchantListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onTridentLand(ProjectileHitEvent event) {
+        TriggerType.set(TriggerType.SHOOT);
         if (!(event.getEntity() instanceof Trident trident)) {
             return;
         }
@@ -1028,6 +1057,7 @@ public final class NewEnchantListener implements Listener {
     // ================= 击杀 =================
     @EventHandler
     public void onKill(EntityDeathEvent event) {
+        TriggerType.set(TriggerType.KILL);
         if (!(event.getEntity() instanceof LivingEntity dead)) {
             return;
         }
@@ -1061,6 +1091,7 @@ public final class NewEnchantListener implements Listener {
     // ================= time_ward：死亡保留经验 =================
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
+        TriggerType.set(TriggerType.KILL);
         Player p = event.getEntity();
         ItemStack held = p.getInventory().getItemInMainHand();
         if (Enchants.level(held, "time_ward") > 0) {

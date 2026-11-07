@@ -7,6 +7,8 @@ import com.ecoclone.listener.AdminSwordListener;
 import com.ecoclone.listener.ArtifactListener;
 import com.ecoclone.listener.CombatListener;
 import com.ecoclone.listener.DeathListener;
+import com.ecoclone.listener.LootInjectListener;
+import com.ecoclone.listener.VillagerTradeListener;
 import com.ecoclone.listener.GuiListener;
 import com.ecoclone.listener.MiningListener;
 import com.ecoclone.listener.ProjectileListener;
@@ -32,6 +34,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class EcoClonePlugin extends JavaPlugin {
 
     private EnchantManager manager;
+    private EnchantConditions enchantConditions;
     private GuiListener guiListener;
     private ArtifactListener artifactListener;
     private NewEnchantListener newEnchantListener;
@@ -78,6 +81,7 @@ public final class EcoClonePlugin extends JavaPlugin {
             getLogger().info("正在启用 AeathMC-pofengEnchants...");
             manager = new EnchantManager(this);
             manager.load();
+            enchantConditions = new EnchantConditions(this);
             detectVersion();
             checkUpdate(true);
             int n = Enchants.loadFromRegistry();
@@ -108,6 +112,8 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new UtilityListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new UpdateNotifyListener(this), this);
             getServer().getPluginManager().registerEvents(new DeathListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new VillagerTradeListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new LootInjectListener(this, manager), this);
             guiListener = new GuiListener(this, manager);
             getServer().getPluginManager().registerEvents(guiListener, this);
             artifactListener = new ArtifactListener(this, manager);
@@ -339,8 +345,16 @@ public final class EcoClonePlugin extends JavaPlugin {
         return manager;
     }
 
+    /** v1.4.7 高级功能：自定义条件 + 触发器 */
+    public EnchantConditions conditions() {
+        return enchantConditions;
+    }
+
     public void reload() {
         manager.load();
+        if (enchantConditions != null) {
+            enchantConditions.reload();
+        }
         manager.clearCooldowns();
         if (newEnchantListener != null) {
             newEnchantListener.clearState();

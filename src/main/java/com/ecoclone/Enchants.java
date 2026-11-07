@@ -411,4 +411,77 @@ public final class Enchants {
                 ItemTypeKeys.SHIELD, ItemTypeKeys.ELYTRA, ItemTypeKeys.FISHING_ROD));
         return l;
     }
+
+    /**
+     * v1.4.7 高级功能：静态清单 + 市场导入的附魔。
+     * 导入的 yml 落在 plugins/&lt;插件&gt;/enchantments/&lt;key&gt;.yml，bootstrap 阶段据此注册为真实附魔，
+     * 因此新导入的附魔重启服务端后即可用。
+     */
+    public static List<EnchantDef> withImported(java.nio.file.Path dataDir) {
+        List<EnchantDef> base = definitions();
+        List<EnchantDef> out = new ArrayList<>(base);
+        if (dataDir == null) {
+            return out;
+        }
+        java.io.File dir = dataDir.resolve("enchantments").toFile();
+        java.io.File[] files = dir.listFiles((d, n) -> n.endsWith(".yml"));
+        if (files == null) {
+            return out;
+        }
+        java.util.Set<String> known = new java.util.HashSet<>();
+        for (EnchantDef d : base) {
+            known.add(d.key);
+        }
+        for (java.io.File f : files) {
+            String key = f.getName().substring(0, f.getName().length() - 4);
+            if (known.contains(key)) {
+                continue;
+            }
+            try {
+                org.bukkit.configuration.file.YamlConfiguration y =
+                        org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(f);
+                String name = y.getString("name", key);
+                String desc = y.getString("description", "");
+                int max = Math.max(1, y.getInt("general-config.maximum-level", 1));
+                String rarity = y.getString("obtaining.rarity", "common");
+                java.util.List<String> groups = y.getStringList("general-config.targets");
+                out.add(new EnchantDef(key, name, desc, max, 3, false, false, rarity,
+                        targetGroups(groups), 10, 10, 20, 10, 5));
+                known.add(key);
+            } catch (Throwable ignored) {
+                // 导入文件损坏时跳过，不影响启动
+            }
+        }
+        return out;
+    }
+
+    /** 把 yml 的 targets 分组名翻译成物品类型集合 */
+    private static List<TypedKey<ItemType>> targetGroups(java.util.List<String> groups) {
+        List<TypedKey<ItemType>> out = new ArrayList<>();
+        for (String raw : groups) {
+            if (raw == null) {
+                continue;
+            }
+            switch (raw.toLowerCase().trim()) {
+                case "swords", "sword" -> out.addAll(swords());
+                case "axes", "axe" -> out.addAll(axes());
+                case "swax", "swords-axes" -> out.addAll(swAx());
+                case "armor", "armour" -> out.addAll(armor());
+                case "boots" -> out.addAll(boots());
+                case "helmets", "helmet" -> out.addAll(helmets());
+                case "pickaxes", "pickaxe" -> out.addAll(pickaxes());
+                case "tools", "tool" -> out.addAll(tools());
+                case "bows", "bow" -> out.addAll(bows());
+                case "ranged" -> out.addAll(ranged());
+                case "tridents", "trident" -> out.addAll(tridents());
+                case "everything", "all" -> out.addAll(everything());
+                default -> {
+                }
+            }
+        }
+        if (out.isEmpty()) {
+            out.addAll(everything());
+        }
+        return out;
+    }
 }

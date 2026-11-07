@@ -22,13 +22,47 @@ enchanting-table:
   # 每个附魔的权重乘数
   weight-multiplier: 1.0
 
-# 村民交易（是否生成自定义附魔书交易）
+# 村民交易（v1.4.7：自动生成自定义附魔书交易）
 villager:
   enabled: true
+  # 村民新增交易被替换为自定义附魔书的概率（0-1）
+  chance: 0.35
+  # 单笔交易可被购买次数
+  max-uses: 3
+  # 附魔书价格（绿宝石），按稀有度
+  price:
+    common: 8
+    uncommon: 12
+    rare: 18
+    epic: 26
+    legendary: 40
 
-# 世界生成的战利品宝箱 / 末地城等结构中的自然附魔
+# 世界生成的战利品宝箱 / 末地城等结构中的自然附魔（v1.4.7：自动注入附魔书）
 loot:
   enabled: true
+  # 每个匹配的战利品箱生成附魔书的概率（0-1）
+  chance: 0.35
+  # 单箱最多生成几本
+  max-books: 2
+  # 等级浮动倍率（1.0 = 保持抽取等级）
+  level-multiplier: 1.0
+  # 只处理这些前缀的战利品表（chests = 全部箱子）
+  table-prefixes:
+    - chests
+
+# 市场导入（v1.4.7：LRCDB / EcoEnchants 社区配置）
+market:
+  # 导入地址模板，%s 为附魔 key
+  source: "https://lrcdb.com/api/enchantment/%s.yml"
+  # 是否允许覆盖同名 yml（也可用 /aeath import --force）
+  overwrite: false
+
+# 高级功能总开关（v1.4.7）
+advanced:
+  # 附魔自定义条件（conditions / filters），见文件末尾示例
+  conditions: true
+  # 附魔触发器（triggers）
+  triggers: true
 
 # 铁砧/磨石交互
 anvil:
@@ -42,3 +76,34 @@ show-descriptions: true
 
 # 消息语言文件（en.yml 或自定义）
 language: en.yml
+
+# ================= v1.4.7 高级功能写法说明 =================
+# 以下段落在单个附魔的 enchantments/<key>.yml 中生效（本文件只是说明，改动这里无效）。
+#
+# conditions（别名 filters）：附魔生效前逐条判定，全部满足才生效；不写 = 不限制。
+#   conditions:
+#     - "permission:aeath.vip"          # 需要权限
+#     - "world:world"                   # 世界名，可用逗号写多个
+#     - "y-above:60"                    # 坐标
+#     - "time:night"                    # day / night / dawn / dusk / 13000-23000
+#     - "weather:clear"                 # clear / rain / thunder
+#     - "health-below:50%"              # 血量，支持百分比
+#     - "level-above:10"                # 玩家等级
+#     - "gamemode:survival"             # 游戏模式
+#     - "biome:plains,desert"           # 生物群系
+#     - "sneaking:true"                 # 布尔：sneaking / sprinting / flying / on-ground / in-water / vehicle
+#     - "entities-nearby:MONSTER>=3"    # 附近实体数量
+#     - "placeholder:%server_online%>=10"  # PlaceholderAPI 变量（未装 PAPI 时视为通过）
+#     - type: biome                     # 也可以写成 map 形式
+#       value: plains
+#
+# triggers：限定附魔只在指定场景触发；不写 = 全部允许。
+#   general-config:
+#     triggers: [attack, defense]       # attack / defense / shoot / mine / kill / passive / fish / trade / loot
+#   # 也可以直接写在顶层：triggers: [mining]
+#
+# 市场导入：/aeath import <附魔键>              按 market.source 模板下载
+#           /aeath import <附魔键> <直链>       从指定直链下载
+#           /aeath import --force <附魔键>      覆盖同名配置
+# 导入文件落在 enchantments/<key>.yml：静态清单已有 key 立即热生效，新 key 重启后注册生效。
+

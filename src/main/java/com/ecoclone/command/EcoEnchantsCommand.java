@@ -99,6 +99,37 @@ public final class EcoEnchantsCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(manager.prefix() + manager.msg("commands.reload"));
                 return true;
             }
+            case "import" -> {
+                if (!sender.hasPermission("ecoenchants.command.import")) {
+                    noPerm(sender);
+                    return true;
+                }
+                java.util.List<String> rest = new java.util.ArrayList<>();
+                boolean force = false;
+                for (int i = 1; i < args.length; i++) {
+                    if (args[i].equalsIgnoreCase("--force") || args[i].equalsIgnoreCase("-f")) {
+                        force = true;
+                    } else {
+                        rest.add(args[i]);
+                    }
+                }
+                if (rest.isEmpty()) {
+                    sender.sendMessage(manager.prefix() + manager.color(
+                            "&c用法：/aeath import <附魔键> [直链] [--force]"));
+                    sender.sendMessage(manager.color(" &7按 config.yml 的 market.source 模板下载，保存到 enchantments/<key>.yml"));
+                    return true;
+                }
+                String target0 = rest.get(0);
+                String direct = rest.size() > 1 ? rest.get(1) : null;
+                boolean force0 = force;
+                sender.sendMessage(manager.prefix() + manager.color("&7正在从市场拉取附魔配置..."));
+                org.bukkit.Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    String result = new com.ecoclone.MarketImporter(plugin).importFrom(target0, direct, force0);
+                    org.bukkit.Bukkit.getScheduler().runTask(plugin,
+                            () -> sender.sendMessage(manager.prefix() + result));
+                });
+                return true;
+            }
             case "givebook" -> {
                 if (!sender.hasPermission("ecoenchants.command.givebook")) {
                     noPerm(sender);
@@ -612,7 +643,7 @@ public final class EcoEnchantsCommand implements CommandExecutor, TabCompleter {
         List<String> subs = List.of("help", "giverandombook", "randomenchant", "givebook", "scroll",
                 "enchant", "set", "gui", "wipe", "reload", "artifact", "admin", "rainbow", "aether", "dawn",
                 "abyss", "hoe", "wrath", "armor", "gem", "gemlv", "socket", "gems", "geminfo",
-                "version", "update");
+                "version", "update", "import");
         if (args.length == 1) {
             return filter(subs, args[0]);
         }
@@ -736,6 +767,7 @@ public final class EcoEnchantsCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(manager.color(" &e/aeath geminfo &7- 查看手持装备宝石槽"));
         sender.sendMessage(manager.color(" &e/aeath version &7- 版本信息"));
         sender.sendMessage(manager.color(" &e/aeath update &7- 检测更新"));
+        sender.sendMessage(manager.color(" &e/aeath import <附魔键> [直链] [--force] &7- 从市场导入附魔配置"));
         sender.sendMessage(manager.color("&7提示 / Tips："));
         sender.sendMessage(manager.color(" &7宝石完整清单：&e/aeath gems"));
         sender.sendMessage(manager.color(" &7附魔键补全：输入 &e/aeath givebook <空格> &7后按 Tab"));

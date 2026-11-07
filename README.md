@@ -4,8 +4,9 @@
 通过 Paper 官方 registry bootstrap 把自定义附魔注册为**真实附魔**，因此能被附魔台、铁砧、磨石
 以及其它插件原生识别（与 EcoEnchants 的实现方式一致）。
 
-当前版本 **v1.4.6.9**：
+当前版本 **v1.4.7.0**：
 **227 个自定义附魔** · **123 种宝石**（1-100 级 / 10 档 / 每件最多 100 槽） · **9 件神器** · **物质团** · **内置更新检测**
+**v1.4.7 新增高级功能**：附魔自定义条件（conditions / filters）· 触发器（triggers）· 村民交易自动生成附魔书 · 战利品箱自动注入附魔书 · 市场（LRCDB）配置导入
 
 > 开源协议：GPL-3.0（详见 [LICENSE](LICENSE)）。可自由使用、修改、分发，但任何衍生作品必须保持开源并同样采用 GPL-3.0，禁止闭源商用。
 
@@ -26,6 +27,11 @@
 | 神器系列 | 9 件：寰宇支配之剑、创世神刃、彩虹猫之刃、以太五阶剑（1-5）、晨曦破晓剑、暗渊噬魂剑、大楚兴陈胜王之锄、七宗罪·暴怒、无尽防具四件套 |
 | 物质团 | 对齐《无尽贪婪》Avaritia 的收纳物品：容量 4096，装满后升级为「极质物质团」容量 ∞，右键优先释放进背包 |
 | 更新检测 | 启动自动检测、管理员进服自动检测、手动 `/aeath update`，均输出最新 GitHub Release 链接与 SpigotMC 链接 |
+| 自定义条件 | 单附魔可用 `conditions`（别名 `filters`）限制生效场景：权限、世界、维度、生物群系、坐标、时间、天气、血量、饱食度、等级、游戏模式、潜行/飞行/骑乘、附近实体数量、PlaceholderAPI 变量 |
+| 触发器 | 单附魔可用 `triggers` 限定只在 attack / defense / shoot / mine / kill / passive / fish / trade / loot 场景触发，不配置则全部允许 |
+| 村民交易 | 村民新增交易按概率替换为自定义附魔书，价格按稀有度可配置（`villager` 段） |
+| 战利品注入 | 箱子战利品生成时按概率自动注入 0-N 本自定义附魔书，等级可浮动（`loot` 段） |
+| 市场导入 | `/aeath import` 从 LRCDB 模板地址或任意直链下载附魔 yml，落盘即时热加载；新附魔重启后注册生效 |
 | 软依赖 | PlaceholderAPI / Vault / ProtocolLib，未安装时静默跳过，不影响主功能 |
 
 ## 三、环境要求
@@ -90,6 +96,7 @@ mvn clean package
 | `/aeath geminfo` | 查看手持装备宝石槽 |
 | `/aeath version` | 插件版本 / 服务端版本 / 支持范围 / 兼容判定 |
 | `/aeath update` | 立即检测更新，结果直接回给执行者 |
+| `/aeath import <附魔键> [直链] [--force]` | 从市场导入附魔配置到 `enchantments/<key>.yml` |
 | `/enchantinfo <附魔>` | 查看附魔信息 |
 
 附魔键名即权限后缀，例如 `Curse of Fragility` → `curse_of_fragility`。
@@ -137,6 +144,57 @@ config:
 - `obtaining` 控制附魔台 / 村民 / 战利品获取与稀有度。
 - `general-config.targets` 对应 `targets.yml` 中的物品分组。
 - `rarity.yml` 定义稀有度权重。
+
+### 高级功能（v1.4.7）
+
+同一份 yml 里可追加 `conditions` 与 `triggers`（总开关在 `config.yml` 的 `advanced` 段）：
+
+```yaml
+conditions:                     # 别名 filters，全部满足才生效；不写 = 不限制
+  - "permission:aeath.vip"
+  - "world:world"
+  - "y-above:60"
+  - "time:night"
+  - "weather:clear"
+  - "health-below:50%"
+  - type: biome
+    value: plains,desert
+filters:                        # map 写法同样支持
+  level-above: 10
+general-config:
+  triggers: [attack, defense]   # attack/defense/shoot/mine/kill/passive/fish/trade/loot
+```
+
+支持的条件类型：`permission` / `no-permission` / `world` / `world-not` / `world-env` / `biome` /
+`y-above` / `y-below` / `time` / `weather` / `health-above` / `health-below` / `food-above` /
+`food-below` / `level-above` / `level-below` / `gamemode` / `sneaking` / `sprinting` / `flying` /
+`on-ground` / `in-water` / `vehicle` / `gliding` / `swimming` / `entities-nearby` / `placeholder`。
+
+村民交易与战利品注入在 `config.yml`：
+
+```yaml
+villager:
+  enabled: true
+  chance: 0.35
+  max-uses: 3
+  price: { common: 8, uncommon: 12, rare: 18, epic: 26, legendary: 40 }
+loot:
+  enabled: true
+  chance: 0.35
+  max-books: 2
+  level-multiplier: 1.0
+  table-prefixes: [chests]
+market:
+  source: "https://lrcdb.com/api/enchantment/%s.yml"
+  overwrite: false
+advanced:
+  conditions: true
+  triggers: true
+```
+
+市场导入的三步：`/aeath import <key>` 按模板下载 → 存到 `enchantments/<key>.yml` →
+静态清单已有的 key 立即热生效，新 key 在重启后由 bootstrap 注册为真实附魔。导入记录写在
+`plugins/AeathMC-pofengEnchants/market-imported.txt`。
 
 ## 八、如何新增附魔
 

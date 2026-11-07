@@ -42,7 +42,9 @@ public final class EcoCloneBootstrap implements PluginBootstrap {
                 RegistryEvents.ENCHANTMENT.freeze().newHandler(event -> {
                     WritableRegistry<Enchantment, EnchantmentRegistryEntry.Builder> registry = event.registry();
                     ERRORS.clear();
-                    for (EnchantDef def : Enchants.definitions()) {
+                    // v1.4.7：静态清单 + 市场导入（enchantments/ 下多出来的 yml 也会被注册）
+                    List<EnchantDef> all = Enchants.withImported(context.getDataDirectory());
+                    for (EnchantDef def : all) {
                         try {
                             TypedKey<Enchantment> typed =
                                     TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("ecoclone", def.key));
@@ -61,7 +63,7 @@ public final class EcoCloneBootstrap implements PluginBootstrap {
                                 ERRORS.isEmpty() ? List.of("all 32 enchantments registered OK") : ERRORS);
                     } catch (Exception ignored) {
                     }
-                    int ok = Enchants.definitions().size() - ERRORS.size();
+                    int ok = all.size() - ERRORS.size();
                     context.getLogger().info("bootstrap 注册完成：成功 " + ok + " / 失败 " + ERRORS.size());
                 }));
     }

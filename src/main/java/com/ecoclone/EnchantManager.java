@@ -69,7 +69,8 @@ public final class EnchantManager {
     private void buildTargets() {
         keyTargets.clear();
         Registry<ItemType> registry = Registry.ITEM;
-        for (EnchantDef def : Enchants.definitions()) {
+        // 含市场导入的附魔，保证 canEnchant / 附魔书发放对导入项同样有效
+        for (EnchantDef def : Enchants.withImported(plugin.getDataFolder().toPath())) {
             List<ItemType> types = new ArrayList<>();
             for (TypedKey<ItemType> tk : def.targets) {
                 ItemType t = registry.get(tk);
@@ -1188,5 +1189,85 @@ public final class EnchantManager {
 
     public YamlConfiguration rawRarity() {
         return rarity;
+    }
+
+    // ---------- v1.4.7 高级功能配置 ----------
+
+    /** 单个附魔的 yml 配置（高级功能：conditions / triggers / filters 从这里读） */
+    public YamlConfiguration enchantConfig(String key) {
+        return enchantConfigs.get(key);
+    }
+
+    /** 已加载的附魔配置 key 集合 */
+    public Set<String> configuredKeys() {
+        return enchantConfigs.keySet();
+    }
+
+    public boolean villagerEnabled() {
+        return config == null || config.getBoolean("villager.enabled", true);
+    }
+
+    public double villagerChance() {
+        return config == null ? 0.35 : EnchantManager.clamp01(config.getDouble("villager.chance", 0.35));
+    }
+
+    public int villagerMaxUses() {
+        return config == null ? 3 : Math.max(1, config.getInt("villager.max-uses", 3));
+    }
+
+    /** 附魔书交易价格（绿宝石），按稀有度取 villager.price.<rarity>，缺省 8/12/18/26/40 */
+    public int villagerPrice(String rarity) {
+        int def = switch (rarity == null ? "common" : rarity) {
+            case "uncommon" -> 12;
+            case "rare" -> 18;
+            case "epic" -> 26;
+            case "legendary" -> 40;
+            default -> 8;
+        };
+        return config == null ? def : Math.max(1, config.getInt("villager.price." + rarity, def));
+    }
+
+    public boolean lootEnabled() {
+        return config == null || config.getBoolean("loot.enabled", true);
+    }
+
+    public double lootChance() {
+        return config == null ? 0.35 : EnchantManager.clamp01(config.getDouble("loot.chance", 0.35));
+    }
+
+    public int lootMaxBooks() {
+        return config == null ? 2 : Math.max(1, config.getInt("loot.max-books", 2));
+    }
+
+    public double lootLevelMultiplier() {
+        return config == null ? 1.0 : Math.max(0.1, config.getDouble("loot.level-multiplier", 1.0));
+    }
+
+    /** 战利品表白名单前缀（空表示全部箱子） */
+    public List<String> lootTablePrefixes() {
+        if (config == null) {
+            return List.of("chests");
+        }
+        List<String> l = config.getStringList("loot.table-prefixes");
+        return l.isEmpty() ? List.of("chests") : l;
+    }
+
+    /** LRCDB / 市场导入地址模板，%s 为附魔 key */
+    public String marketSource() {
+        return config == null
+                ? "https://lrcdb.com/api/enchantment/%s.yml"
+                : config.getString("market.source", "https://lrcdb.com/api/enchantment/%s.yml");
+    }
+
+    public boolean marketOverwrite() {
+        return config != null && config.getBoolean("market.overwrite", false);
+    }
+
+    public boolean conditionsEnabled() {
+        return config == null || config.getBoolean("advanced.conditions", true);
+    }
+
+    public boolean triggersEnabled() {
+        return config == null || config.getBoolean("advanced.triggers", true);
     }
 }
