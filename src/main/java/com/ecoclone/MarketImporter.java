@@ -85,7 +85,7 @@ public final class MarketImporter {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(8000);
         c.setReadTimeout(8000);
-        c.setRequestProperty("User-Agent", "AeathMC-pofengEnchants/v" + plugin.getDescription().getVersion());
+        c.setRequestProperty("User-Agent", "AeathMC-pofengEnchants/" + plugin.getDescription().getVersion());
         c.setRequestProperty("Accept", "text/yaml, text/plain, */*");
         int code = c.getResponseCode();
         if (code < 200 || code >= 300) {

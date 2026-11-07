@@ -4,9 +4,9 @@
 通过 Paper 官方 registry bootstrap 把自定义附魔注册为**真实附魔**，因此能被附魔台、铁砧、磨石
 以及其它插件原生识别（与 EcoEnchants 的实现方式一致）。
 
-当前版本 **v1.4.7.0**：
+当前版本 **r-v1.4.7.0**：
 **227 个自定义附魔** · **123 种宝石**（1-100 级 / 10 档 / 每件最多 100 槽） · **9 件神器** · **物质团** · **内置更新检测**
-**v1.4.7 新增高级功能**：附魔自定义条件（conditions / filters）· 触发器（triggers）· 村民交易自动生成附魔书 · 战利品箱自动注入附魔书 · 市场（LRCDB）配置导入
+**r-v1.4.7.0 新增高级功能**：附魔自定义条件（conditions / filters）· 触发器（triggers）· 村民交易自动生成附魔书 · 战利品箱自动注入附魔书 · 市场（LRCDB）配置导入
 
 > 开源协议：GPL-3.0（详见 [LICENSE](LICENSE)）。可自由使用、修改、分发，但任何衍生作品必须保持开源并同样采用 GPL-3.0，禁止闭源商用。
 
@@ -145,7 +145,7 @@ config:
 - `general-config.targets` 对应 `targets.yml` 中的物品分组。
 - `rarity.yml` 定义稀有度权重。
 
-### 高级功能（v1.4.7）
+### 高级功能（r-v1.4.7.0）
 
 同一份 yml 里可追加 `conditions` 与 `triggers`（总开关在 `config.yml` 的 `advanced` 段）：
 
