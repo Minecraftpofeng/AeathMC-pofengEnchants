@@ -1,8 +1,10 @@
 package com.ecoclone.listener;
 
 import com.ecoclone.EcoClonePlugin;
+import com.ecoclone.EnchantGate;
 import com.ecoclone.EnchantManager;
 import com.ecoclone.Enchants;
+import com.ecoclone.TriggerType;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
@@ -48,6 +50,8 @@ public final class UtilityListener implements Listener {
             @Override
             public void run() {
                 for (Player player : Bukkit.getOnlinePlayers()) {
+                    EnchantGate.enter(player);
+                    TriggerType.set(TriggerType.PASSIVE);
                     magnetic(player);
                     thrive(player);
                     spring(player);
@@ -145,9 +149,19 @@ public final class UtilityListener implements Listener {
     // ---------- 耐久：Indestructibility / Curse of Fragility ----------
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onItemDamage(PlayerItemDamageEvent event) {
+        EnchantGate.enter(event.getPlayer());
+        TriggerType.set(TriggerType.PASSIVE);
         ItemStack item = event.getItem();
         int indestructible = Enchants.level(item, "indestructibility");
         if (indestructible > 0) {
+            event.setDamage(0);
+            return;
+        }
+        // Conservation：滑翔时概率不消耗鞘翅耐久
+        int conservation = Enchants.level(item, "conservation");
+        if (conservation > 0 && event.getPlayer().isGliding()
+                && item.getType() == org.bukkit.Material.ELYTRA
+                && Math.random() < Math.min(0.15 * conservation, 0.45)) {
             event.setDamage(0);
             return;
         }

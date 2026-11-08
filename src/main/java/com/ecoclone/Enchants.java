@@ -30,10 +30,14 @@ public final class Enchants {
         return REGISTERED.get(key);
     }
 
-    /** 该附魔在物品上的等级 */
+    /** 该附魔在物品上的等级（v1.4.7.0 起同时套 conditions / triggers 闸门） */
     public static int level(ItemStack item, String key) {
         Enchantment e = REGISTERED.get(key);
-        return e == null || item == null ? 0 : item.getEnchantmentLevel(e);
+        int value = e == null || item == null ? 0 : item.getEnchantmentLevel(e);
+        if (value <= 0) {
+            return 0;
+        }
+        return EnchantGate.allows(item, key) ? value : 0;
     }
 
     public static boolean has(ItemStack item, String key) {
@@ -324,6 +328,12 @@ public final class Enchants {
         list.add(def("launch", "Launch", "Chance to launch your enemy into the air", 3, 2, false, false, "epic", swAx(), 10, 10, 25, 10, 8));
         list.add(def("splash", "Splash", "Tridents deal area damage on landing", 4, 3, false, false, "rare", tridents(), 10, 10, 20, 10, 6));
         list.add(def("haste", "Haste", "Gain haste after mining blocks", 3, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
+        list.add(def("shield_bash", "Shield Bash", "Knock back and damage attackers while blocking", 3, 3, false, false, "uncommon", shields(), 10, 10, 20, 10, 5));
+        list.add(def("spikes", "Spikes", "Reflect contact damage to attackers while blocking", 3, 3, false, false, "common", shields(), 10, 10, 20, 10, 4));
+        list.add(def("mirror", "Mirror", "Chance to fully reflect damage while blocking", 2, 2, false, false, "epic", shields(), 10, 10, 20, 10, 8));
+        list.add(def("lucky_catch", "Lucky Catch", "Chance to catch an extra fish", 3, 3, false, false, "uncommon", fishingRods(), 10, 10, 20, 10, 5));
+        list.add(def("grappling", "Grappling", "Reel in hooked entities", 3, 3, false, false, "rare", fishingRods(), 10, 10, 20, 10, 6));
+        list.add(def("conservation", "Conservation", "Chance to save elytra durability while gliding", 3, 3, false, false, "rare", elytras(), 10, 10, 20, 10, 6));
         return list;
     }
 
@@ -400,6 +410,18 @@ public final class Enchants {
         return List.of(ItemTypeKeys.TRIDENT);
     }
 
+    private static List<TypedKey<ItemType>> shields() {
+        return List.of(ItemTypeKeys.SHIELD);
+    }
+
+    private static List<TypedKey<ItemType>> elytras() {
+        return List.of(ItemTypeKeys.ELYTRA);
+    }
+
+    private static List<TypedKey<ItemType>> fishingRods() {
+        return List.of(ItemTypeKeys.FISHING_ROD);
+    }
+
     private static List<TypedKey<ItemType>> everything() {
         List<TypedKey<ItemType>> l = new ArrayList<>();
         l.addAll(swords());
@@ -474,6 +496,9 @@ public final class Enchants {
                 case "bows", "bow" -> out.addAll(bows());
                 case "ranged" -> out.addAll(ranged());
                 case "tridents", "trident" -> out.addAll(tridents());
+                case "shields", "shield" -> out.addAll(shields());
+                case "elytras", "elytra" -> out.addAll(elytras());
+                case "fishing-rods", "fishing_rods", "fishingrods", "rods", "rods-fishing" -> out.addAll(fishingRods());
                 case "everything", "all" -> out.addAll(everything());
                 default -> {
                 }

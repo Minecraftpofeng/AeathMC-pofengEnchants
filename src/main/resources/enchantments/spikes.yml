@@ -1,0 +1,22 @@
+#
+# Spikes EcoEnchant
+#
+name: "Spikes"
+description: Reflect contact damage to attackers while blocking
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: common
+
+general-config:
+  targets:
+  - shields
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.3

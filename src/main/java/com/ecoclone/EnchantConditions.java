@@ -452,4 +452,13 @@ public final class EnchantConditions {
         }
         return out;
     }
+
+    /** 该附魔配置的触发器（空列表表示全部场景允许） */
+    public List<String> triggersOf(String key) {
+        List<String> out = new ArrayList<>();
+        for (TriggerType t : triggers.computeIfAbsent(key, k -> parseTriggers(manager.enchantConfig(k)))) {
+            out.add(t.name().toLowerCase(java.util.Locale.ROOT));
+        }
+        return out;
+    }
 }

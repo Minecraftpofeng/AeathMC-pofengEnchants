@@ -1,0 +1,22 @@
+#
+# Shield Bash EcoEnchant
+#
+name: "Shield Bash"
+description: Knock back and damage attackers while blocking
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: uncommon
+
+general-config:
+  targets:
+  - shields
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.2

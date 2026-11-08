@@ -1,8 +1,10 @@
 package com.ecoclone.listener;
 
 import com.ecoclone.EcoClonePlugin;
+import com.ecoclone.EnchantGate;
 import com.ecoclone.EnchantManager;
 import com.ecoclone.Enchants;
+import com.ecoclone.TriggerType;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -103,6 +105,8 @@ public final class ProjectileListener implements Listener {
         if (bow == null) {
             return;
         }
+        EnchantGate.enter(player);
+        TriggerType.set(TriggerType.SHOOT);
         Projectile proj = (Projectile) event.getProjectile();
         stats.put(proj.getUniqueId(), new int[]{
                 Enchants.level(bow, "force"),

@@ -1,8 +1,10 @@
 package com.ecoclone.listener;
 
 import com.ecoclone.EcoClonePlugin;
+import com.ecoclone.EnchantGate;
 import com.ecoclone.EnchantManager;
 import com.ecoclone.Enchants;
+import com.ecoclone.TriggerType;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -182,6 +184,8 @@ public final class CombatListener implements Listener {
         if (held == null || held.getType().isAir()) {
             return;
         }
+        EnchantGate.enter(attacker, victim instanceof Player pv ? pv : null);
+        TriggerType.set(TriggerType.ATTACK);
         // 神器（寰宇支配之剑）：所有技能 100% 概率触发且无视冷却
         boolean artifact = manager.isArtifact(held);
 
@@ -510,6 +514,8 @@ public final class CombatListener implements Listener {
         if (!(event.getEntity() instanceof Player victim)) {
             return;
         }
+        EnchantGate.enter(victim);
+        TriggerType.set(TriggerType.DEFEND);
         double dmg = event.getDamage();
         boolean changed = false;
         // Guardian：格挡减伤
@@ -601,6 +607,8 @@ public final class CombatListener implements Listener {
         if (held == null) {
             return;
         }
+        EnchantGate.enter(killer);
+        TriggerType.set(TriggerType.KILL);
         // Frenzy：击杀后获得力量+速度
         int frenzy = Enchants.level(held, "frenzy");
         if (frenzy > 0) {

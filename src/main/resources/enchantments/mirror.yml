@@ -1,0 +1,22 @@
+#
+# Mirror EcoEnchant
+#
+name: "Mirror"
+description: Chance to fully reflect damage while blocking
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: epic
+
+general-config:
+  targets:
+  - shields
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 2
+
+config:
+  chance: 0.25

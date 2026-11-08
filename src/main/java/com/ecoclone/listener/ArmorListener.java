@@ -1,8 +1,10 @@
 package com.ecoclone.listener;
 
 import com.ecoclone.EcoClonePlugin;
+import com.ecoclone.EnchantGate;
 import com.ecoclone.EnchantManager;
 import com.ecoclone.Enchants;
+import com.ecoclone.TriggerType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -28,6 +30,8 @@ public final class ArmorListener implements Listener {
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }
+        EnchantGate.enter(player);
+        TriggerType.set(TriggerType.DEFEND);
         int evasion = total(player, "evasion");
         int preservation = total(player, "preservation");
         int freerunner = total(player, "freerunner");

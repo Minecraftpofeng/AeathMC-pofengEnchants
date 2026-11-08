@@ -1,0 +1,22 @@
+#
+# Grappling EcoEnchant
+#
+name: "Grappling"
+description: Reel in hooked entities
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - fishing-rods
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.25

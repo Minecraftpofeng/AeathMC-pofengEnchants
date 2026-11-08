@@ -1,8 +1,10 @@
 package com.ecoclone.listener;
 
 import com.ecoclone.EcoClonePlugin;
+import com.ecoclone.EnchantGate;
 import com.ecoclone.EnchantManager;
 import com.ecoclone.Enchants;
+import com.ecoclone.TriggerType;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -56,6 +58,8 @@ public final class MiningListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
+        EnchantGate.enter(player);
+        TriggerType.set(TriggerType.MINE);
         ItemStack held = player.getInventory().getItemInMainHand();
         if (held == null || held.getType().isAir()) {
             return;

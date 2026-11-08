@@ -130,6 +130,35 @@ public final class EcoEnchantsCommand implements CommandExecutor, TabCompleter {
                 });
                 return true;
             }
+            case "conditions" -> {
+                if (!sender.hasPermission("ecoenchants.command.conditions")) {
+                    noPerm(sender);
+                    return true;
+                }
+                if (args.length < 2) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c用法：/aeath conditions <附魔键>"));
+                    return true;
+                }
+                String key = args[1].toLowerCase();
+                if (Enchants.get(key) == null) {
+                    sender.sendMessage(manager.prefix() + manager.color("&c找不到附魔 " + args[1] + "。"));
+                    return true;
+                }
+                java.util.List<String> conds = plugin.conditions().conditionsOf(key);
+                java.util.List<String> trigs = plugin.conditions().triggersOf(key);
+                sender.sendMessage(manager.color("&8&m--------&r &b" + key + " &8&m--------"));
+                if (conds.isEmpty()) {
+                    sender.sendMessage(manager.color("&7条件：&f未配置，全部场景生效"));
+                } else {
+                    sender.sendMessage(manager.color("&7条件：&f" + conds.size() + " 条"));
+                    for (String c : conds) {
+                        sender.sendMessage(manager.color(" &8- &f" + c));
+                    }
+                }
+                sender.sendMessage(manager.color("&7触发器：&f"
+                        + (trigs.isEmpty() ? "全部允许" : String.join(", ", trigs))));
+                return true;
+            }
             case "givebook" -> {
                 if (!sender.hasPermission("ecoenchants.command.givebook")) {
                     noPerm(sender);
@@ -643,7 +672,7 @@ public final class EcoEnchantsCommand implements CommandExecutor, TabCompleter {
         List<String> subs = List.of("help", "giverandombook", "randomenchant", "givebook", "scroll",
                 "enchant", "set", "gui", "wipe", "reload", "artifact", "admin", "rainbow", "aether", "dawn",
                 "abyss", "hoe", "wrath", "armor", "gem", "gemlv", "socket", "gems", "geminfo",
-                "version", "update", "import");
+                "version", "update", "import", "conditions");
         if (args.length == 1) {
             return filter(subs, args[0]);
         }
@@ -653,7 +682,7 @@ public final class EcoEnchantsCommand implements CommandExecutor, TabCompleter {
                 return filter(plugin.gemManager().defs().keySet(), args[1]);
             }
             if (head.equals("givebook") || head.equals("scroll") || head.equals("enchant")
-                    || head.equals("set")) {
+                    || head.equals("set") || head.equals("conditions")) {
                 List<String> keys = new ArrayList<>(Enchants.REGISTERED.keySet());
                 if (head.equals("enchant") || head.equals("set")) {
                     keys.addAll(List.of("sharpness", "power", "protection", "unbreaking", "efficiency",
@@ -768,6 +797,7 @@ public final class EcoEnchantsCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(manager.color(" &e/aeath version &7- 版本信息"));
         sender.sendMessage(manager.color(" &e/aeath update &7- 检测更新"));
         sender.sendMessage(manager.color(" &e/aeath import <附魔键> [直链] [--force] &7- 从市场导入附魔配置"));
+        sender.sendMessage(manager.color(" &e/aeath conditions <附魔键> &7- 查看该附魔的条件与触发器"));
         sender.sendMessage(manager.color("&7提示 / Tips："));
         sender.sendMessage(manager.color(" &7宝石完整清单：&e/aeath gems"));
         sender.sendMessage(manager.color(" &7附魔键补全：输入 &e/aeath givebook <空格> &7后按 Tab"));

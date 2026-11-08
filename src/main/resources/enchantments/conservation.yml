@@ -1,0 +1,22 @@
+#
+# Conservation EcoEnchant
+#
+name: "Conservation"
+description: Chance to save elytra durability while gliding
+enabled: true
+
+obtaining:
+  table: true
+  villager: true
+  loot: true
+  rarity: rare
+
+general-config:
+  targets:
+  - elytras
+  grindstoneable: true
+  conflicts: []
+  maximum-level: 3
+
+config:
+  chance: 0.25

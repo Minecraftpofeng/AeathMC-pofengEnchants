@@ -8,6 +8,8 @@ import com.ecoclone.listener.ArtifactListener;
 import com.ecoclone.listener.CombatListener;
 import com.ecoclone.listener.DeathListener;
 import com.ecoclone.listener.LootInjectListener;
+import com.ecoclone.listener.ShieldEnchantListener;
+import com.ecoclone.listener.TriggerEventsListener;
 import com.ecoclone.listener.VillagerTradeListener;
 import com.ecoclone.listener.GuiListener;
 import com.ecoclone.listener.MiningListener;
@@ -82,6 +84,7 @@ public final class EcoClonePlugin extends JavaPlugin {
             manager = new EnchantManager(this);
             manager.load();
             enchantConditions = new EnchantConditions(this);
+            EnchantGate.bind(enchantConditions);
             detectVersion();
             checkUpdate(true);
             int n = Enchants.loadFromRegistry();
@@ -114,6 +117,8 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new DeathListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new VillagerTradeListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new LootInjectListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new ShieldEnchantListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new TriggerEventsListener(this, manager), this);
             guiListener = new GuiListener(this, manager);
             getServer().getPluginManager().registerEvents(guiListener, this);
             artifactListener = new ArtifactListener(this, manager);
