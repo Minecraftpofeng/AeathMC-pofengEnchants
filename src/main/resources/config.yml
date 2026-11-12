@@ -57,12 +57,33 @@ market:
   # 是否允许覆盖同名 yml（也可用 /aeath import --force）
   overwrite: false
 
-# 高级功能总开关（v1.4.7）
+# 高级功能总开关（v1.4.7 / v1.4.8.0）
 advanced:
+  # v1.4.8.0 高级配置层总开关：type / levels / requirements / required / disabled-in-worlds
+  features: true
   # 附魔自定义条件（conditions / filters），见文件末尾示例
   conditions: true
   # 附魔触发器（triggers）
   triggers: true
+
+# ================= v1.4.8.0 高级配置层 =================
+
+# 类型上限：单件物品最多几个该类型附魔（0 = 不限制）
+type-limits:
+  special: 1
+  artifact: 1
+
+# spell（主动技能型）附魔
+spell:
+  # 默认冷却秒数；单个附魔可用 config.spell-cooldown 覆盖
+  cooldown: 10.0
+  # 是否发送冷却提示
+  messages: true
+  cooldown-message: "&7冷却中 &f%remaining%s"
+
+# artifact（装饰粒子型）附魔
+artifact:
+  enabled: true
 
 # 铁砧/磨石交互
 anvil:
@@ -106,4 +127,50 @@ language: en.yml
 #           /aeath import <附魔键> <直链>       从指定直链下载
 #           /aeath import --force <附魔键>      覆盖同名配置
 # 导入文件落在 enchantments/<key>.yml：静态清单已有 key 立即热生效，新 key 重启后注册生效。
+
+# ================= v1.4.8.0 单附魔 yml 新增字段说明 =================
+# 以下同样写在 enchantments/<key>.yml 中（本文件只是说明，改动这里无效）。
+#
+# type：附魔类型
+#   type: normal      # normal / curse / special / artifact / spell
+#   # special：单件唯一，强力型；artifact：单件唯一，纯粒子装饰；spell：主动技能
+#
+# levels：逐级效果（不写 levels 时，用 effects 对所有等级生效）
+#   levels:
+#     1:
+#       effects:
+#         - id: damage_multiplier
+#           args: { multiplier: "1 + 0.05 * %level%" }
+#           triggers: [attack]
+#     2:
+#       effects:
+#         - id: potion_effect
+#           args: { effect: speed, level: 2, duration: 200 }
+#           triggers: [attack]
+#   # 字符串参数支持 %level% 表达式：+ - * / % ^ 与括号
+#
+# 已实现的效果 id：
+#   damage_multiplier / damage_add / potion_effect / heal / feed / ignite
+#   knock_away / pull_in / drop_xp / play_sound / particle / run_command / msg
+#   remove_this_enchant（一次性附魔） / set_item_level
+#
+# general-config 新增字段：
+#   required:                        # 前置附魔；"remove" 表示应用时吃掉它
+#     - unbreaking
+#     - "sharpness:2 remove"
+#   requirements:                    # 使用条件，不满足则附魔不生效
+#     list:
+#       - "has-permission:aeath.vip"
+#       - "placeholder-greater-than:%ecoskills_enchanting%:20"
+#       - "placeholder-equals:%player_world%:world"
+#       - "placeholder-less-than:%player_level%:60"
+#     not-met-lore:                  # 不满足时的提示（/enchantinfo 显示，触发时 actionbar 提示）
+#       - "&c需要附魔等级 20"
+#   disabled-in-worlds: [world_nether] # 这些世界不生效，* 表示全部
+#   flags: [no-cooldown-message]       # no-cooldown-message / no-use-message / hard-cap-ignore
+#
+# config 新增字段：
+#   spell-cooldown: 15                 # spell 型冷却秒数
+#   artifact-particle: end_rod         # artifact 型粒子名（Bukkit Particle 枚举）
+#   chance / duration / cooldown       # v1.4.7 已有
 

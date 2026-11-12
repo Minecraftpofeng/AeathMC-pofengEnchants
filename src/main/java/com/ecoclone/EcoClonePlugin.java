@@ -2,6 +2,7 @@ package com.ecoclone;
 
 import com.ecoclone.command.EcoEnchantsCommand;
 import com.ecoclone.command.EnchantInfoCommand;
+import com.ecoclone.listener.AdvancedEnchantListener;
 import com.ecoclone.listener.ArmorListener;
 import com.ecoclone.listener.AdminSwordListener;
 import com.ecoclone.listener.ArtifactListener;
@@ -37,6 +38,7 @@ public final class EcoClonePlugin extends JavaPlugin {
 
     private EnchantManager manager;
     private EnchantConditions enchantConditions;
+    private AdvancedEnchantListener advancedListener;
     private GuiListener guiListener;
     private ArtifactListener artifactListener;
     private NewEnchantListener newEnchantListener;
@@ -85,6 +87,7 @@ public final class EcoClonePlugin extends JavaPlugin {
             manager.load();
             enchantConditions = new EnchantConditions(this);
             EnchantGate.bind(enchantConditions);
+            EnchantGate.bindManager(manager);
             detectVersion();
             checkUpdate(true);
             int n = Enchants.loadFromRegistry();
@@ -119,6 +122,8 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new LootInjectListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new ShieldEnchantListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new TriggerEventsListener(this, manager), this);
+            advancedListener = new AdvancedEnchantListener(this, manager);
+            getServer().getPluginManager().registerEvents(advancedListener, this);
             guiListener = new GuiListener(this, manager);
             getServer().getPluginManager().registerEvents(guiListener, this);
             artifactListener = new ArtifactListener(this, manager);
@@ -359,6 +364,9 @@ public final class EcoClonePlugin extends JavaPlugin {
         manager.load();
         if (enchantConditions != null) {
             enchantConditions.reload();
+        }
+        if (advancedListener != null) {
+            advancedListener.engine().reload();
         }
         manager.clearCooldowns();
         if (newEnchantListener != null) {

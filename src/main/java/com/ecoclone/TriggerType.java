@@ -17,7 +17,9 @@ public enum TriggerType {
     PASSIVE("passive", "tick", "always"),
     FISH("fish", "fishing"),
     TRADE("trade", "villager"),
-    LOOT("loot", "chest");
+    LOOT("loot", "chest"),
+    DEATH("death", "die", "on-death"),
+    SPELL("spell", "cast", "activate", "use");
 
     private final String[] aliases;
 

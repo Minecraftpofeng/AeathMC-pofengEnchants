@@ -4,8 +4,9 @@
 通过 Paper 官方 registry bootstrap 把自定义附魔注册为**真实附魔**，因此能被附魔台、铁砧、磨石
 以及其它插件原生识别（与 EcoEnchants 的实现方式一致）。
 
-当前版本 **v1.4.7.0**：
+当前版本 **v1.4.8.0**：
 **233 个自定义附魔** · **123 种宝石**（1-100 级 / 10 档 / 每件最多 100 槽） · **9 件神器** · **物质团** · **内置更新检测**
+**v1.4.8.0 新增高级功能**：附魔类型（type：normal / curse / special / artifact / spell）· 逐级效果引擎（levels / effects，14 种 effect id，参数支持 %level% 表达式）· spell 主动技能（右键施放 + 冷却）· artifact 装饰粒子（鞘翅双翼拖尾 / 手持环绕 / 击杀螺旋 / 挖掘粒子 / 投射物拖尾）· requirements 使用条件（权限 / PAPI 数值）· required 前置附魔（`remove` 吃掉前置）· 类型上限（special / artifact 单件唯一）· disabled-in-worlds 世界禁用 · `/enchantinfo` 展示高级字段
 **v1.4.7.0 新增高级功能**：附魔自定义条件（conditions / filters）· 触发器（triggers，FISH / TRADE / LOOT 已接真实事件）· 村民交易自动生成附魔书 · 战利品箱自动注入附魔书 · 市场（LRCDB）配置导入 · `/aeath conditions` 查询 · 全局附魔闸门（EnchantGate）· 新增 6 个盾牌 / 钓竿 / 鞘翅附魔
 
 > 开源协议：GPL-3.0（详见 [LICENSE](LICENSE)）。可自由使用、修改、分发，但任何衍生作品必须保持开源并同样采用 GPL-3.0，禁止闭源商用。
@@ -33,6 +34,13 @@
 | 村民交易 | 村民新增交易按概率替换为自定义附魔书，价格按稀有度可配置（`villager` 段） |
 | 战利品注入 | 箱子战利品生成时按概率自动注入 0-N 本自定义附魔书，等级可浮动（`loot` 段） |
 | 市场导入 | `/aeath import` 从 LRCDB 模板地址或任意直链下载附魔 yml，落盘即时热加载；新附魔重启后注册生效 |
+| 附魔类型 v1.4.8.0 | 单附魔 `type`: normal / curse / special / artifact / spell；special 与 artifact 默认单件唯一（`type-limits`），spell 为主动技能 |
+| 逐级效果 v1.4.8.0 | 单附魔 `levels`（按等级）或 `effects`（全等级）配置：damage_multiplier / damage_add / potion_effect / heal / feed / ignite / knock_away / pull_in / drop_xp / play_sound / particle / run_command / msg / remove_this_enchant / set_item_level，参数支持 `%level%` 数学表达式 |
+| 主动技能 v1.4.8.0 | spell 型附魔右键施放（弓 / 弩 / 三叉戟 / 鱼竿为左键），冷却按 `config.spell-cooldown` → `config.cooldown` → `spell.cooldown` 取值，actionbar 提示剩余秒数 |
+| 装饰粒子 v1.4.8.0 | artifact 型附魔：鞘翅双翼拖尾、手持环绕、近战击杀螺旋、挖掘粒子、射击弹道粒子，粒子名由 `config.artifact-particle` 指定 |
+| 使用条件 v1.4.8.0 | `requirements`: `has-permission:<perm>`、`placeholder-greater-than` / `less-than` / `equals`（PlaceholderAPI），`not-met-lore` 提示不满足原因 |
+| 前置附魔 v1.4.8.0 | `required`: `id[:level] [remove]`，不满足则附魔不生效；`remove` 在应用时吃掉前置附魔（一次性升级类配置） |
+| 世界禁用 v1.4.8.0 | `disabled-in-worlds` 列表，`*` 表示全部世界；规则集中在 EnchantGate 与 `apply()`，GUI / 指令 / 卷轴 / 交易统一生效 |
 | 软依赖 | PlaceholderAPI / Vault / ProtocolLib，未安装时静默跳过，不影响主功能 |
 
 ## 三、环境要求

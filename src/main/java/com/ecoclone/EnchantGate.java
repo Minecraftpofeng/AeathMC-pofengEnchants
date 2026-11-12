@@ -19,6 +19,7 @@ public final class EnchantGate {
     private static final ThreadLocal<Player[]> CONTEXT = new ThreadLocal<>();
     private static final ThreadLocal<Long> STAMP = new ThreadLocal<>();
     private static volatile EnchantConditions conditions;
+    private static volatile EnchantManager manager;
 
     private EnchantGate() {
     }
@@ -26,6 +27,11 @@ public final class EnchantGate {
     /** 插件启用时注入条件判定器 */
     public static void bind(EnchantConditions c) {
         conditions = c;
+    }
+
+    /** v1.4.8.0：注入配置管理器，用于世界禁用 / 类型上限 / 前置附魔 / requirements */
+    public static void bindManager(EnchantManager m) {
+        manager = m;
     }
 
     /** 事件入口登记参与判定的玩家（可为 null，最多两位：攻击方与受击方） */
@@ -42,12 +48,27 @@ public final class EnchantGate {
 
     /** 该物品上的 key 附魔在当前上下文下是否允许生效 */
     public static boolean allows(ItemStack item, String key) {
-        EnchantConditions c = conditions;
-        if (c == null || item == null) {
+        if (item == null || key == null) {
             return true;
         }
         Player owner = ownerOf(item);
-        if (owner == null) {
+        EnchantManager m = manager;
+        if (m != null) {
+            if (owner != null && m.isDisabledInWorld(key, owner.getWorld().getName())) {
+                return false;
+            }
+            if (!m.typeLimitOk(item, key)) {
+                return false;
+            }
+            if (!m.requiredOk(item, key)) {
+                return false;
+            }
+            if (owner != null && !m.requirementsOk(key, owner)) {
+                return false;
+            }
+        }
+        EnchantConditions c = conditions;
+        if (c == null || owner == null) {
             return true;
         }
         return c.triggerAllowed(key, TriggerType.get()) && c.matches(key, owner);

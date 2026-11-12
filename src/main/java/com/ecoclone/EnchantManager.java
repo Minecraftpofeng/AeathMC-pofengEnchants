@@ -3,6 +3,7 @@ package com.ecoclone;
 import io.papermc.paper.registry.TypedKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -42,6 +43,9 @@ public final class EnchantManager {
     private final Map<String, YamlConfiguration> enchantConfigs = new HashMap<>();
     private final Map<String, Long> cooldowns = new ConcurrentHashMap<>();
     private final Map<String, Set<ItemType>> keyTargets = new HashMap<>();
+    /** v1.4.8.0：requirements / required 解析缓存，reload 时清空 */
+    private final Map<String, List<String>> requirementCache = new ConcurrentHashMap<>();
+    private final Map<String, List<String>> requiredCache = new ConcurrentHashMap<>();
 
     public EnchantManager(EcoClonePlugin plugin) {
         this.plugin = plugin;
@@ -55,6 +59,8 @@ public final class EnchantManager {
         messages = loadYml(messagesName());
 
         enchantConfigs.clear();
+        requirementCache.clear();
+        requiredCache.clear();
         File dir = new File(plugin.getDataFolder(), "enchantments");
         File[] files = dir.listFiles((d, n) -> n.endsWith(".yml"));
         if (files != null) {
@@ -323,8 +329,31 @@ public final class EnchantManager {
     // ---------- 附魔应用 / 随机 ----------
 
     public ItemStack apply(ItemStack item, Enchantment enchantment, int level) {
+        if (item == null || enchantment == null) {
+            return item;
+        }
+        String key = enchantment.getKey().getKey();
+        if (advancedEnabled()) {
+            // 前置附魔 / 类型上限不满足时不落地，避免出现"给了但无效"的物品
+            if (!requiredOk(item, key) || !typeLimitOk(item, key)) {
+                lastApplyBlocked = key;
+                return item;
+            }
+            applyRequiredRemovals(item, key);
+        }
         item.editMeta(meta -> meta.addEnchant(enchantment, level, true));
         return item;
+    }
+
+    /** 最近一次被高级规则拦下的附魔 key（指令 / GUI 提示用） */
+    private volatile String lastApplyBlocked;
+
+    public String lastApplyBlocked() {
+        return lastApplyBlocked;
+    }
+
+    public void clearApplyBlocked() {
+        lastApplyBlocked = null;
     }
 
     public ItemStack bookOf(Enchantment enchantment, int level) {
@@ -1202,6 +1231,336 @@ public final class EnchantManager {
     public Set<String> configuredKeys() {
         return enchantConfigs.keySet();
     }
+
+    // ---------- v1.4.8.0 高级配置层（type / levels / requirements / required / disabled-in-worlds） ----------
+
+    /** 附魔类型：yml type 优先，否则按静态定义里的 curse 标记推断 */
+    public EnchantType type(String key) {
+        YamlConfiguration c = enchantConfigs.get(key);
+        if (c != null && c.getString("type") != null) {
+            return EnchantType.parse(c.getString("type"));
+        }
+        for (EnchantDef d : Enchants.definitions()) {
+            if (d.key.equals(key)) {
+                return d.curse ? EnchantType.CURSE : EnchantType.NORMAL;
+            }
+        }
+        return EnchantType.NORMAL;
+    }
+
+    /** 高级配置层总开关 */
+    public boolean advancedEnabled() {
+        return config == null || config.getBoolean("advanced.features", true);
+    }
+
+    /** 单件物品允许的同类型附魔数量；0 表示不限制 */
+    public int typeLimit(EnchantType type) {
+        if (type == EnchantType.SPECIAL) {
+            return config == null ? 1 : Math.max(0, config.getInt("type-limits.special", 1));
+        }
+        if (type == EnchantType.ARTIFACT) {
+            return config == null ? 1 : Math.max(0, config.getInt("type-limits.artifact", 1));
+        }
+        return 0;
+    }
+
+    /**
+     * 类型上限校验：同类型附魔按 key 排序后，只有排在前 limit 位的生效。
+     * 用排序保证结果稳定，不会因为物品 NBT 顺序变化而随机切换。
+     */
+    public boolean typeLimitOk(ItemStack item, String key) {
+        if (item == null || !advancedEnabled()) {
+            return true;
+        }
+        EnchantType t = type(key);
+        int limit = typeLimit(t);
+        if (limit <= 0) {
+            return true;
+        }
+        List<String> same = new ArrayList<>();
+        for (Enchantment e : item.getEnchantments().keySet()) {
+            if (!e.getKey().getNamespace().equals("ecoclone")) {
+                continue;
+            }
+            String k = e.getKey().getKey();
+            if (type(k) == t) {
+                same.add(k);
+            }
+        }
+        java.util.Collections.sort(same);
+        int index = same.indexOf(key);
+        if (index < 0) {
+            // 应用前校验：物品上还没有该附魔，用已有同类型数量判断
+            return same.size() < limit;
+        }
+        return index < limit;
+    }
+
+    private static List<String> asStrings(Object raw) {
+        List<String> out = new ArrayList<>();
+        if (raw instanceof List<?> list) {
+            for (Object o : list) {
+                if (o != null && !String.valueOf(o).isBlank()) {
+                    out.add(String.valueOf(o));
+                }
+            }
+        } else if (raw != null && !String.valueOf(raw).isBlank()) {
+            out.add(String.valueOf(raw));
+        }
+        return out;
+    }
+
+    /** required：前置附魔，写法 id[:level] [remove] */
+    public List<String> requiredList(String key) {
+        return requiredCache.computeIfAbsent(key, k -> {
+            YamlConfiguration c = enchantConfigs.get(k);
+            if (c == null) {
+                return new ArrayList<>();
+            }
+            Object raw = c.get("general-config.required");
+            if (raw == null) {
+                raw = c.get("required");
+            }
+            return asStrings(raw);
+        });
+    }
+
+    /** 前置附魔是否全部满足（用原始等级，不经过闸门，避免递归） */
+    public boolean requiredOk(ItemStack item, String key) {
+        if (item == null || !advancedEnabled()) {
+            return true;
+        }
+        for (String raw : requiredList(key)) {
+            String[] parts = raw.trim().split("\\s+");
+            if (parts.length == 0 || parts[0].isBlank()) {
+                continue;
+            }
+            String id = parts[0];
+            int need = 1;
+            int colon = id.indexOf(':');
+            if (colon > 0) {
+                try {
+                    need = Math.max(1, Integer.parseInt(id.substring(colon + 1)));
+                } catch (NumberFormatException ignored) {
+                    // 等级写错按 1 处理
+                }
+                id = id.substring(0, colon);
+            }
+            Enchantment e = Enchants.get(id);
+            if (e == null) {
+                continue;
+            }
+            if (item.getEnchantmentLevel(e) < need) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** 应用附魔时吃掉带 remove 的前置附魔 */
+    public void applyRequiredRemovals(ItemStack item, String key) {
+        if (item == null) {
+            return;
+        }
+        for (String raw : requiredList(key)) {
+            String[] parts = raw.trim().split("\\s+");
+            boolean remove = false;
+            for (int i = 1; i < parts.length; i++) {
+                if (parts[i].equalsIgnoreCase("remove")) {
+                    remove = true;
+                }
+            }
+            if (!remove || parts.length == 0) {
+                continue;
+            }
+            String id = parts[0];
+            int colon = id.indexOf(':');
+            if (colon > 0) {
+                id = id.substring(0, colon);
+            }
+            Enchantment e = Enchants.get(id);
+            if (e != null) {
+                item.editMeta(meta -> meta.removeEnchant(e));
+            }
+        }
+    }
+
+    /** requirements：权限 / PlaceholderAPI 数值比较 */
+    public List<String> requirements(String key) {
+        return requirementCache.computeIfAbsent(key, k -> {
+            YamlConfiguration c = enchantConfigs.get(k);
+            if (c == null) {
+                return new ArrayList<>();
+            }
+            Object raw = c.get("general-config.requirements.list");
+            if (raw == null) {
+                raw = c.get("requirements.list");
+            }
+            if (raw == null) {
+                raw = c.get("general-config.requirements");
+            }
+            if (raw == null) {
+                raw = c.get("requirements");
+            }
+            return asStrings(raw);
+        });
+    }
+
+    /** 不满足 requirements 时给玩家的提示行（对标 not-met-lore，以 actionbar/聊天提示呈现） */
+    public List<String> notMetLore(String key) {
+        YamlConfiguration c = enchantConfigs.get(key);
+        if (c == null) {
+            return new ArrayList<>();
+        }
+        Object raw = c.get("general-config.requirements.not-met-lore");
+        if (raw == null) {
+            raw = c.get("requirements.not-met-lore");
+        }
+        return asStrings(raw);
+    }
+
+    /** requirements 是否全部满足；未装 PlaceholderAPI 时 placeholder-* 一律放行 */
+    public boolean requirementsOk(String key, org.bukkit.entity.Player p) {
+        if (p == null || !advancedEnabled()) {
+            return true;
+        }
+        for (String raw : requirements(key)) {
+            String s = raw.trim();
+            if (s.startsWith("has-permission:")) {
+                String perm = s.substring("has-permission:".length()).trim();
+                if (!perm.isEmpty() && !p.hasPermission(perm)) {
+                    return false;
+                }
+            } else if (s.startsWith("placeholder-equals:")) {
+                String[] parts = splitPlaceholder(s, "placeholder-equals:");
+                if (parts != null && !parts[1].equals(placeholder(p, parts[0]))) {
+                    return false;
+                }
+            } else if (s.startsWith("placeholder-greater-than:")) {
+                String[] parts = splitPlaceholder(s, "placeholder-greater-than:");
+                if (parts != null && asDouble(placeholder(p, parts[0])) < asDouble(parts[1])) {
+                    return false;
+                }
+            } else if (s.startsWith("placeholder-less-than:")) {
+                String[] parts = splitPlaceholder(s, "placeholder-less-than:");
+                if (parts != null && asDouble(placeholder(p, parts[0])) >= asDouble(parts[1])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static String[] splitPlaceholder(String s, String prefix) {
+        String rest = s.substring(prefix.length());
+        int colon = rest.lastIndexOf(':');
+        if (colon <= 0) {
+            return null;
+        }
+        return new String[]{rest.substring(0, colon), rest.substring(colon + 1)};
+    }
+
+    private static double asDouble(String s) {
+        try {
+            return Double.parseDouble(s.trim());
+        } catch (Throwable ignored) {
+            return 0.0;
+        }
+    }
+
+    /** 解析 PlaceholderAPI 变量；未安装或解析失败时返回原串（使数值比较不通过，权限类不受影响） */
+    private static String placeholder(org.bukkit.entity.Player p, String text) {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
+            return "0";
+        }
+        try {
+            Class<?> api = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
+            java.lang.reflect.Method m = api.getMethod("setPlaceholders", org.bukkit.entity.Player.class, String.class);
+            Object out = m.invoke(null, p, text);
+            return out == null ? "0" : String.valueOf(out);
+        } catch (Throwable ignored) {
+            return "0";
+        }
+    }
+
+    /** disabled-in-worlds：这些世界里附魔不生效 */
+    public boolean isDisabledInWorld(String key, String world) {
+        if (world == null || !advancedEnabled()) {
+            return false;
+        }
+        for (String w : disabledWorlds(key)) {
+            if (w.equalsIgnoreCase(world) || w.equals("*")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** disabled-in-worlds 配置的世界列表 */
+    public List<String> disabledWorlds(String key) {
+        YamlConfiguration c = enchantConfigs.get(key);
+        if (c == null) {
+            return new ArrayList<>();
+        }
+        Object raw = c.get("general-config.disabled-in-worlds");
+        if (raw == null) {
+            raw = c.get("disabled-in-worlds");
+        }
+        return asStrings(raw);
+    }
+
+    /** spell 型附魔冷却秒数：config.spell-cooldown > config.cooldown > spell.cooldown 全局值 */
+    public double spellCooldown(String key) {
+        YamlConfiguration c = enchantConfigs.get(key);
+        if (c != null && c.contains("config.spell-cooldown")) {
+            return Math.max(0, c.getDouble("config.spell-cooldown"));
+        }
+        if (c != null && c.contains("config.cooldown")) {
+            return Math.max(0, c.getDouble("config.cooldown"));
+        }
+        return config == null ? 10.0 : Math.max(0, config.getDouble("spell.cooldown", 10.0));
+    }
+
+    /** spell 是否发送冷却提示（支持 flags: [no-cooldown-message]） */
+    public boolean spellMessages(String key) {
+        YamlConfiguration c = enchantConfigs.get(key);
+        if (c != null) {
+            for (String f : asStrings(c.get("general-config.flags"))) {
+                if (f.equalsIgnoreCase("no-cooldown-message")) {
+                    return false;
+                }
+            }
+        }
+        return config == null || config.getBoolean("spell.messages", true);
+    }
+
+    public String spellCooldownMessage() {
+        return config == null ? "&7冷却中 &f%remaining%s"
+                : config.getString("spell.cooldown-message", "&7冷却中 &f%remaining%s");
+    }
+
+    /** 剩余冷却秒数（用于提示） */
+    public double remainingCooldown(UUID uuid, String key) {
+        Long until = cooldowns.get(uuid + ":" + key);
+        if (until == null) {
+            return 0;
+        }
+        return Math.max(0, (until - System.currentTimeMillis()) / 1000.0);
+    }
+
+    /** artifact 型附魔的粒子名（config.artifact-particle，缺省 end_rod） */
+    public String artifactParticle(String key) {
+        YamlConfiguration c = enchantConfigs.get(key);
+        if (c != null && c.getString("config.artifact-particle") != null) {
+            return c.getString("config.artifact-particle");
+        }
+        return "end_rod";
+    }
+
+    public boolean artifactsEnabled() {
+        return config == null || config.getBoolean("artifact.enabled", true);
+    }
+
 
     public boolean villagerEnabled() {
         return config == null || config.getBoolean("villager.enabled", true);
