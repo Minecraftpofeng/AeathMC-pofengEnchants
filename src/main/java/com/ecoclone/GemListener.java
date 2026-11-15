@@ -10,6 +10,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * 宝石效果与镶嵌监听器。
@@ -34,6 +36,26 @@ public final class GemListener implements Listener {
     private final EcoClonePlugin plugin;
     private final GemManager gems;
     private final Random rnd = new Random();
+
+    // ---------- 闪电宝石限流（防止高等级 + 生物堆叠造成雷击风暴） ----------
+    /** 概率封顶：0.10 * lv 在 lv>=10 时就会饱和成 100%，必须截断 */
+    private static final double LIGHTNING_MAX_CHANCE = 0.30;
+    /** 同一玩家两次雷击的最小间隔（毫秒） */
+    private static final long LIGHTNING_PLAYER_COOLDOWN_MS = 1000L;
+    /** 全服时间窗口内最多允许的雷击次数 */
+    private static final int LIGHTNING_MAX_PER_WINDOW = 1;
+    /** 限流窗口长度（毫秒），100ms = 2 tick */
+    private static final long LIGHTNING_WINDOW_MS = 100L;
+    /** 暴击概率上限：0.05 * lv 在 lv>=20 时就会饱和成 100% */
+    private static final double CRIT_MAX_CHANCE = 0.50;
+    /** 真伤概率上限：同上，避免高等级必触发 */
+    private static final double TRUE_DMG_MAX_CHANCE = 0.50;
+
+    private final Map<UUID, Long> lightningCd = new HashMap<>();
+    private long lightningWindow = Long.MIN_VALUE;
+    private int lightningCount = 0;
+    /** 附加伤害是否正在结算：防止 damage() 触发的嵌套事件再次跑到宝石逻辑 */
+    private final ThreadLocal<Boolean> inBonusDamage = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     public GemListener(EcoClonePlugin plugin) {
         this.plugin = plugin;
@@ -155,6 +177,29 @@ public final class GemListener implements Listener {
         // 取出宝石仅支持副手右键（见 /aeath geminfo），背包点击不再提供取出，避免穿上护甲误触
     }
 
+    /** 闪电限流：同一玩家 1 秒内最多 1 次，全服每 100ms 窗口最多 1 次 */
+    private boolean allowLightning(Player attacker) {
+        long now = System.currentTimeMillis();
+        Long last = lightningCd.get(attacker.getUniqueId());
+        if (last != null && now - last < LIGHTNING_PLAYER_COOLDOWN_MS) {
+            return false;
+        }
+        long window = now / LIGHTNING_WINDOW_MS;
+        if (window != lightningWindow) {
+            lightningWindow = window;
+            lightningCount = 0;
+        }
+        if (lightningCount >= LIGHTNING_MAX_PER_WINDOW) {
+            return false;
+        }
+        lightningCount++;
+        lightningCd.put(attacker.getUniqueId(), now);
+        if (lightningCd.size() > 1000) {
+            lightningCd.entrySet().removeIf(en -> now - en.getValue() > 10_000L);
+        }
+        return true;
+    }
+
     private String gemName(ItemStack gem) {
         GemManager.GemDef d = gems.gemDef(gem);
         return d == null ? "宝石" : d.name + " Lv." + gems.gemLevel(gem);
@@ -165,6 +210,8 @@ public final class GemListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onDamage(EntityDamageByEntityEvent e) {
         if (!(e.getDamager() instanceof Player attacker)) return;
+        // 这里可能是真伤 / 虚空宝石引发的二次伤害，直接跳过，避免无限套娃
+        if (inBonusDamage.get()) return;
         ItemStack main = attacker.getInventory().getItemInMainHand();
         if (main == null || main.getType().isAir() || !gems.hasGems(main)) return;
         double dmg = e.getDamage();
@@ -198,18 +245,21 @@ public final class GemListener implements Listener {
                         }
                     }
                     case "LIGHTNING" -> {
-                        if (rnd.nextDouble() < 0.10 * lv) {
+                        // 概率封顶 + 玩家冷却 + 全服窗口限流，避免高等级堆叠生物时雷击风暴卡服
+                        double chance = Math.min(LIGHTNING_MAX_CHANCE, 0.10 * lv);
+                        if (rnd.nextDouble() < chance && allowLightning(attacker)) {
                             e.getEntity().getWorld().strikeLightning(e.getEntity().getLocation());
                         }
                     }
                     case "LIFESTEAL" -> attacker.setHealth(Math.min(attacker.getMaxHealth(),
                             attacker.getHealth() + e.getDamage() * 0.05 * lv));
                     case "CRIT" -> {
-                        if (rnd.nextDouble() < 0.05 * lv) crit = true;
+                        if (rnd.nextDouble() < Math.min(CRIT_MAX_CHANCE, 0.05 * lv)) crit = true;
                     }
                     case "TRUE_DMG" -> {
-                        if (rnd.nextDouble() < 0.05 * lv && e.getEntity() instanceof LivingEntity le) {
-                            le.damage(e.getDamage() * 0.5, attacker);
+                        double chance = Math.min(TRUE_DMG_MAX_CHANCE, 0.05 * lv);
+                        if (rnd.nextDouble() < chance && e.getEntity() instanceof LivingEntity le) {
+                            dealBonusDamage(le, e.getDamage() * 0.5, attacker);
                         }
                     }
                     case "SPEED_ON_HIT" -> attacker.addPotionEffect(
@@ -237,7 +287,7 @@ public final class GemListener implements Listener {
                     attacker.setHealth(Math.min(attacker.getMaxHealth(), attacker.getHealth() + heal));
                 }
                 case "topaz" -> {
-                    if (rnd.nextDouble() < 0.05 * lv) crit = true;
+                    if (rnd.nextDouble() < Math.min(CRIT_MAX_CHANCE, 0.05 * lv)) crit = true;
                 }
                 case "dragon" -> dmg *= (1 + 0.03 * lv);
                 case "tiger_eye" -> {
@@ -250,7 +300,8 @@ public final class GemListener implements Listener {
                     }
                 }
                 case "starstone" -> {
-                    if (rnd.nextDouble() < 0.10 * lv) {
+                    double chance = Math.min(LIGHTNING_MAX_CHANCE, 0.10 * lv);
+                    if (rnd.nextDouble() < chance && allowLightning(attacker)) {
                         e.getEntity().getWorld().strikeLightning(e.getEntity().getLocation());
                     }
                 }
@@ -270,8 +321,9 @@ public final class GemListener implements Listener {
                     }
                 }
                 case "void" -> {
-                    if (rnd.nextDouble() < 0.05 * lv && e.getEntity() instanceof LivingEntity le) {
-                        le.damage(e.getDamage() * 0.5, attacker);
+                    double chance = Math.min(TRUE_DMG_MAX_CHANCE, 0.05 * lv);
+                    if (rnd.nextDouble() < chance && e.getEntity() instanceof LivingEntity le) {
+                        dealBonusDamage(le, e.getDamage() * 0.5, attacker);
                     }
                 }
                 default -> {
@@ -280,6 +332,16 @@ public final class GemListener implements Listener {
         }
         if (crit) dmg *= 2;
         e.setDamage(dmg);
+    }
+
+    /** 附加伤害：结算期间屏蔽宝石二次触发，防止事件嵌套成递归 */
+    private void dealBonusDamage(LivingEntity target, double amount, Player source) {
+        inBonusDamage.set(Boolean.TRUE);
+        try {
+            target.damage(amount, source);
+        } finally {
+            inBonusDamage.set(Boolean.FALSE);
+        }
     }
 
     // ---------- 受击（钻石之心减伤 / 尖晶石反伤） ----------
@@ -303,7 +365,15 @@ public final class GemListener implements Listener {
         if (reflect > 0 && e instanceof EntityDamageByEntityEvent be
                 && be.getDamager() instanceof LivingEntity dl) {
             double r = e.getFinalDamage() * Math.min(reflect, 0.6);
-            if (r > 0) dl.damage(r);
+            if (r > 0) {
+                // 反伤同样走屏蔽，避免双方都有反伤宝石时来回触发
+                inBonusDamage.set(Boolean.TRUE);
+                try {
+                    dl.damage(r);
+                } finally {
+                    inBonusDamage.set(Boolean.FALSE);
+                }
+            }
         }
     }
 
@@ -410,5 +480,11 @@ public final class GemListener implements Listener {
         if (absorb > 0) {
             p.setAbsorptionAmount(Math.max(p.getAbsorptionAmount(), 2.0 * absorb));
         }
+    }
+
+    /** 离线时清掉该玩家的雷击冷却记录 */
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        lightningCd.remove(e.getPlayer().getUniqueId());
     }
 }

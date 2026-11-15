@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemStack;
@@ -210,5 +211,16 @@ public final class ArtifactListener implements Listener {
     // ---------- 工具 ----------
     public Component gradient(String text, int sr, int sg, int sb, int er, int eg, int eb) {
         return manager.gradient(text, sr, sg, sb, er, eg, eb);
+    }
+
+    /** 玩家离线时清掉其连击 / 眩晕状态 */
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        UUID id = e.getPlayer().getUniqueId();
+        fury.remove(id);
+        lastHit.remove(id);
+        stunCharge.remove(id);
+        stunChargeTime.remove(id);
+        stunCooldown.remove(id);
     }
 }

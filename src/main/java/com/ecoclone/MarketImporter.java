@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * v1.4.7 高级功能：市场（LRCDB / EcoEnchants 社区库）附魔配置导入。
+ * 市场（LRCDB / EcoEnchants 社区库）附魔配置导入。
  *
  * 用法（/aeath import）：
  *   /aeath import <key>                 按 config.yml 的 market.source 模板下载（%s 替换为 key）

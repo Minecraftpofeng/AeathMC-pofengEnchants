@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 /**
- * v1.4.7.0 新增附魔：盾牌系 Spikes / Mirror / Shield Bash。
+ * 新增附魔：盾牌系 Spikes / Mirror / Shield Bash。
  * 只在玩家举盾格挡时生效，同样走 conditions 与 triggers（DEFEND 触发器）。
  */
 public final class ShieldEnchantListener implements Listener {

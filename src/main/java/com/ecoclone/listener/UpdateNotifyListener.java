@@ -8,7 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 /**
- * v1.4.6.8：管理员（OP 或拥有 ecoenchants.command.update 权限）进入游戏时，
+ * 管理员（OP 或拥有 ecoenchants.command.update 权限）进入游戏时，
  * 自动执行一次更新检测，并把最新 GitHub 版本链接与 SpigotMC 链接发给该管理员。
  * 普通玩家不触发，避免刷屏与无谓的网络请求。
  */

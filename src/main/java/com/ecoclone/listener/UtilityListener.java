@@ -19,6 +19,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemDamageEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -185,5 +186,11 @@ public final class UtilityListener implements Listener {
 
     public static void reapply(Server server, EcoClonePlugin plugin) {
         clearAll(server);
+    }
+
+    /** 玩家离线时清掉成长记录 */
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        appliedThrive.remove(e.getPlayer().getUniqueId());
     }
 }

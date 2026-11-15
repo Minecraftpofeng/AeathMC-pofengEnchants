@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 /**
- * v1.4.7.0：把 FISH / TRADE / LOOT 三个触发器接到真实事件，
+ * 把 FISH / TRADE / LOOT 三个触发器接到真实事件，
  * 并实现钓鱼系新附魔 Lucky Catch（额外鱼获）与 Grappling（钓中实体拉近）。
  */
 public final class TriggerEventsListener implements Listener {

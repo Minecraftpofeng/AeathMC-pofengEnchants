@@ -42,7 +42,7 @@ public final class EcoCloneBootstrap implements PluginBootstrap {
                 RegistryEvents.ENCHANTMENT.freeze().newHandler(event -> {
                     WritableRegistry<Enchantment, EnchantmentRegistryEntry.Builder> registry = event.registry();
                     ERRORS.clear();
-                    // v1.4.7：静态清单 + 市场导入（enchantments/ 下多出来的 yml 也会被注册）
+                    // 静态清单 + 市场导入（enchantments/ 下多出来的 yml 也会被注册）
                     List<EnchantDef> all = Enchants.withImported(context.getDataDirectory());
                     for (EnchantDef def : all) {
                         try {
@@ -68,6 +68,7 @@ public final class EcoCloneBootstrap implements PluginBootstrap {
                 }));
     }
 
+    @SuppressWarnings("unchecked")
     private void configure(EnchantmentRegistryEntry.Builder b, EnchantDef def) {
         RegistryKeySet<ItemType> supported = RegistrySet.keySet(RegistryKey.ITEM, def.targets.toArray(TypedKey[]::new));
         EnchantmentRegistryEntry.EnchantmentCost min =

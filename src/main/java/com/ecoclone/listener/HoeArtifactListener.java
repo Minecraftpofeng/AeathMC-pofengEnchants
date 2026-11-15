@@ -21,6 +21,7 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -325,5 +326,13 @@ public final class HoeArtifactListener implements Listener {
                     key, 0.04, org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER,
                     org.bukkit.inventory.EquipmentSlotGroup.MAINHAND));
         }
+    }
+
+    /** 玩家离线时清掉易伤计时与飞行标记 */
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        java.util.UUID id = e.getPlayer().getUniqueId();
+        vulnerable.remove(id);
+        pluginFlying.remove(id);
     }
 }

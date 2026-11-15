@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * v1.4.8.0 逐级效果引擎（对齐 EcoEnchants 的 effects / levels）。
+ * 逐级效果引擎（effects / levels）。
  *
  * 单个附魔 yml 新增两种写法，二者等价，levels 优先：
  *

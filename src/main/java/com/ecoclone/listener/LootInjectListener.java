@@ -12,7 +12,7 @@ import org.bukkit.loot.LootTable;
 import java.util.Map;
 
 /**
- * v1.4.7 高级功能：战利品箱自动生成自定义附魔书。
+ * 战利品箱自动生成自定义附魔书。
  * 配置见 config.yml 的 loot 段（enabled / chance / max-books / level-multiplier / table-prefixes）。
  */
 public final class LootInjectListener implements Listener {

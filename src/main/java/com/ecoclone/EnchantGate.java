@@ -5,7 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 /**
- * v1.4.7.0 高级功能闸门：让老监听器（Combat / Mining / Projectile / Utility / Armor）里的
+ * 闸门：让老监听器（Combat / Mining / Projectile / Utility / Armor）里的
  * Enchants.level 也受 conditions 与 triggers 控制。
  *
  * 用法：监听器事件入口调用 enter(本次事件相关的玩家...)，随后所有 Enchants.level(item, key)
@@ -29,7 +29,7 @@ public final class EnchantGate {
         conditions = c;
     }
 
-    /** v1.4.8.0：注入配置管理器，用于世界禁用 / 类型上限 / 前置附魔 / requirements */
+    /** 注入配置管理器，用于世界禁用 / 类型上限 / 前置附魔 / requirements */
     public static void bindManager(EnchantManager m) {
         manager = m;
     }

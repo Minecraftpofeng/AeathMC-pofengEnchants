@@ -15,7 +15,7 @@ import org.bukkit.inventory.MerchantRecipe;
 import java.util.Map;
 
 /**
- * v1.4.7 高级功能：村民交易自动生成自定义附魔书。
+ * 村民交易自动生成自定义附魔书。
  * 配置见 config.yml 的 villager 段（enabled / chance / max-uses / price.<rarity>）。
  */
 public final class VillagerTradeListener implements Listener {

@@ -355,7 +355,7 @@ public final class EcoClonePlugin extends JavaPlugin {
         return manager;
     }
 
-    /** v1.4.7 高级功能：自定义条件 + 触发器 */
+    /** 自定义条件 + 触发器 */
     public EnchantConditions conditions() {
         return enchantConditions;
     }

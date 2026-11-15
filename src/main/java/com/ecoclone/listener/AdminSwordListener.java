@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -100,5 +101,11 @@ public class AdminSwordListener implements Listener {
             p.sendTitle("§c§l让整个世界为之颤抖吧!", "", 10, 60, 20);
         }
         e.setDamage(0);
+    }
+
+    /** 玩家离线时摘掉飞行标记 */
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        pluginFlying.remove(e.getPlayer().getUniqueId());
     }
 }

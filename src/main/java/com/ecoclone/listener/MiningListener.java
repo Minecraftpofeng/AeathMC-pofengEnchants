@@ -59,9 +59,10 @@ public final class MiningListener implements Listener {
     public void onBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         EnchantGate.enter(player);
-        TriggerType.set(TriggerType.MINE);
+        TriggerType prevTrigger = TriggerType.set(TriggerType.MINE);
         ItemStack held = player.getInventory().getItemInMainHand();
         if (held == null || held.getType().isAir()) {
+            TriggerType.set(prevTrigger);
             return;
         }
         Block block = event.getBlock();
@@ -70,29 +71,41 @@ public final class MiningListener implements Listener {
         if (Enchants.has(held, "curse_of_misfortune") && Math.random() < 0.25) {
             event.setDropItems(false);
             event.setExpToDrop(0);
+            TriggerType.set(prevTrigger);
             return;
         }
 
-        // Telekinesis：掉落直接进背包
+        // 掉落统一处理：先算出最终掉落列表，再决定「进背包 / 掉地上 / 保持原样」
         boolean tele = Enchants.has(held, "telekinesis");
-        if (tele && event.isDropItems()) {
-            List<ItemStack> drops = new ArrayList<>(block.getDrops(held));
-            event.setDropItems(false);
-            for (ItemStack d : drops) {
-                player.getInventory().addItem(d).values().forEach(left ->
-                        block.getWorld().dropItemNaturally(block.getLocation(), left));
-            }
-        }
-
-        // Infernal Touch：自动熔炼
-        if (Enchants.has(held, "infernal_touch") && event.isDropItems()) {
-            java.util.List<ItemStack> all = new java.util.ArrayList<>(block.getDrops(held));
-            event.setDropItems(false);
-            for (ItemStack d : all) {
-                Material smelted = smelt(d.getType());
-                ItemStack out = d.clone();
-                if (smelted != null) { out.setType(smelted); }
-                block.getWorld().dropItemNaturally(block.getLocation(), out);
+        boolean infernal = Enchants.has(held, "infernal_touch");
+        boolean smelter = Enchants.has(held, "smelter");
+        if ((tele || infernal || smelter) && event.isDropItems()) {
+            List<ItemStack> raw = new ArrayList<>(block.getDrops(held));
+            // 取不到掉落物时绝不取消原掉落，避免把东西整没了
+            if (!raw.isEmpty()) {
+                boolean doSmelt = infernal || smelter;
+                List<ItemStack> out = new ArrayList<>(raw.size());
+                for (ItemStack d : raw) {
+                    ItemStack one = d.clone();
+                    if (doSmelt) {
+                        Material sm = smelt(one.getType());
+                        if (sm != null) {
+                            one.setType(sm);
+                        }
+                    }
+                    out.add(one);
+                }
+                event.setDropItems(false);
+                if (tele) {
+                    for (ItemStack d : out) {
+                        player.getInventory().addItem(d).values().forEach(left ->
+                                block.getWorld().dropItemNaturally(block.getLocation(), left));
+                    }
+                } else {
+                    for (ItemStack d : out) {
+                        block.getWorld().dropItemNaturally(block.getLocation(), d);
+                    }
+                }
             }
         }
 
@@ -202,18 +215,7 @@ public final class MiningListener implements Listener {
             }
         }
 
-        // Smelter：自动熔炼
-        if (Enchants.has(held, "smelter") && event.isDropItems()) {
-            for (ItemStack d : block.getDrops(held)) {
-                Material sm = smelt(d.getType());
-                if (sm != null) {
-                    ItemStack out = d.clone();
-                    out.setType(sm);
-                    event.setDropItems(false);
-                    block.getWorld().dropItemNaturally(block.getLocation(), out);
-                }
-            }
-        }
+        // Smelter 已在方法开头与 Telekinesis / Infernal Touch 一并处理，此处不再重复取消掉落
 
         // Lucky Mining：概率双倍掉落
         int lucky = Enchants.level(held, "lucky_mining");
@@ -247,6 +249,9 @@ public final class MiningListener implements Listener {
                 }
             }
         }
+
+        // 还原触发器，避免 MINE 残留污染后续事件的 triggers 判定
+        TriggerType.set(prevTrigger);
     }
 
     private static boolean isCrop(Material m) {

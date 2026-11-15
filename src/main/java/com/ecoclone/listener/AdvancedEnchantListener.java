@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * v1.4.8.0 高级附魔监听器：
+ * 附魔监听器：
  *   1) 逐级 effects 引擎的事件入口（attack / defend / kill / mine / shoot / death / fish / passive）
  *   2) spell 型附魔主动激活（右键；弓 / 弩 / 三叉戟 / 鱼竿为左键）与冷却
  *   3) artifact 型附魔粒子（鞘翅拖尾 / 手持环绕 / 击杀螺旋 / 挖掘粒子 / 投射物拖尾）

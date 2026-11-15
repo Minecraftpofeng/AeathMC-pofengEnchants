@@ -30,7 +30,7 @@ public final class Enchants {
         return REGISTERED.get(key);
     }
 
-    /** 该附魔在物品上的等级（v1.4.7.0 起同时套 conditions / triggers 闸门） */
+    /** 该附魔在物品上的等级（起同时套 conditions / triggers 闸门） */
     public static int level(ItemStack item, String key) {
         Enchantment e = REGISTERED.get(key);
         int value = e == null || item == null ? 0 : item.getEnchantmentLevel(e);
@@ -57,7 +57,7 @@ public final class Enchants {
                 REGISTERED.put(e.getKey().getKey(), e);
             }
         }
-        // 兜底：如果遍历没找到，再按单个 key 取一次
+        // 遍历结果为空时，逐个 key 再取一次
         if (REGISTERED.isEmpty()) {
             for (EnchantDef def : definitions()) {
                 TypedKey<Enchantment> k = TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("ecoclone", def.key));
@@ -201,7 +201,7 @@ public final class Enchants {
         list.add(def("auto_repair", "Auto Repair", "Slowly repairs the tool", 3, 2, false, true, "mythic", tools(), 20, 10, 40, 10, 10));
         list.add(def("smelter", "Smelter", "Automatically smelt mined blocks", 1, 3, false, false, "rare", tools(), 10, 10, 20, 10, 8));
         list.add(def("lucky_mining", "Lucky Mining", "Chance of double drops", 5, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
-        // ===== v1.4.2 新增 50 个附魔 =====
+        // ===== 新增 50 个附魔 =====
         // 近战
         list.add(def("gale_strike", "Gale Strike", "Knocks back and slows your opponent", 4, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
         list.add(def("thunder_clap", "Thunder Clap", "Chance to stun with a thunder shock", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
@@ -258,7 +258,7 @@ public final class Enchants {
         list.add(def("time_ward", "Time Ward", "Keep experience on death", 1, 1, false, true, "mythic", everything(), 20, 10, 40, 10, 10));
         list.add(def("prosperity", "Prosperity", "Increases all earned experience", 3, 3, false, false, "rare", everything(), 10, 10, 20, 10, 6));
         list.add(def("lucky", "Lucky", "Small chance for bonus loot", 3, 3, false, false, "uncommon", everything(), 10, 10, 20, 10, 5));
-        // ===== v1.4.6 新增附魔书 10 个 =====
+        // ===== 新增附魔书 10 个 =====
         list.add(def("soul_rend", "Soul Rend", "Hits wither your opponent", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
         list.add(def("hex", "Hex", "Hits weaken your opponent", 3, 3, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
         list.add(def("thunder_fury", "Thunder Fury", "Hits strike lightning above your opponent", 2, 2, false, false, "epic", swords(), 10, 10, 25, 10, 8));
@@ -269,7 +269,7 @@ public final class Enchants {
         list.add(def("granite_skin", "Granite Skin", "Increases armor while worn", 3, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
         list.add(def("swift_step", "Swift Step", "Grants speed while worn", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
         list.add(def("nightguard", "Nightguard", "Grants night vision and glowing sight", 1, 2, false, false, "rare", helmets(), 10, 10, 20, 10, 6));
-        // ===== v1.4.6.3 新增附魔书 11 个 =====
+        // ===== 新增附魔书 11 个 =====
         list.add(def("frost_brand", "Frost Brand", "Hits freeze and chill your opponent", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
         list.add(def("culling_blade", "Culling Blade", "Bonus damage to low-health enemies", 4, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
         list.add(def("arcane_strike", "Arcane Strike", "Chance to deal bonus magic damage", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
@@ -281,7 +281,7 @@ public final class Enchants {
         list.add(def("second_wind", "Second Wind", "Regenerate at low health while worn", 3, 2, false, false, "rare", armor(), 10, 10, 20, 10, 6));
         list.add(def("frost_guard", "Frost Guard", "Nearly negate freeze damage", 3, 3, false, false, "uncommon", armor(), 10, 10, 20, 10, 5));
         list.add(def("speed_dash", "Speed Dash", "Sprint faster while worn", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
-        // ===== v1.4.6.4 新增附魔书 11 个 =====
+        // ===== 新增附魔书 11 个 =====
         list.add(def("glacial_grip", "Glacial Grip", "Hits deeply freeze your opponent", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
         list.add(def("punisher", "Punisher", "Bonus damage against buffed enemies", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
         list.add(def("interrupt", "Interrupt", "Hits strip positive effects from your opponent", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
@@ -293,7 +293,7 @@ public final class Enchants {
         list.add(def("retribution", "Retribution", "Chance to counterattack when hit", 3, 3, false, false, "epic", armor(), 10, 10, 25, 10, 8));
         list.add(def("celerity", "Celerity", "Sprint faster while worn", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
         list.add(def("prospecting", "Prospecting", "Mined ores may drop extra gold nuggets", 3, 3, false, false, "rare", pickaxes(), 10, 10, 20, 10, 6));
-        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔 10 个 =====
+        // ===== 新增附魔 10 个 =====
         list.add(def("goliath", "Goliath", "Extra damage against enemies with more health than you", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
         list.add(def("water_aspect", "Water Aspect", "Bonus damage against fiery mobs and endermen", 3, 3, false, false, "uncommon", swAx(), 10, 10, 20, 10, 5));
         list.add(def("confusion", "Confusion", "Chance to shuffle your opponent's hotbar", 3, 3, false, false, "epic", swords(), 10, 10, 25, 10, 8));
@@ -304,7 +304,7 @@ public final class Enchants {
         list.add(def("stamina", "Stamina", "Restore hunger while sprinting", 3, 3, false, false, "uncommon", boots(), 10, 10, 20, 10, 5));
         list.add(def("oxygenate", "Oxygenate", "Gain oxygen when mining underwater", 3, 3, false, false, "uncommon", pickaxes(), 10, 10, 20, 10, 5));
         list.add(def("juggler", "Juggler", "Arrows ignore gravity", 1, 1, false, false, "rare", bows(), 10, 10, 20, 10, 6));
-        // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+        // ===== 新增 =====
         list.add(def("cubism", "Cubism", "Extra damage against slimes and magma cubes", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
         list.add(def("insecticide", "Insecticide", "Extra damage against spiders, silverfish and endermites", 3, 4, false, false, "uncommon", swords(), 10, 10, 20, 10, 5));
         list.add(def("plague", "Plague", "Chance to poison nearby enemies on hit", 3, 2, false, false, "epic", swords(), 10, 10, 25, 10, 8));
@@ -315,7 +315,7 @@ public final class Enchants {
         list.add(def("replenish", "Replenish", "Replants harvested crops automatically", 1, 3, false, false, "uncommon", tools(), 10, 10, 20, 10, 5));
         list.add(def("suction", "Suction", "Pulls nearby dropped items toward you", 3, 3, false, false, "rare", boots(), 10, 10, 20, 10, 6));
         list.add(def("voltaic", "Voltaic", "Chance to shock nearby enemies on hit", 3, 3, false, false, "rare", swords(), 10, 10, 20, 10, 6));
-        // ===== v1.4.6.9 对标 EcoEnchants 新增 =====
+        // ===== 新增 =====
         list.add(def("abrasion", "Abrasion", "Chance to damage your opponent's armor", 3, 3, false, false, "uncommon", swAx(), 10, 10, 20, 10, 5));
         list.add(def("antidote", "Antidote", "Chance to be immune to potion damage", 6, 3, false, false, "rare", armor(), 10, 10, 20, 10, 6));
         list.add(def("butcher", "Butcher", "Extra damage against passive animals", 5, 3, false, false, "uncommon", swAx(), 10, 10, 20, 10, 5));
@@ -435,7 +435,7 @@ public final class Enchants {
     }
 
     /**
-     * v1.4.7 高级功能：静态清单 + 市场导入的附魔。
+     * 静态清单 + 市场导入的附魔。
      * 导入的 yml 落在 plugins/&lt;插件&gt;/enchantments/&lt;key&gt;.yml，bootstrap 阶段据此注册为真实附魔，
      * 因此新导入的附魔重启服务端后即可用。
      */

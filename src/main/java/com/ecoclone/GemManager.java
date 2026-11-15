@@ -204,7 +204,7 @@ public final class GemManager {
         defs.put("iron_pickaxe", new GemDef("iron_pickaxe", "矿工之石", Material.IRON_PICKAXE, "&#D8D8D8", "armor", 5, "穿戴时急迫 Lv", "HASTE"));
         defs.put("cobble", new GemDef("cobble", "石拳之石", Material.COBBLESTONE, "&#7A7A7A", "armor", 5, "穿戴时急迫 Lv", "HASTE"));
         defs.put("bark", new GemDef("bark", "树皮之石", Material.OAK_LOG, "&#7A6A4A", "armor", 5, "穿戴时急迫 Lv", "HASTE"));
-        // ================= 新宝石 22 种（v1.4.6，fx 效果模板驱动） =================
+        // ================= 新宝石 22 种（，fx 效果模板驱动） =================
         // 武器系 12
         defs.put("sakura", new GemDef("sakura", "樱花之心", Material.CHERRY_SAPLING, "&#FFB3C7", "weapon", 5, "命中伤害 +2%×Lv", "DMG_PCT"));
         defs.put("bamboo", new GemDef("bamboo", "青竹之刃", Material.BAMBOO, "&#7FFF6E", "weapon", 5, "命中追加 Lv 点伤害", "DMG_FLAT"));
@@ -229,7 +229,7 @@ public final class GemManager {
         defs.put("ghost", new GemDef("ghost", "幽魂之石", Material.POINTED_DRIPSTONE, "&#B0B7C0", "armor", 5, "穿戴时隐身 Lv", "INVIS"));
         defs.put("tide", new GemDef("tide", "潮汐之石", Material.KELP, "&#4C8DFF", "armor", 5, "穿戴时水下呼吸 Lv", "WATER_BREATH"));
         defs.put("oxheart", new GemDef("oxheart", "蛮牛之心", Material.COOKED_BEEF, "&#FF8C8C", "armor", 5, "穿戴时力量 Lv", "STRENGTH"));
-        // ================= v1.4.6.5 新增宝石 16 种（复用已有 fx 效果模板） =================
+        // ================= 新增宝石 16 种（复用已有 fx 效果模板） =================
         // 武器系 9
         defs.put("peridot", new GemDef("peridot", "橄榄石", Material.LIME_DYE, "&#B4FF5E", "weapon", 5, "命中伤害 +2%×Lv", "DMG_PCT"));
         defs.put("garnet", new GemDef("garnet", "石榴石", Material.RED_DYE, "&#E03C3C", "weapon", 5, "命中追加 Lv 点伤害", "DMG_FLAT"));
@@ -248,7 +248,7 @@ public final class GemManager {
         defs.put("aegis", new GemDef("aegis", "埃癸斯之壁", Material.SMOOTH_STONE, "&#9E9E9E", "armor", 5, "穿戴时伤害吸收 Lv", "ABSORB"));
         defs.put("breeze", new GemDef("breeze", "微风之石", Material.POWDER_SNOW_BUCKET, "&#D0F5FF", "armor", 5, "穿戴时速度 Lv", "SPEED"));
         defs.put("aurora", new GemDef("aurora", "极光石", Material.HEART_OF_THE_SEA, "&#7FE0FF", "armor", 5, "穿戴时夜视 Lv", "NIGHT_VISION"));
-        // ================= v1.4.6.7 新增宝石 12 种（复用已有 fx 效果模板） =================
+        // ================= 新增宝石 12 种（复用已有 fx 效果模板） =================
         // 武器系 7
         defs.put("sunfire", new GemDef("sunfire", "曜阳之心", Material.SUNFLOWER, "&#FFE14D", "weapon", 5, "命中点燃 Lv 秒", "FIRE"));
         defs.put("frostbite", new GemDef("frostbite", "冻伤之刃", Material.SNOW_BLOCK, "&#C0F0FF", "weapon", 5, "命中附加缓慢 Lv（2 秒）", "SLOWNESS"));

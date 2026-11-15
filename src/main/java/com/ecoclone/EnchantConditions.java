@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * v1.4.7 高级功能：附魔自定义条件（conditions / filters）与触发器（triggers）。
+ * 附魔自定义条件（conditions / filters）与触发器（triggers）。
  *
  * yml 写法（两种格式都支持）：
  *   conditions:

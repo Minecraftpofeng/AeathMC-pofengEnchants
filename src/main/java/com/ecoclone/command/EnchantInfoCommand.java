@@ -45,7 +45,7 @@ public final class EnchantInfoCommand implements CommandExecutor {
                 .replace("%level%", String.valueOf(manager.maxLevel(key)))));
         sender.sendMessage(manager.color(manager.msg("enchantinfo.rarity")
                 .replace("%rarity%", manager.rarity(key))));
-        // v1.4.8.0 高级配置
+        // 配置
         com.ecoclone.EnchantType type = manager.type(key);
         sender.sendMessage(manager.color("&7类型 Type: &f" + type.id() + " &8(" + type.cn() + ")"));
         if (type == com.ecoclone.EnchantType.SPELL) {

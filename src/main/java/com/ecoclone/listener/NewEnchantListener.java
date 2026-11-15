@@ -33,6 +33,7 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -49,7 +50,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * v1.4.2 新增 50 个附魔的集中实现。
+ * 新增 50 个附魔的集中实现。
  */
 public final class NewEnchantListener implements Listener {
 
@@ -76,7 +77,7 @@ public final class NewEnchantListener implements Listener {
     }
 
     /**
-     * v1.4.7 高级功能：附魔生效前的统一闸门。
+     * 附魔生效前的统一闸门。
      * 1) triggers：该附魔只允许在配置的触发器场景生效（未配置 = 全部允许）；
      * 2) conditions / filters：自定义条件（权限、世界、生物群系、坐标、时间、天气、血量等）。
      */
@@ -113,7 +114,7 @@ public final class NewEnchantListener implements Listener {
         return Math.random() < EnchantManager.clamp01(c);
     }
 
-    /** v1.4.6 被动药水：有等级则补药水，无则清除 */
+    /** 被动药水：有等级则补药水，无则清除 */
     private void passiveBuff(Player p, String key, int lvl, PotionEffectType type, int ticks) {
         if (lvl > 0) {
             if (!p.hasPotionEffect(type)) {
@@ -205,7 +206,7 @@ public final class NewEnchantListener implements Listener {
             if (armorTotal(p, "warmth") > 0) {
                 p.removePotionEffect(PotionEffectType.SLOWNESS);
             }
-            // ===== v1.4.6 新增附魔：被动效果 =====
+            // ===== 新增附魔：被动效果 =====
             passiveBuff(p, "turtle_shell", armorTotal(p, "turtle_shell"), PotionEffectType.RESISTANCE, 25 * 20);
             passiveBuff(p, "swift_step", lv(p, p.getInventory().getBoots(), "swift_step"), PotionEffectType.SPEED, 25 * 20);
             passiveBuff(p, "nightguard", lv(p, p.getInventory().getHelmet(), "nightguard"), PotionEffectType.NIGHT_VISION, 25 * 20);
@@ -237,7 +238,7 @@ public final class NewEnchantListener implements Listener {
                     under.setType(Material.FROSTED_ICE);
                 }
             }
-            // ===== v1.4.6.3 新增附魔：被动效果 =====
+            // ===== 新增附魔：被动效果 =====
             // second_wind：低血量时再生
             int secondWind = armorTotal(p, "second_wind");
             if (secondWind > 0 && p.getHealth() < p.getMaxHealth() * 0.3) {
@@ -252,7 +253,7 @@ public final class NewEnchantListener implements Listener {
             if (lv(p, p.getInventory().getBoots(), "speed_dash") > 0 && p.isSprinting()) {
                 p.setVelocity(p.getVelocity().add(p.getLocation().getDirection().multiply(0.05).setY(0)));
             }
-            // ===== v1.4.6.4 新增附魔：被动效果 =====
+            // ===== 新增附魔：被动效果 =====
             // cleansing：每秒清除负面药水效果
             if (armorTotal(p, "cleansing") > 0) {
                 for (PotionEffectType pt : new PotionEffectType[]{PotionEffectType.POISON,
@@ -269,7 +270,7 @@ public final class NewEnchantListener implements Listener {
             setMod(p, Attribute.GENERIC_MOVEMENT_SPEED, celerityKey,
                     (celerity > 0 && p.isSprinting()) ? 0.12 * celerity : 0,
                     AttributeModifier.Operation.MULTIPLY_SCALAR_1);
-            // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：被动效果 =====
+            // ===== 新增附魔：被动效果 =====
             // fire_warding：着火时概率灭火
             int fireWard = armorTotal(p, "fire_warding");
             if (fireWard > 0 && p.getFireTicks() > 0 && chance("fire_warding", 0.5, fireWard)) {
@@ -280,7 +281,7 @@ public final class NewEnchantListener implements Listener {
             if (stamina > 0 && p.isSprinting()) {
                 p.setFoodLevel(Math.min(20, p.getFoodLevel() + 1));
             }
-            // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+            // ===== 新增 =====
             // suction：把附近掉落物吸过来
             int suction = lv(p, p.getInventory().getBoots(), "suction");
             if (suction > 0) {
@@ -396,7 +397,7 @@ public final class NewEnchantListener implements Listener {
         if (changed) {
             event.setDamage(dmg);
         }
-        // ===== v1.4.6 新增附魔：命中效果 =====
+        // ===== 新增附魔：命中效果 =====
         int soul = held(p, "soul_rend");
         if (soul > 0 && chance("soul_rend", 0.35, soul)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 60, 1));
@@ -416,7 +417,7 @@ public final class NewEnchantListener implements Listener {
             double heal = event.getDamage() * 0.05 * siphon;
             p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() + heal));
         }
-        // ===== v1.4.6.3 新增附魔：命中效果 =====
+        // ===== 新增附魔：命中效果 =====
         int frostBrand = held(p, "frost_brand");
         if (frostBrand > 0 && chance("frost_brand", 0.35, frostBrand)) {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
@@ -439,7 +440,7 @@ public final class NewEnchantListener implements Listener {
             dmg *= 1.2;
             event.setDamage(dmg);
         }
-        // ===== v1.4.6.4 新增附魔：命中效果 =====
+        // ===== 新增附魔：命中效果 =====
         // glacial_grip：强减速
         int glacial = held(p, "glacial_grip");
         if (glacial > 0 && chance("glacial_grip", 0.35, glacial)) {
@@ -468,7 +469,7 @@ public final class NewEnchantListener implements Listener {
         if (mark > 0) {
             marked.put(victim.getUniqueId(), p.getUniqueId());
         }
-        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：命中效果 =====
+        // ===== 新增附魔：命中效果 =====
         // goliath：对血量高于自己的敌人增伤
         int goliath = held(p, "goliath");
         if (goliath > 0 && victim.getHealth() > p.getHealth()) {
@@ -496,7 +497,7 @@ public final class NewEnchantListener implements Listener {
         if (valiant > 0 && p.getLocation().distance(victim.getLocation()) < 3) {
             event.setDamage(event.getDamage() * (1 + 0.1 * valiant));
         }
-        // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+        // ===== 新增 =====
         // cubism：对史莱姆/岩浆怪增伤
         int cubism = held(p, "cubism");
         if (cubism > 0) {
@@ -539,7 +540,7 @@ public final class NewEnchantListener implements Listener {
                 }
             }
         }
-        // ===== v1.4.6.9 对标 EcoEnchants 新增 =====
+        // ===== 新增 =====
         // abrasion：命中概率磨损对手盔甲耐久
         int abrasion = held(p, "abrasion");
         if (abrasion > 0 && chance("abrasion", 0.25, abrasion)
@@ -687,13 +688,13 @@ public final class NewEnchantListener implements Listener {
                 && event.getCause() == EntityDamageEvent.DamageCause.FREEZE) {
             event.setDamage(event.getDamage() * 0.5);
         }
-        // ===== v1.4.6.3 新增附魔：护甲 =====
+        // ===== 新增附魔：护甲 =====
         // frost_guard：大幅减免冻结伤害
         if (armorTotal(p, "frost_guard") > 0
                 && event.getCause() == EntityDamageEvent.DamageCause.FREEZE) {
             event.setDamage(event.getDamage() * 0.2);
         }
-        // ===== v1.4.6.4 新增附魔：护甲 =====
+        // ===== 新增附魔：护甲 =====
         // stalwart：高血量时减免伤害
         int stalwart = armorTotal(p, "stalwart");
         if (stalwart > 0 && p.getHealth() > p.getMaxHealth() * 0.6) {
@@ -708,14 +709,14 @@ public final class NewEnchantListener implements Listener {
                 le.damage(event.getDamage() * 0.4, p);
             }
         }
-        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：受击效果 =====
+        // ===== 新增附魔：受击效果 =====
         // blazing：受击概率让攻击者着火
         int blazing = armorTotal(p, "blazing");
         if (blazing > 0 && damager instanceof LivingEntity le && le != p
                 && chance("blazing", 0.3, blazing)) {
             le.setFireTicks(60);
         }
-        // ===== v1.4.6.9 对标 EcoEnchants 新增 =====
+        // ===== 新增 =====
         // antidote：概率免疫药水（魔法/中毒）伤害
         int antidote = armorTotal(p, "antidote");
         if (antidote > 0
@@ -764,7 +765,7 @@ public final class NewEnchantListener implements Listener {
                 ar.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
             }
         }
-        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：射出效果 =====
+        // ===== 新增附魔：射出效果 =====
         // juggler：箭矢无视重力
         if (Enchants.level(bow, "juggler") > 0) {
             event.getProjectile().setGravity(false);
@@ -808,13 +809,13 @@ public final class NewEnchantListener implements Listener {
         if (trajectory > 0) {
             projectile.setGravity(false);
         }
-        // ===== v1.4.6 新增附魔：余烬（箭点燃灵魂火） =====
+        // ===== 新增附魔：余烬（箭点燃灵魂火） =====
         int ember = Enchants.level(bow, "ember");
         if (ember > 0 && chance("ember", 0.3, ember)) {
             victim.setFireTicks(80);
             victim.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 40, 0));
         }
-        // ===== v1.4.6.3 新增附魔：箭矢效果 =====
+        // ===== 新增附魔：箭矢效果 =====
         int heavy = Enchants.level(bow, "heavy_arrow");
         if (heavy > 0) {
             event.setDamage(event.getDamage() * (1 + 0.2 * heavy));
@@ -825,7 +826,7 @@ public final class NewEnchantListener implements Listener {
             victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,
                     manager.duration("ice_tip", 100), 1));
         }
-        // ===== v1.4.6.4 新增附魔：箭矢效果 =====
+        // ===== 新增附魔：箭矢效果 =====
         // debilitating_shot：箭命中虚弱 + 缓慢
         int debilitate = Enchants.level(bow, "debilitating_shot");
         if (debilitate > 0) {
@@ -842,7 +843,7 @@ public final class NewEnchantListener implements Listener {
             event.setDamage(event.getDamage() * 1.3);
             marked.remove(victim.getUniqueId());
         }
-        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：箭矢命中效果 =====
+        // ===== 新增附魔：箭矢命中效果 =====
         // sniper：射程越远伤害越高
         int sniper = Enchants.level(bow, "sniper");
         if (sniper > 0) {
@@ -851,7 +852,7 @@ public final class NewEnchantListener implements Listener {
                 event.setDamage(event.getDamage() * (1 + 0.05 * sniper * Math.min(3, dist / 8)));
             }
         }
-        // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+        // ===== 新增 =====
         // precision：概率暴击
         int precision = Enchants.level(bow, "precision");
         if (precision > 0 && chance("precision", 0.15, precision)) {
@@ -940,7 +941,7 @@ public final class NewEnchantListener implements Listener {
                 }
             }
         }
-        // ===== v1.4.6.3 新增附魔：挖掘效果 =====
+        // ===== 新增附魔：挖掘效果 =====
         // ore_magnet：挖掘矿石时吸引附近掉落物
         int oreMag = Enchants.level(held, "ore_magnet");
         if (oreMag > 0 && isOre(m)) {
@@ -957,7 +958,7 @@ public final class NewEnchantListener implements Listener {
         if (mineExpert > 0) {
             p.giveExp(1 + mineExpert);
         }
-        // ===== v1.4.6.4 新增附魔：挖掘效果 =====
+        // ===== 新增附魔：挖掘效果 =====
         // timberlord：斧砍原木概率双倍掉落
         int timber = Enchants.level(held, "timberlord");
         if (timber > 0 && held.getType().name().contains("_AXE")
@@ -972,13 +973,13 @@ public final class NewEnchantListener implements Listener {
             b.getWorld().dropItemNaturally(b.getLocation(),
                     new ItemStack(Material.GOLD_NUGGET, 1 + prospecting));
         }
-        // ===== v1.4.6.6 对照 EcoEnchants 新增附魔：挖掘效果 =====
+        // ===== 新增附魔：挖掘效果 =====
         // oxygenate：水下挖矿恢复氧气
         int oxygenate = Enchants.level(held, "oxygenate");
         if (oxygenate > 0 && p.isInWater()) {
             p.setRemainingAir(p.getMaximumAir());
         }
-        // ===== v1.4.6.8 对标 EcoEnchants 新增 =====
+        // ===== 新增 =====
         // replenish：收获成熟作物后自动补种（延后 1 tick，等原方块真正被移除）
         int replenish = Enchants.level(held, "replenish");
         if (replenish > 0 && b.getBlockData() instanceof org.bukkit.block.data.Ageable age
@@ -1005,7 +1006,7 @@ public final class NewEnchantListener implements Listener {
                 });
             }
         }
-        // ===== v1.4.6.9 对标 EcoEnchants 新增 =====
+        // ===== 新增 =====
         // haste：挖掘方块后获得急迫
         int hasteLv = Enchants.level(held, "haste");
         if (hasteLv > 0) {
@@ -1105,5 +1106,16 @@ public final class NewEnchantListener implements Listener {
     public void clearState() {
         combo.clear();
         marked.clear();
+        lastModCache.clear();
+    }
+
+    /** 玩家离线时摘掉与之相关的连击 / 标记记录 */
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        UUID id = e.getPlayer().getUniqueId();
+        combo.remove(id);
+        marked.remove(id);
+        marked.values().removeIf(v -> v.equals(id));
+        lastModCache.remove(id);
     }
 }

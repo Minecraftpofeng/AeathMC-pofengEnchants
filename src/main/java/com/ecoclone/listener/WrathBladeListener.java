@@ -196,6 +196,18 @@ public final class WrathBladeListener implements Listener {
         }
         double finalDmg = event.getFinalDamage();
         double post = p.getHealth() - finalDmg;
+        // 赎罪：这一下会打死人，在伤害阶段直接拦下并回满，不依赖死亡事件
+        if (post <= 0) {
+            event.setCancelled(true);
+            p.setHealth(p.getMaxHealth());
+            p.setFoodLevel(20);
+            p.setFireTicks(0);
+            p.getWorld().spawnParticle(Particle.DRAGON_BREATH, p.getLocation().add(0, 1, 0), 30,
+                    0.4, 0.4, 0.4, 0.02);
+            p.getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.6f);
+            p.sendTitle("赎罪 · ovO", "", 10, 40, 20);
+            return;
+        }
         // 反伤（暴怒专属）：反弹 30% 伤害给攻击者
         org.bukkit.damage.DamageSource src = event.getDamageSource();
         Entity damager = src == null ? null : src.getCausingEntity();

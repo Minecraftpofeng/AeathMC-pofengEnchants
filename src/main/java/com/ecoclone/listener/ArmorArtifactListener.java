@@ -28,6 +28,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
@@ -691,12 +692,18 @@ public final class ArmorArtifactListener implements Listener {
         }
     }
 
-    // ---------- 不死图腾（全套）：死亡复活 5 次 ----------
+    // ---------- 不死图腾（全套）：致死伤害拦截 5 次 ----------
 
-    @EventHandler
-    public void onDeath(PlayerDeathEvent e) {
-        Player p = e.getEntity();
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onLethal(EntityDamageEvent e) {
+        if (!(e.getEntity() instanceof Player p)) {
+            return;
+        }
         if (!fullSet(p)) {
+            return;
+        }
+        // 只在真正会打死人的那一下触发，避免低伤害也消耗次数
+        if (p.getHealth() - e.getFinalDamage() > 0) {
             return;
         }
         int left = totem.getOrDefault(p.getUniqueId(), 5);
@@ -708,6 +715,7 @@ public final class ArmorArtifactListener implements Listener {
         p.setHealth(p.getMaxHealth());
         p.setFoodLevel(20);
         p.setSaturation(10);
+        p.setFireTicks(0);
         p.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, p.getLocation().add(0, 1, 0), 30, 0.4, 0.4, 0.4, 0.2);
         p.sendMessage(manager.prefix()
                 + manager.color("&a不死图腾守护！剩余次数 &f" + (left - 1)));
@@ -721,5 +729,20 @@ public final class ArmorArtifactListener implements Listener {
         if (it != null && manager.isArmorArtifact(it)) {
             e.setCancelled(true);
         }
+    }
+
+    // ---------- 离线清理：把该玩家的运行时状态全部摘掉 ----------
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        UUID id = e.getPlayer().getUniqueId();
+        stored.remove(id);
+        dragonLayer.remove(id);
+        dragonExpire.remove(id);
+        magickCd.remove(id);
+        witherCd.remove(id);
+        furyExpire.remove(id);
+        armorFlight.remove(id);
+        mining.remove(id);
     }
 }

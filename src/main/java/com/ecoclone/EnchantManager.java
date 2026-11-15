@@ -43,7 +43,7 @@ public final class EnchantManager {
     private final Map<String, YamlConfiguration> enchantConfigs = new HashMap<>();
     private final Map<String, Long> cooldowns = new ConcurrentHashMap<>();
     private final Map<String, Set<ItemType>> keyTargets = new HashMap<>();
-    /** v1.4.8.0：requirements / required 解析缓存，reload 时清空 */
+    /** requirements / required 解析缓存，reload 时清空 */
     private final Map<String, List<String>> requirementCache = new ConcurrentHashMap<>();
     private final Map<String, List<String>> requiredCache = new ConcurrentHashMap<>();
 
@@ -231,7 +231,16 @@ public final class EnchantManager {
     }
 
     public void startCooldown(UUID uuid, String key, double seconds) {
+        if (cooldowns.size() > 512) {
+            pruneCooldowns();
+        }
         cooldowns.put(uuid + ":" + key, System.currentTimeMillis() + (long) (seconds * 1000));
+    }
+
+    /** 条目过多时清掉已到期的冷却，避免高并发下只增不减 */
+    private void pruneCooldowns() {
+        long now = System.currentTimeMillis();
+        cooldowns.entrySet().removeIf(en -> en.getValue() <= now);
     }
 
     public double cooldownSeconds() {
@@ -1220,9 +1229,9 @@ public final class EnchantManager {
         return rarity;
     }
 
-    // ---------- v1.4.7 高级功能配置 ----------
+    // ---------- 配置 ----------
 
-    /** 单个附魔的 yml 配置（高级功能：conditions / triggers / filters 从这里读） */
+    /** 单个附魔的 yml 配置（conditions / triggers / filters 从这里读） */
     public YamlConfiguration enchantConfig(String key) {
         return enchantConfigs.get(key);
     }
@@ -1232,7 +1241,7 @@ public final class EnchantManager {
         return enchantConfigs.keySet();
     }
 
-    // ---------- v1.4.8.0 高级配置层（type / levels / requirements / required / disabled-in-worlds） ----------
+    // ---------- 配置层（type / levels / requirements / required / disabled-in-worlds） ----------
 
     /** 附魔类型：yml type 优先，否则按静态定义里的 curse 标记推断 */
     public EnchantType type(String key) {
@@ -1248,7 +1257,7 @@ public final class EnchantManager {
         return EnchantType.NORMAL;
     }
 
-    /** 高级配置层总开关 */
+    /** 配置层总开关 */
     public boolean advancedEnabled() {
         return config == null || config.getBoolean("advanced.features", true);
     }
