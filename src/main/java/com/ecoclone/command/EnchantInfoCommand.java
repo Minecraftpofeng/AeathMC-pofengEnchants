@@ -72,6 +72,17 @@ public final class EnchantInfoCommand implements CommandExecutor {
         if (manager.typeLimit(type) > 0) {
             sender.sendMessage(manager.color("&7单件上限 Per-item limit: &f" + manager.typeLimit(type)));
         }
+        // 标签决定能从哪些渠道流进服务器，这里直接显示结果
+        java.util.List<String> channels = new java.util.ArrayList<>();
+        if (manager.villagerTypes().contains(type)) {
+            channels.add("村民柜台 Villager");
+        }
+        if (manager.lootTypes().contains(type)
+                && manager.lootTypeWeights().getOrDefault(type, 0.0) > 0) {
+            channels.add("战利品 Loot");
+        }
+        sender.sendMessage(manager.color("&7获取渠道 Obtainable: &f"
+                + (channels.isEmpty() ? "仅指令 Grant only" : String.join(" / ", channels))));
         return true;
     }
 }

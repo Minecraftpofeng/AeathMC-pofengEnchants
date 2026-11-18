@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -371,9 +372,24 @@ public final class EnchantManager {
         return book;
     }
 
-    /** 按稀有度权重随机抽取一个附魔（用于 randomenchant / giverandombook）。 */
+    /** 单次抽签结果：附魔 + 等级 + 本次权重 */
+    private record Roll(Enchantment enchant, int level, double weight) {
+    }
+
+    /** 按稀有度权重随机抽取一个附魔（不限标签，管理员指令用）。 */
     public Map.Entry<Enchantment, Integer> randomEnchant() {
-        List<Map.Entry<Enchantment, Integer>> pool = new ArrayList<>();
+        return randomEnchant(null, null);
+    }
+
+    /**
+     * 按标签池抽取附魔。
+     * allowed 为空表示不限标签；tagWeights 用于在同一池内再按标签乘一次权重
+     * （例如战利品里 special 只占 3%，artifact 直接为 0 即排除）。
+     */
+    public Map.Entry<Enchantment, Integer> randomEnchant(Collection<EnchantType> allowed,
+                                                         Map<EnchantType, Double> tagWeights) {
+        List<Roll> pool = new ArrayList<>();
+        double total = 0;
         for (EnchantDef def : Enchants.definitions()) {
             if (!isEnabled(def.key)) {
                 continue;
@@ -382,18 +398,33 @@ public final class EnchantManager {
             if (e == null) {
                 continue;
             }
+            EnchantType tag = type(def.key);
+            if (allowed != null && !allowed.isEmpty() && !allowed.contains(tag)) {
+                continue;
+            }
+            double tagWeight = tagWeights == null ? 1.0 : tagWeights.getOrDefault(tag, 1.0);
+            if (tagWeight <= 0) {
+                continue;
+            }
             double rarityWeight = rarity.getDouble(def.rarity + ".weight", 1);
-            int totalWeight = Math.max(1, (int) (rarityWeight * def.weight));
+            double weight = Math.max(0.0001, rarityWeight * def.weight * tagWeight);
             int maxLvl = maxLevel(def.key);
             int level = 1 + (int) (Math.random() * maxLvl);
-            for (int i = 0; i < totalWeight; i++) {
-                pool.add(Map.entry(e, level));
-            }
+            pool.add(new Roll(e, level, weight));
+            total += weight;
         }
         if (pool.isEmpty()) {
             return null;
         }
-        return pool.get((int) (Math.random() * pool.size()));
+        double r = Math.random() * total;
+        for (Roll roll : pool) {
+            r -= roll.weight;
+            if (r <= 0) {
+                return Map.entry(roll.enchant, roll.level);
+            }
+        }
+        Roll last = pool.get(pool.size() - 1);
+        return Map.entry(last.enchant, last.level);
     }
 
     // ---------- 卷轴 / 附魔槽 / 洗附魔 ----------
@@ -1618,6 +1649,63 @@ public final class EnchantManager {
         }
         List<String> l = config.getStringList("loot.table-prefixes");
         return l.isEmpty() ? List.of("chests") : l;
+    }
+
+    // ---------- 标签池（normal / curse / special / artifact / spell） ----------
+
+    /** 村民柜台允许的标签，默认只出普通与诅咒 */
+    public List<EnchantType> villagerTypes() {
+        return typeList("villager.types", List.of(EnchantType.NORMAL, EnchantType.CURSE));
+    }
+
+    /** 战利品箱允许的标签，默认普通、诅咒，外加低概率的强力与法术 */
+    public List<EnchantType> lootTypes() {
+        return typeList("loot.types", List.of(EnchantType.NORMAL, EnchantType.CURSE,
+                EnchantType.SPECIAL, EnchantType.SPELL));
+    }
+
+    /** 战利品箱内的标签权重；强力 3%，法术 1%，装饰不出 */
+    public Map<EnchantType, Double> lootTypeWeights() {
+        Map<EnchantType, Double> weights = new HashMap<>();
+        weights.put(EnchantType.NORMAL, 1.0);
+        weights.put(EnchantType.CURSE, 1.0);
+        weights.put(EnchantType.SPECIAL, 0.03);
+        weights.put(EnchantType.SPELL, 0.01);
+        weights.put(EnchantType.ARTIFACT, 0.0);
+        if (config == null) {
+            return weights;
+        }
+        for (EnchantType t : EnchantType.values()) {
+            String path = "loot.type-weights." + t.id();
+            if (config.isSet(path)) {
+                weights.put(t, Math.max(0.0, config.getDouble(path, weights.getOrDefault(t, 1.0))));
+            }
+        }
+        return weights;
+    }
+
+    /** 读取标签列表，非法或缺失的标签会被丢弃；结果为空时回落到默认池 */
+    private List<EnchantType> typeList(String path, List<EnchantType> def) {
+        if (config == null) {
+            return def;
+        }
+        List<String> raw = config.getStringList(path);
+        if (raw.isEmpty()) {
+            return def;
+        }
+        List<EnchantType> out = new ArrayList<>();
+        for (String s : raw) {
+            if (s == null) {
+                continue;
+            }
+            String v = s.trim().toLowerCase();
+            for (EnchantType t : EnchantType.values()) {
+                if (t.id().equals(v) && !out.contains(t)) {
+                    out.add(t);
+                }
+            }
+        }
+        return out.isEmpty() ? def : out;
     }
 
     /** LRCDB / 市场导入地址模板，%s 为附魔 key */

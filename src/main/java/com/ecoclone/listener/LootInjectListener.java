@@ -51,7 +51,9 @@ public final class LootInjectListener implements Listener {
         int count = 1 + (int) (Math.random() * manager.lootMaxBooks());
         double mult = manager.lootLevelMultiplier();
         for (int i = 0; i < count; i++) {
-            Map.Entry<Enchantment, Integer> roll = manager.randomEnchant();
+            // 按标签池 + 标签权重抽取：强力 3%，法术 1%，装饰不出
+            Map.Entry<Enchantment, Integer> roll = manager.randomEnchant(manager.lootTypes(),
+                    manager.lootTypeWeights());
             if (roll == null) {
                 return;
             }

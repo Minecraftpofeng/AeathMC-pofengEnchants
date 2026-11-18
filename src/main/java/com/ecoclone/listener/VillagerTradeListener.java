@@ -40,7 +40,8 @@ public final class VillagerTradeListener implements Listener {
         if (Math.random() > manager.villagerChance()) {
             return;
         }
-        Map.Entry<Enchantment, Integer> roll = manager.randomEnchant();
+        // 按标签池抽取：默认只出 normal / curse，强力、装饰、法术不进柜台
+        Map.Entry<Enchantment, Integer> roll = manager.randomEnchant(manager.villagerTypes(), null);
         if (roll == null) {
             return;
         }

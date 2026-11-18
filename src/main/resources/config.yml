@@ -36,6 +36,11 @@ villager:
     rare: 18
     epic: 26
     legendary: 40
+  # 柜台只出这些标签的附魔（normal / curse / special / artifact / spell）
+  # 默认只出普通与诅咒；强力、装饰、法术进柜台会直接破坏经济
+  types:
+    - normal
+    - curse
 
 # 世界生成的战利品宝箱 / 末地城等结构中的自然附魔（v1.4.7：自动注入附魔书）
 loot:
@@ -49,6 +54,19 @@ loot:
   # 只处理这些前缀的战利品表（chests = 全部箱子）
   table-prefixes:
     - chests
+  # 战利品箱允许的标签池
+  types:
+    - normal
+    - curse
+    - special
+    - spell
+  # 池内标签权重（相对值，0 = 完全不产出）
+  type-weights:
+    normal: 1.0
+    curse: 1.0
+    special: 0.03
+    spell: 0.01
+    artifact: 0.0
 
 # 市场导入（v1.4.7：LRCDB / EcoEnchants 社区配置）
 market:
@@ -173,4 +191,20 @@ language: en.yml
 #   spell-cooldown: 15                 # spell 型冷却秒数
 #   artifact-particle: end_rod         # artifact 型粒子名（Bukkit Particle 枚举）
 #   chance / duration / cooldown       # v1.4.7 已有
+
+# ================= 标签分流 =================
+# 附魔 yml 顶层的 type 是标签的唯一来源：
+#   normal   普通，可叠加
+#   curse    诅咒，负面
+#   special  强力，单件上限 type-limits.special
+#   artifact 装饰，只出粒子，单件上限 type-limits.artifact
+#   spell    法术，主动技能，走 spell.cooldown
+#
+# 未写 type 的配置按 normal 处理；写了非法标签的社区配置会被 /aeath import 直接拒收。
+#
+# 分流规则（都在本文件里可改）：
+#   村民柜台   villager.types              默认 normal + curse
+#   战利品箱   loot.types + loot.type-weights
+#                                         默认 normal + curse，special 3%，spell 1%，artifact 0
+# 新增附魔先定标签，标签决定它能从哪条渠道流进服务器，避免顶级附魔从村民柜台漏出去。
 

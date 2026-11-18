@@ -61,6 +61,11 @@ public final class MarketImporter {
             if (!text.contains("name:") || !text.contains("general-config")) {
                 return "§c下载内容不是有效的附魔配置（需要包含 name 与 general-config），来源：" + url;
             }
+            // 标签校验：写了 type 就必须是五个合法标签之一，写错直接拒收，避免静默变 normal
+            String typeError = checkType(text);
+            if (typeError != null) {
+                return typeError + " 来源：" + url;
+            }
             File dir = new File(plugin.getDataFolder(), "enchantments");
             if (!dir.exists() && !dir.mkdirs()) {
                 return "§c无法创建 enchantments 目录：" + dir.getAbsolutePath();
@@ -79,6 +84,30 @@ public final class MarketImporter {
         } catch (Throwable t) {
             return "§c导入失败：" + t.getMessage();
         }
+    }
+
+    /**
+     * 校验导入配置的 type 标签。
+     * 未写 type 视为合法（老配置回落 normal），写了但不在五个合法标签内则拒收。
+     */
+    private String checkType(String text) {
+        String typeRaw = null;
+        for (String line : text.split("\n")) {
+            String s = line.trim();
+            if (s.startsWith("type:")) {
+                typeRaw = s.substring("type:".length()).trim().replace("\"", "").replace("'", "").toLowerCase();
+                break;
+            }
+        }
+        if (typeRaw == null || typeRaw.isEmpty()) {
+            return null;
+        }
+        for (com.ecoclone.EnchantType t : com.ecoclone.EnchantType.values()) {
+            if (t.id().equals(typeRaw)) {
+                return null;
+            }
+        }
+        return "§ctype 标签 \"" + typeRaw + "\" 不合法，只能是 normal / curse / special / artifact / spell。";
     }
 
     private byte[] download(String url) throws Exception {
