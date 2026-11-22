@@ -1,0 +1,140 @@
+package com.ecoclone;
+
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * 启动冷知识池：每条中英成对，启动时随机抽一条并同时输出中文和英文。
+ * 文案集中在这里，增删直接改 TIPS 列表。
+ */
+public final class StartupTips {
+
+    /** 一条冷知识的中英文版本 */
+    public record Tip(String cn, String en) {
+    }
+
+    private static final List<Tip> TIPS = List.of(
+            new Tip("没人用 255.255.255.255 搭建 MC 服务器，这是广播地址，不能分配给主机",
+                    "Nobody builds an MC server on 255.255.255.255 — it's the broadcast address, not a host address."),
+            new Tip("没人在 yml 配置里用 Tab 缩进，很多插件读到直接炸配置",
+                    "Nobody indents yml with Tab — plenty of plugins blow up the moment they read it."),
+            new Tip("没人写 “int 9ball;”，变量不能数字开头",
+                    "Nobody writes “int 9ball;” — a variable name can't start with a digit."),
+            new Tip("没人把 datapack 数据包放进 plugins 文件夹，服务端不会加载它",
+                    "Nobody drops a datapack into plugins/ — the server never loads it from there."),
+            new Tip("没人用 “true = 99” 赋值，true 是字面量，不是变量",
+                    "Nobody assigns “true = 99” — true is a literal, not a variable."),
+            new Tip("没人给 Velocity 子服填 localhost 当代理地址，跨机器访问不通",
+                    "Nobody points a Velocity backend at localhost — across machines that address never resolves."),
+            new Tip("没人拿 “@e[type=player]” 配合 kill 清除玩家，这个目标选择器对玩家无效",
+                    "Nobody uses “@e[type=player]” with kill to clear players — that selector never matches players."),
+            new Tip("没人用 “class return” 写 Java，return 是关键字，不能做类名",
+                    "Nobody writes “class return” in Java — return is a keyword, not a class name."),
+            new Tip("没人把服务端 jar 塞进 resourcepacks，资源包目录不认服务端程序",
+                    "Nobody puts the server jar in resourcepacks/ — that folder doesn't load server software."),
+            new Tip("没人用 0 做 TCP 服务端口，0 是动态分配端口，不能固定占用",
+                    "Nobody binds TCP port 0 — it means dynamic allocation and can't be held."),
+            new Tip("没人写 “let mr.beast” 中间加点当变量，点会被识别成属性访问",
+                    "Nobody writes “let mr.beast” as one variable — the dot becomes a property access."),
+            new Tip("没人靠改 server.properties 强行开两个一样的端口，端口不能复用",
+                    "Nobody edits server.properties to run two servers on one port — ports can't be reused."),
+            new Tip("没人在 mcfunction 里写 // 注释，函数只认 # 作为注释开头",
+                    "Nobody writes // comments in a mcfunction — only # starts a comment there."),
+            new Tip("没人用 “for()” 当成变量名，for 是循环保留字",
+                    "Nobody names a variable “for()” — for is a reserved loop keyword."),
+            new Tip("没人把 BungeeCord 的 config.yml 丢进子服读取，代理和子服配置互相独立",
+                    "Nobody loads BungeeCord's config.yml on a backend — proxy and backend configs are separate."),
+            new Tip("没人用 “null = 5”，null 只是空值，不能被赋值修改",
+                    "Nobody writes “null = 5” — null is an empty value, not something you assign to."),
+            new Tip("没人用 127.0.0.1 给外网玩家分享服务器地址，环回地址只能本机访问",
+                    "Nobody hands out 127.0.0.1 to outside players — a loopback address only works on the host."),
+            new Tip("没人在 JSON 里写 # 注释，标准 JSON 根本不支持注释语法",
+                    "Nobody puts # comments in JSON — standard JSON has no comment syntax at all."),
+            new Tip("没人写 “var a-b” 想要命名变量，横杠直接当成减号运算",
+                    "Nobody writes “var a-b” as one name — the hyphen is read as subtraction."),
+            new Tip("没人把插件的 lang 语言文件放进 datapack 文件夹，两套加载体系互不识别",
+                    "Nobody puts a plugin's lang files in datapacks/ — the two loading systems can't read each other."),
+            new Tip("“break;” 不能当变量名，几乎所有主流语言里它都是保留关键字",
+                    "“break;” can't be a variable name — it's a reserved keyword in nearly every mainstream language."),
+            new Tip("没人用 0.0.0.0 去访问网页，0.0.0.0 一般代表监听全部网卡，不是可访问地址",
+                    "Nobody browses to 0.0.0.0 — it usually means listen on all interfaces, not a reachable address."),
+            new Tip("“String 用户名” 在 Java 不推荐，中文变量虽然语法允许，但编码坑特别多",
+                    "“String 用户名” isn't recommended in Java — legal but a minefield of encoding issues."),
+            new Tip("没人在 MC 服务端用 /gamemode @s 不加模式参数，这条指令会直接报错",
+                    "Nobody runs /gamemode @s without a mode — it just throws an error."),
+            new Tip("“for=5” 写不了 C 代码，for 是循环关键字，禁止赋值",
+                    "“for=5” can't compile in C — for is a loop keyword and can't be assigned."),
+            new Tip("没人把插件配置 yml 直接用记事本保存，容易搞出不可见编码导致插件炸配置",
+                    "Nobody saves plugin yml in Notepad — invisible encoding artifacts break the config."),
+            new Tip("“#include <mcfunction>” 不存在，C 头文件和 MC 函数完全两套东西",
+                    "“#include <mcfunction>” doesn't exist — C headers and MC functions are unrelated systems."),
+            new Tip("没人用端口 65536 开服务端口，端口范围上限就是 65535",
+                    "Nobody opens port 65536 — the port range stops at 65535."),
+            new Tip("“let 123abc” 在 JS 里非法，标识符不能以数字开头",
+                    "“let 123abc” is illegal in JS — identifiers can't begin with a digit."),
+            new Tip("没人用 UUID 手动改玩家背包，UUID 只是标识，不直接存储物品数据",
+                    "Nobody edits an inventory through a UUID — it's just an identifier, not inventory storage."),
+            new Tip("“return = 0” 语法错误，return 是语句，不是变量",
+                    "“return = 0” is a syntax error — return is a statement, not a variable."),
+            new Tip("没人把 Velocity 代理放进 spigot 的 plugins 文件夹，代理程序本身不是插件",
+                    "Nobody drops Velocity into a spigot plugins folder — the proxy itself isn't a plugin."),
+            new Tip("“a-b” 在 JS 里永远是减法，不会当成一个变量名",
+                    "“a-b” is always subtraction in JS — it never becomes one variable name."),
+            new Tip("没人 ping shturl.cc/ftTGB 去连通外网，这是内网地址，公网路由不转发",
+                    "Nobody pings shturl.cc/ftTGB to reach the internet — that's an intranet address, no public route."),
+            new Tip("“import 我的世界” Python 语法报错，import 后面只能跟合法模块标识符",
+                    "“import 我的世界” is a Python syntax error — import takes a valid module identifier only."),
+            new Tip("没人靠修改 level.dat 直接批量刷 MC 物品，格式写错存档直接损坏",
+                    "Nobody batch-spawns items by editing level.dat — one wrong field corrupts the world save."),
+            new Tip("“null = 2” 不能赋值，null 是空字面量，不是可修改变量",
+                    "“null = 2” can't be assigned — null is an empty literal, not a mutable variable."),
+            new Tip("没人用 127.0.0.1:25565 给外网玩家直连，环回地址外部访问不到",
+                    "Nobody gives out 127.0.0.1:25565 — outside players can't reach a loopback address."),
+            new Tip("“function if(){}” 在 JS 报错，if 是保留字，不能定义函数",
+                    "“function if(){}” errors in JS — if is reserved and can't name a function."),
+            new Tip("没人把数据包 datapack 丢进 plugins 文件夹，插件目录不会加载 json 数据包",
+                    "Nobody puts a datapack in plugins/ — that folder never loads json datapacks."),
+            new Tip("“int mr.beast” 不是一个合法变量，空格会被解析成两个 token",
+                    "“int mr.beast” isn't one variable — the space splits it into two tokens."),
+            new Tip("没人用 ChatGPT 6 接 QQ，官方根本没有开放给机器人直连的接口",
+                    "Nobody wires “ChatGPT 6” into QQ — no official API exposes direct bot access."),
+            new Tip("“var 666shop” 不是合法 JS 变量，变量不能用数字开头",
+                    "“var 666shop” isn't a legal JS variable — names can't start with a digit."),
+            new Tip("没人用 127.0.0.1 去攻击别人，这地址永远指向自己本机",
+                    "Nobody attacks anyone via 127.0.0.1 — that address always points back at your own machine."),
+            new Tip("“if = true” 写不了代码，if 是编程语言的保留关键字",
+                    "“if = true” compiles nowhere — if is a reserved keyword in every mainstream language."),
+            new Tip("没人拿 “/kill @e[type=player]” 清服务器玩家，这条指令杀不掉玩家",
+                    "Nobody clears players with “/kill @e[type=player]” — it can't kill players."),
+            new Tip("“file://C:/” 不能发给网友直接打开对方电脑，浏览器同源策略拦死",
+                    "“file://C:/” can't open someone else's disk — the browser same-origin policy blocks it."),
+            new Tip("没人用 255.255.255.255 当服务器 IP，这是广播地址，不是主机地址",
+                    "Nobody uses 255.255.255.255 as a server IP — it's a broadcast address, not a host."),
+            new Tip("“const hello-world” 在 JS 里非法，横杠会被识别成减号",
+                    "“const hello-world” is illegal in JS — the hyphen is parsed as subtraction."),
+            new Tip("没人把 MC 插件丢进 resourcepacks 文件夹，资源包文件夹不认 jar 插件",
+                    "Nobody puts an MC plugin in resourcepacks/ — that folder doesn't load jar plugins."),
+            new Tip("“class 蛋糕” 在 Java 里不行，class 是保留词，不能拿来当类名",
+                    "“class 蛋糕” won't work in Java — class is reserved and can't be a class name."),
+            new Tip("没人用 localhost 给外网朋友连服务器，localhost 只有本机认",
+                    "Nobody sends localhost to friends outside — only the host machine resolves it."),
+            new Tip("“$123name” 在 C++ 里非法，C++ 变量不能以美元符号开头",
+                    "“$123name” is illegal in C++ — identifiers can't start with a dollar sign."),
+            new Tip("没人靠改 hosts 文件免费充会员，hosts 只能改域名指向，改不了支付校验",
+                    "Nobody gets free membership by editing hosts — it only redirects domains, not payment checks."),
+            new Tip("“true = 100” 不能赋值，true 是布尔字面量，不是变量",
+                    "“true = 100” can't be assigned — true is a boolean literal, not a variable."),
+            new Tip("没人把 BungeeCord 插件丢进子服 plugins，代理插件只能放代理端",
+                    "Nobody drops BungeeCord plugins into a backend — proxy plugins belong on the proxy only."),
+            new Tip("“@echo off” 不是 Python 代码，它是 Windows 批处理 bat 语法",
+                    "“@echo off” isn't Python — it's Windows batch script syntax.")
+    );
+
+    private StartupTips() {
+    }
+
+    /** 随机取一条启动冷知识 */
+    public static Tip random() {
+        return TIPS.get(ThreadLocalRandom.current().nextInt(TIPS.size()));
+    }
+}

@@ -74,15 +74,39 @@ public final class EnchantInfoCommand implements CommandExecutor {
         }
         // 标签决定能从哪些渠道流进服务器，这里直接显示结果
         java.util.List<String> channels = new java.util.ArrayList<>();
-        if (manager.villagerTypes().contains(type)) {
+        if (manager.villagerTypes().contains(type) && manager.tradeable(key)) {
             channels.add("村民柜台 Villager");
         }
         if (manager.lootTypes().contains(type)
                 && manager.lootTypeWeights().getOrDefault(type, 0.0) > 0) {
-            channels.add("战利品 Loot");
+            if (manager.discoverableChannel(key, "chests")) {
+                channels.add("战利品箱 Chests");
+            }
+            if (manager.discoverableChannel(key, "fishing")) {
+                channels.add("钓鱼 Fishing");
+            }
+            if (manager.discoverableChannel(key, "mob-drops")) {
+                channels.add("生物掉落 Mobs");
+            }
+            if (manager.discoverableChannel(key, "raids")) {
+                channels.add("袭击 Raids");
+            }
         }
         sender.sendMessage(manager.color("&7获取渠道 Obtainable: &f"
                 + (channels.isEmpty() ? "仅指令 Grant only" : String.join(" / ", channels))));
+        sender.sendMessage(manager.color("&7交易 / 附魔台 / 拖拽 Trade / Table / Drag: &f"
+                + (manager.tradeable(key) ? "可交易 Yes" : "不可 No") + " &8/ &f"
+                + (manager.enchantable(key) ? "可上桌 Yes" : "不可 No") + " &8/ &f"
+                + (manager.dragDropEnabled(key) ? "允许 Yes" : "禁止 No")));
+        java.util.List<String> conflicts = manager.conflicts(key);
+        if (!conflicts.isEmpty()) {
+            sender.sendMessage(manager.color("&7互斥 Conflicts: &f" + String.join(", ", conflicts)));
+        }
+        double dragPrice = manager.dragDropPrice(key, 1);
+        if (dragPrice > 0) {
+            sender.sendMessage(manager.color("&7拖拽价格 Drag price: &f"
+                    + EnchantManager.num(dragPrice) + " &8(Lv1)"));
+        }
         return true;
     }
 }

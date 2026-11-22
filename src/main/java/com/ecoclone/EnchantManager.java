@@ -47,6 +47,8 @@ public final class EnchantManager {
     /** requirements / required 解析缓存，reload 时清空 */
     private final Map<String, List<String>> requirementCache = new ConcurrentHashMap<>();
     private final Map<String, List<String>> requiredCache = new ConcurrentHashMap<>();
+    /** 互斥附魔解析缓存，reload 时清空 */
+    private final Map<String, List<String>> conflictsCache = new ConcurrentHashMap<>();
 
     public EnchantManager(EcoClonePlugin plugin) {
         this.plugin = plugin;
@@ -62,6 +64,7 @@ public final class EnchantManager {
         enchantConfigs.clear();
         requirementCache.clear();
         requiredCache.clear();
+        conflictsCache.clear();
         File dir = new File(plugin.getDataFolder(), "enchantments");
         File[] files = dir.listFiles((d, n) -> n.endsWith(".yml"));
         if (files != null) {
@@ -145,6 +148,10 @@ public final class EnchantManager {
         if (c != null && c.getString("name") != null) {
             return c.getString("name");
         }
+        // EcoEnchants 新版写法：顶层 display-name
+        if (c != null && c.getString("display-name") != null) {
+            return c.getString("display-name");
+        }
         for (EnchantDef d : Enchants.definitions()) {
             if (d.key.equals(key)) {
                 return d.name;
@@ -168,8 +175,14 @@ public final class EnchantManager {
 
     public int maxLevel(String key) {
         YamlConfiguration c = ench(key);
-        if (c != null && c.contains("general-config.maximum-level")) {
-            return c.getInt("general-config.maximum-level");
+        if (c != null) {
+            if (c.contains("general-config.maximum-level")) {
+                return c.getInt("general-config.maximum-level");
+            }
+            // EcoEnchants 新版写法：顶层 max-level
+            if (c.contains("max-level")) {
+                return c.getInt("max-level", 1);
+            }
         }
         for (EnchantDef d : Enchants.definitions()) {
             if (d.key.equals(key)) {
@@ -183,6 +196,10 @@ public final class EnchantManager {
         YamlConfiguration c = ench(key);
         if (c != null && c.getString("obtaining.rarity") != null) {
             return c.getString("obtaining.rarity");
+        }
+        // EcoEnchants 新版写法：顶层 rarity
+        if (c != null && c.getString("rarity") != null) {
+            return c.getString("rarity");
         }
         for (EnchantDef d : Enchants.definitions()) {
             if (d.key.equals(key)) {
@@ -344,15 +361,49 @@ public final class EnchantManager {
         }
         String key = enchantment.getKey().getKey();
         if (advancedEnabled()) {
-            // 前置附魔 / 类型上限不满足时不落地，避免出现"给了但无效"的物品
-            if (!requiredOk(item, key) || !typeLimitOk(item, key)) {
+            // 前置附魔 / 互斥附魔 / 类型上限不满足时不落地，避免出现“给了但无效”的物品
+            if (!requiredOk(item, key) || !conflictsOk(item, key) || !typeLimitOk(item, key)) {
                 lastApplyBlocked = key;
                 return item;
             }
             applyRequiredRemovals(item, key);
         }
         item.editMeta(meta -> meta.addEnchant(enchantment, level, true));
+        if (showDescriptions()) {
+            appendDescription(item, key, level);
+        }
         return item;
+    }
+
+    /** 是否把附魔描述写进物品 lore */
+    public boolean showDescriptions() {
+        return config == null || config.getBoolean("show-descriptions", true);
+    }
+
+    /** 把附魔描述以灰色斜体追加到 lore 末尾，已有同样一行则不重复写 */
+    private void appendDescription(ItemStack item, String key, int level) {
+        String raw = description(key);
+        if (raw == null || raw.isEmpty()) {
+            return;
+        }
+        String desc = color(expandPlaceholders(key, raw, level));
+        item.editMeta(meta -> {
+            java.util.List<net.kyori.adventure.text.Component> lore =
+                    new java.util.ArrayList<>(meta.lore() == null
+                            ? java.util.List.<net.kyori.adventure.text.Component>of()
+                            : meta.lore());
+            net.kyori.adventure.text.Component line = net.kyori.adventure.text.Component
+                    .text(desc).color(net.kyori.adventure.text.format.NamedTextColor.GRAY)
+                    .decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false);
+            for (net.kyori.adventure.text.Component existing : lore) {
+                if (net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+                        .plainText().serialize(existing).equals(desc)) {
+                    return;
+                }
+            }
+            lore.add(line);
+            meta.lore(lore);
+        });
     }
 
     /** 最近一次被高级规则拦下的附魔 key（指令 / GUI 提示用） */
@@ -388,6 +439,16 @@ public final class EnchantManager {
      */
     public Map.Entry<Enchantment, Integer> randomEnchant(Collection<EnchantType> allowed,
                                                          Map<EnchantType, Double> tagWeights) {
+        return randomEnchant(allowed, tagWeights, null);
+    }
+
+    /**
+     * 带 per-key 过滤的抽取：filter 用于获得渠道（tradeable / discoverable.<channel>）判定，
+     * 返回 false 的附魔不进入本次抽签。
+     */
+    public Map.Entry<Enchantment, Integer> randomEnchant(Collection<EnchantType> allowed,
+                                                         Map<EnchantType, Double> tagWeights,
+                                                         java.util.function.Predicate<String> filter) {
         List<Roll> pool = new ArrayList<>();
         double total = 0;
         for (EnchantDef def : Enchants.definitions()) {
@@ -396,6 +457,9 @@ public final class EnchantManager {
             }
             Enchantment e = Enchants.get(def.key);
             if (e == null) {
+                continue;
+            }
+            if (filter != null && !filter.test(def.key)) {
                 continue;
             }
             EnchantType tag = type(def.key);
@@ -1684,8 +1748,15 @@ public final class EnchantManager {
         return weights;
     }
 
-    /** 读取标签列表，非法或缺失的标签会被丢弃；结果为空时回落到默认池 */
-    private List<EnchantType> typeList(String path, List<EnchantType> def) {
+    /** 各发现渠道的掉落概率：fishing 0.05 / mob 0.03 / raid 0.02，config 里 loot.<channel>-chance 覆盖 */
+    public double channelChance(String channel, double def) {
+        if (config == null) {
+            return def;
+        }
+        return Math.max(0.0, config.getDouble("loot." + channel + "-chance", def));
+    }
+
+    /** 读取标签列表，非法或缺失的标签会被丢弃；结果为空时回落到默认池 */    private List<EnchantType> typeList(String path, List<EnchantType> def) {
         if (config == null) {
             return def;
         }
@@ -1725,5 +1796,277 @@ public final class EnchantManager {
 
     public boolean triggersEnabled() {
         return config == null || config.getBoolean("advanced.triggers", true);
+    }
+
+    // ---------- 获得渠道（tradeable / discoverable / enchantable） ----------
+
+    /** 该附魔能否从村民柜台获得：obtaining.villager / 顶层 tradeable，默认 true */
+    public boolean tradeable(String key) {
+        return obtainingFlag(key, true, "obtaining.tradeable", "tradeable", "obtaining.villager");
+    }
+
+    /** 该附魔能否从附魔台获得：obtaining.table / 顶层 enchantable，默认 true；treasure 类型一律不行 */
+    public boolean enchantable(String key) {
+        if (isTreasure(key) || type(key) == EnchantType.ARTIFACT) {
+            return false;
+        }
+        return obtainingFlag(key, true, "obtaining.enchantable", "enchantable", "obtaining.table");
+    }
+
+    /** discoverable 总开关：布尔写法直接生效，map 写法只有全 false 才算关 */
+    public boolean discoverable(String key) {
+        YamlConfiguration c = ench(key);
+        if (c == null) {
+            return true;
+        }
+        if (c.isBoolean("discoverable")) {
+            return c.getBoolean("discoverable");
+        }
+        if (c.isBoolean("obtaining.discoverable")) {
+            return c.getBoolean("obtaining.discoverable");
+        }
+        if (c.isConfigurationSection("discoverable")) {
+            return true;
+        }
+        return true;
+    }
+
+    /**
+     * 单个发现渠道是否开启。
+     * channel 取 chests / fishing / mob-drops / raids；
+     * 支持 discoverable.<channel> 与旧写法 obtaining.loot（视为全部发现渠道）。
+     */
+    public boolean discoverableChannel(String key, String channel) {
+        YamlConfiguration c = ench(key);
+        if (c == null) {
+            return true;
+        }
+        if (c.isBoolean("discoverable") && !c.getBoolean("discoverable")) {
+            return false;
+        }
+        String path = "discoverable." + channel;
+        if (c.isSet(path)) {
+            return c.getBoolean(path);
+        }
+        String alt = "obtaining.discoverable." + channel;
+        if (c.isSet(alt)) {
+            return c.getBoolean(alt);
+        }
+        if (c.isSet("obtaining.loot")) {
+            return c.getBoolean("obtaining.loot");
+        }
+        return true;
+    }
+
+    /** 依次尝试多个布尔路径，取第一个存在的；都没有就返回 def */
+    private boolean obtainingFlag(String key, boolean def, String... paths) {
+        YamlConfiguration c = ench(key);
+        if (c == null) {
+            return def;
+        }
+        for (String path : paths) {
+            if (c.isSet(path) && (c.isBoolean(path) || c.get(path) instanceof Boolean)) {
+                return c.getBoolean(path);
+            }
+        }
+        return def;
+    }
+
+    // ---------- 冲突附魔（conflicts） ----------
+
+    /** 互斥附魔列表，写法 id 即可；同时兼容 general-config.conflicts 与顶层 conflicts */
+    public List<String> conflicts(String key) {
+        return conflictsCache.computeIfAbsent(key, k -> {
+            YamlConfiguration c = enchantConfigs.get(k);
+            if (c == null) {
+                return new ArrayList<>();
+            }
+            Object raw = c.get("general-config.conflicts");
+            if (raw == null) {
+                raw = c.get("conflicts");
+            }
+            List<String> out = new ArrayList<>();
+            for (String s : asStrings(raw)) {
+                String id = s.trim();
+                int colon = id.indexOf(':');
+                if (colon > 0) {
+                    id = id.substring(0, colon);
+                }
+                if (!id.isBlank()) {
+                    out.add(id.toLowerCase());
+                }
+            }
+            return out;
+        });
+    }
+
+    /** 物品上是否已有互斥附魔；有则不落地 */
+    public boolean conflictsOk(ItemStack item, String key) {
+        if (item == null || !advancedEnabled()) {
+            return true;
+        }
+        for (String id : conflicts(key)) {
+            Enchantment e = Enchants.get(id);
+            if (e != null && item.getEnchantmentLevel(e) > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // ---------- 附魔台 ----------
+
+    public boolean tableEnabled() {
+        return config == null || config.getBoolean("enchanting-table.enabled", true);
+    }
+
+    public double tableWeightMultiplier(String key) {
+        if (config == null) {
+            return 1.0;
+        }
+        double base = Math.max(0.0, config.getDouble("enchanting-table.weight-multiplier", 1.0));
+        YamlConfiguration c = ench(key);
+        double per = c != null ? Math.max(0.0, c.getDouble("obtaining.table-weight", 1.0)) : 1.0;
+        return base * per;
+    }
+
+    /** 附魔台允许的标签，默认只出 normal 与 curse */
+    public List<EnchantType> tableTypes() {
+        return typeList("enchanting-table.types", List.of(EnchantType.NORMAL, EnchantType.CURSE));
+    }
+
+    /**
+     * 附魔台抽签：稀有度权重 × 附魔权重 × 附魔台权重乘数，
+     * 并套 enchantable / treasure / fromtable 权限三重合规判断。
+     * cost 为玩家本次附魔消耗的等级，用于决定抽取等级。
+     */
+    public Map.Entry<Enchantment, Integer> randomTableEnchant(
+            org.bukkit.entity.Player player, int cost, Collection<EnchantType> allowed) {
+        List<Roll> pool = new ArrayList<>();
+        double total = 0;
+        for (EnchantDef def : Enchants.definitions()) {
+            if (!isEnabled(def.key)) {
+                continue;
+            }
+            Enchantment e = Enchants.get(def.key);
+            if (e == null) {
+                continue;
+            }
+            String key = def.key;
+            boolean byPerm = player != null && player.hasPermission("ecoenchants.fromtable." + key);
+            if (!enchantable(key) && !byPerm) {
+                continue;
+            }
+            EnchantType tag = type(key);
+            if (allowed != null && !allowed.isEmpty() && !allowed.contains(tag)) {
+                continue;
+            }
+            double weight = Math.max(0.0001, rarity.getDouble(def.rarity + ".weight", 1)
+                    * def.weight * tableWeightMultiplier(key));
+            int max = maxLevel(key);
+            int level = Math.min(max, Math.max(1, 1 + cost / 10));
+            pool.add(new Roll(e, level, weight));
+            total += weight;
+        }
+        if (pool.isEmpty()) {
+            return null;
+        }
+        double r = Math.random() * total;
+        for (Roll roll : pool) {
+            r -= roll.weight;
+            if (r <= 0) {
+                return Map.entry(roll.enchant, roll.level);
+            }
+        }
+        Roll last = pool.get(pool.size() - 1);
+        return Map.entry(last.enchant, last.level);
+    }
+
+    /** 附魔台每次最多给几个：花费 <15 一个，>=15 两个 */
+    public int tableRolls(int cost) {
+        return cost >= 15 ? 2 : 1;
+    }
+
+    // ---------- 拖拽应用附魔书 ----------
+
+    public boolean dragDropEnabled() {
+        return config == null || config.getBoolean("drag-and-drop.enabled", true);
+    }
+
+    /** 单个附魔是否放开拖拽应用；ytml 顶层 drag-and-drop.enabled 可覆盖全局 */
+    public boolean dragDropEnabled(String key) {
+        YamlConfiguration c = ench(key);
+        if (c != null && c.isSet("drag-and-drop.enabled")) {
+            return c.getBoolean("drag-and-drop.enabled");
+        }
+        return dragDropEnabled();
+    }
+
+    /** 拖拽价格：附魔 yml drag-and-drop.price.value 优先，否则 config drag-and-drop.price */
+    public double dragDropPrice(String key, int level) {
+        YamlConfiguration c = ench(key);
+        double base = config == null ? 0.0 : Math.max(0.0, config.getDouble("drag-and-drop.price", 0.0));
+        if (c == null) {
+            return base;
+        }
+        Object price = c.get("drag-and-drop.price");
+        if (price instanceof Number n) {
+            base = Math.max(0.0, n.doubleValue());
+        } else if (price instanceof java.util.Map<?, ?> map && map.get("value") != null) {
+            base = Math.max(0.0, evalExpr(String.valueOf(map.get("value")), level));
+        }
+        String mult = c.getString("drag-and-drop.price-level-multiplier");
+        if (mult != null && !mult.isBlank()) {
+            base *= evalExpr(mult, level);
+        }
+        return Math.max(0.0, base);
+    }
+
+    // ---------- 占位符 ----------
+
+    /**
+     * 展开附魔 yml 里的占位符：内置 %level%，另有顶层 placeholder（填充 %placeholder%）
+     * 与 placeholders 映射（自定义名），都按表达式求值。
+     */
+    public String expandPlaceholders(String key, String text, int level) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+        String out = text.replace("%level%", String.valueOf(level));
+        YamlConfiguration c = ench(key);
+        if (c == null) {
+            return out;
+        }
+        String main = c.getString("placeholder");
+        if (main != null && !main.isBlank()) {
+            out = out.replace("%placeholder%", num(evalExpr(main, level)));
+        }
+        org.bukkit.configuration.ConfigurationSection extra = c.getConfigurationSection("placeholders");
+        if (extra != null) {
+            for (String name : extra.getKeys(false)) {
+                String expr = extra.getString(name);
+                if (expr != null && !expr.isBlank()) {
+                    out = out.replace("%" + name + "%", num(evalExpr(expr, level)));
+                }
+            }
+        }
+        return out;
+    }
+
+    /** 表达式求值，失败时原样返回文本 */
+    private double evalExpr(String expr, int level) {
+        try {
+            return EffectEngine.eval(expr.replace("%level%", String.valueOf(level)));
+        } catch (Throwable ignored) {
+            return level;
+        }
+    }
+
+    /** 数字美化：整数不带小数点 */
+    public static String num(double v) {
+        if (Math.abs(v - Math.rint(v)) < 1e-9) {
+            return String.valueOf((long) Math.rint(v));
+        }
+        return String.format(java.util.Locale.ROOT, "%.2f", v);
     }
 }

@@ -16,11 +16,20 @@ default-cooldown: 3.0
 # 每件物品的自定义附魔槽上限（附魔槽系统）
 enchantment-slots: 5
 
+# 每次启动在鸣谢弹幕下面补一条随机“你知道吗”冷知识（控制台 + 在线玩家）
+startup-tip:
+  enabled: true
+
 # 是否让自定义附魔在附魔台中出现
 enchanting-table:
   enabled: true
   # 每个附魔的权重乘数
   weight-multiplier: 1.0
+  # 附魔台只出这些标签（normal / curse / special / artifact / spell）
+  # 默认只出普通与诅咒；强力、装饰、法术上桌会让附魔台彻底失衡
+  types:
+    - normal
+    - curse
 
 # 村民交易（v1.4.7：自动生成自定义附魔书交易）
 villager:
@@ -67,6 +76,20 @@ loot:
     special: 0.03
     spell: 0.01
     artifact: 0.0
+  # 钓鱼发现渠道：钓上鱼时额外钓到附魔书的概率（0 = 关闭）
+  fishing-chance: 0.05
+  # 生物掉落发现渠道：玩家击杀生物时掉落附魔书的概率（0 = 关闭）
+  mob-chance: 0.03
+  # 袭击结算发现渠道：守住村庄后每位胜利者获得附魔书的概率（0 = 关闭）
+  raid-chance: 0.02
+
+# 拖拽应用（v1.4.8.3）：光标持附魔书直接点物品即可附魔
+drag-and-drop:
+  enabled: true
+  # 每次拖拽应用的价格（Vault 经济），0 = 免费
+  price: 0.0
+  # 价格随等级放大的倍数（price-level-multiplier）
+  price-level-multiplier: 0.1
 
 # 市场导入（v1.4.7：LRCDB / EcoEnchants 社区配置）
 market:

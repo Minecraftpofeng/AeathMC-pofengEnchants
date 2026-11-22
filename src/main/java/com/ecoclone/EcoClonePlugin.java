@@ -8,7 +8,12 @@ import com.ecoclone.listener.AdminSwordListener;
 import com.ecoclone.listener.ArtifactListener;
 import com.ecoclone.listener.CombatListener;
 import com.ecoclone.listener.DeathListener;
+import com.ecoclone.listener.DragDropEnchantListener;
+import com.ecoclone.listener.EnchantTableListener;
+import com.ecoclone.listener.FishingEnchantListener;
 import com.ecoclone.listener.LootInjectListener;
+import com.ecoclone.listener.MobDropEnchantListener;
+import com.ecoclone.listener.RaidEnchantListener;
 import com.ecoclone.listener.ShieldEnchantListener;
 import com.ecoclone.listener.TriggerEventsListener;
 import com.ecoclone.listener.VillagerTradeListener;
@@ -120,6 +125,11 @@ public final class EcoClonePlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new DeathListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new VillagerTradeListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new LootInjectListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new EnchantTableListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new FishingEnchantListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new MobDropEnchantListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new RaidEnchantListener(this, manager), this);
+            getServer().getPluginManager().registerEvents(new DragDropEnchantListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new ShieldEnchantListener(this, manager), this);
             getServer().getPluginManager().registerEvents(new TriggerEventsListener(this, manager), this);
             advancedListener = new AdvancedEnchantListener(this, manager);
@@ -334,7 +344,10 @@ public final class EcoClonePlugin extends JavaPlugin {
         return 0;
     }
 
-    /** 启动鸣谢弹幕：控制台 + 在线玩家各弹两行（Adventure 组件，16 进制颜色，中文后附英文） */
+    /**
+     * 启动鸣谢弹幕：控制台 + 在线玩家各弹两行（Adventure 组件，16 进制颜色，中文后附英文）。
+     * 末尾再补一条随机冷知识，config.yml 的 startup-tip.enabled 可整体关闭。
+     */
     private void sendSplash() {
         Component line1 = Component.text("鸣谢 / Thanks to: ", TextColor.fromHexString("#FFD700"))
                 .append(Component.text("SKY_qwq  clowm贺  shadow_agent  H1111111  7gzztrgv  ╮(─▽─)╭：）： ⁧♡~喵呜⁧", TextColor.fromHexString("#00E5FF")));
@@ -345,6 +358,19 @@ public final class EcoClonePlugin extends JavaPlugin {
                 .append(Component.text("]", TextColor.fromHexString("#FFD700")));
         getServer().getConsoleSender().sendMessage(line1);
         getServer().getConsoleSender().sendMessage(line2);
+        if (getConfig().getBoolean("startup-tip.enabled", true)) {
+            StartupTips.Tip pick = StartupTips.random();
+            Component tipCn = Component.text("[你知道吗] ", TextColor.fromHexString("#FFD700"))
+                    .append(Component.text(pick.cn(), TextColor.fromHexString("#E0E0E0")));
+            Component tipEn = Component.text("[Did you know] ", TextColor.fromHexString("#FFD700"))
+                    .append(Component.text(pick.en(), TextColor.fromHexString("#B0B0B0")));
+            getServer().getConsoleSender().sendMessage(tipCn);
+            getServer().getConsoleSender().sendMessage(tipEn);
+            getServer().getScheduler().runTaskLater(this, () -> {
+                Bukkit.broadcast(tipCn);
+                Bukkit.broadcast(tipEn);
+            }, 20L);
+        }
         getServer().getScheduler().runTaskLater(this, () -> {
             Bukkit.broadcast(line1);
             Bukkit.broadcast(line2);
